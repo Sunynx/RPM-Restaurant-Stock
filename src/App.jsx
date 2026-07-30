@@ -312,14 +312,6 @@ function App() {
           )}
 
           <div className="sidebar-divider" />
-          
-          <div 
-            className="sidebar-nav-item"
-            onClick={() => setIsCSVModalOpen(true)}
-          >
-            <UploadCloud size={18} />
-            <span>CSV Uploader</span>
-          </div>
 
           <div 
             className="theme-toggle"
@@ -429,7 +421,8 @@ function App() {
                 <AdminPanel 
                   users={appUsers}
                   onAddUser={() => alert("Add user to AppUsers list functionality to be implemented")}
-                  onRemoveUser={() => alert("Remove user functionality to be implemented")}
+                  accessToken={accessToken}
+                  setIsCSVModalOpen={setIsCSVModalOpen}
                 />
               </motion.div>
             )}
@@ -466,11 +459,11 @@ function App() {
           <span>Stock</span>
         </button>
         <button 
-          className={`bottom-nav-item ${activeTab === 'admin' || activeTab === 'csv' ? 'active' : ''}`}
-          onClick={() => setIsCSVModalOpen(true)}
+          className={`bottom-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
+          onClick={() => setActiveTab('admin')}
         >
-          <UploadCloud size={22} />
-          <span>Import</span>
+          <Users size={22} />
+          <span>Admin</span>
         </button>
       </nav>
 

@@ -83,6 +83,32 @@ export async function writeAuditLog(accessToken, userEmail, logType, details, st
   }
 }
 
+export async function fetchAuditLogs(accessToken) {
+  const client = getGraphClient(accessToken);
+  try {
+    const siteId = await getSiteId(client);
+    const listId = await getListId(client, siteId, LIST_AUDIT_LOGS);
+    
+    const response = await client.api(`/sites/${siteId}/lists/${listId}/items`)
+      .expand('fields')
+      .orderby('fields/LogDate desc')
+      .top(50)
+      .get();
+      
+    return response.value.map(item => ({
+      id: item.id,
+      title: item.fields.Title,
+      date: item.fields.LogDate,
+      user: item.fields.UserEmail,
+      details: item.fields.Details,
+      status: item.fields.Status
+    }));
+  } catch (error) {
+    console.error("Error fetching Audit Logs", error);
+    return [];
+  }
+}
+
 // ---------------------------------------------------------
 // CATEGORIES
 // ---------------------------------------------------------
