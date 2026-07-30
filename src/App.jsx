@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Package, LayoutDashboard, LogIn, LogOut, Loader2, Users, Sun, Moon, UploadCloud, Bell, Search, MoreHorizontal } from 'lucide-react';
+import { Package, LayoutDashboard, LogIn, LogOut, Loader2, Users, Sun, Moon, UploadCloud, Bell, Search, MoreHorizontal, AlertCircle, AlertTriangle } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import InventoryList from './components/InventoryList';
 import AdminPanel from './components/AdminPanel';
@@ -32,6 +32,7 @@ function App() {
     return localStorage.getItem('theme') === 'dark';
   });
   const [accessToken, setAccessToken] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
   
   const LOW_STOCK_THRESHOLD = 10;
 
@@ -118,6 +119,13 @@ function App() {
     const me = appUsers.find(u => u.email.toLowerCase() === accounts[0].username.toLowerCase());
     return me ? me.role : 'Staff';
   }, [appUsers, accounts]);
+
+  const alertItems = useMemo(() => {
+    return inventory.filter(i => {
+      const minStock = i.minStockLevel || 0;
+      return minStock > 0 ? i.closing < minStock : i.closing === 0;
+    });
+  }, [inventory]);
 
   const lowStockCount = useMemo(() => {
     return inventory.filter(item => item.closing < LOW_STOCK_THRESHOLD).length;
@@ -309,7 +317,12 @@ function App() {
     );
   }
 
-  // --- Main App ---
+  const handleNotificationClick = (item) => {
+    setShowNotifications(false);
+    setActiveTab('inventory');
+    setInitialFilters({ searchTerm: item.code });
+  };
+
   return (
     <div className="app-shell">
       {/* Desktop Sidebar */}
@@ -387,6 +400,68 @@ function App() {
           </div>
 
           <div className="topbar-right">
+            {/* Notifications */}
+            <div className="notification-bell-wrapper">
+              <button 
+                className="topbar-icon-btn" 
+                onClick={() => setShowNotifications(!showNotifications)}
+                title="Notifications"
+              >
+                <Bell size={18} />
+                {alertItems.length > 0 && (
+                  <div className="notification-badge">{alertItems.length}</div>
+                )}
+              </button>
+              
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div 
+                    className="notifications-dropdown"
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <div className="notifications-header">
+                      <span>Notifications</span>
+                      {alertItems.length > 0 && (
+                        <span className="badge badge-error">{alertItems.length}</span>
+                      )}
+                    </div>
+                    <div className="notifications-body">
+                      {alertItems.length === 0 ? (
+                        <div className="notification-empty">
+                          You're all caught up!
+                        </div>
+                      ) : (
+                        alertItems.map(item => (
+                          <div 
+                            key={item.id} 
+                            className="notification-item"
+                            onClick={() => handleNotificationClick(item)}
+                          >
+                            {item.closing === 0 ? (
+                              <AlertCircle size={16} style={{ color: 'var(--danger)', marginTop: 2, flexShrink: 0 }} />
+                            ) : (
+                              <AlertTriangle size={16} style={{ color: 'var(--warning)', marginTop: 2, flexShrink: 0 }} />
+                            )}
+                            <div style={{ overflow: 'hidden' }}>
+                              <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {item.item}
+                              </div>
+                              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                                {item.closing === 0 ? 'Out of stock!' : `Low stock: ${item.closing} left (Min: ${item.minStockLevel || 0})`}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             {/* Dark Mode Toggle (Mobile) */}
             <button 
               className="topbar-icon-btn mobile-only"
