@@ -2172,3 +2172,22 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-tertiary);
   font-size: 14px;
 }
+
+/* ============================================================
+   Admin Form Row
+   ============================================================ */
+.admin-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  align-items: flex-end;
+}
+@media (max-width: 640px) {
+  .admin-form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .admin-form-row .form-group {
+    width: 100% !important;
+  }
+}

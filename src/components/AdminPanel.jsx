@@ -6,7 +6,7 @@ import { utils, writeFile } from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModalOpen, categories = [], onAddCategory, inventory = [] }) {
+export default function AdminPanel({ users, onAddUser, onEditUserRole, accessToken, setIsCSVModalOpen, categories = [], onAddCategory, inventory = [] }) {
   const [activeTab, setActiveTab] = useState('categories'); // default can stay users, but I'll make it 'categories' for testing or 'users'. Let's stick to 'users'.
   
   // Users state
@@ -165,6 +165,7 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-6)' }}
           >
             {/* Add User Card */}
             <div className="card" style={{ padding: 'var(--sp-6)' }}>
@@ -237,9 +238,15 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
                           </div>
                         </td>
                         <td>
-                          <span className={`badge ${u.role === 'Admin' ? 'badge-info' : 'badge-success'}`}>
-                            {u.role}
-                          </span>
+                          <select 
+                            value={u.role} 
+                            onChange={(e) => onEditUserRole && onEditUserRole(u.id, e.target.value)}
+                            className="form-input"
+                            style={{ padding: '4px 8px', height: 'auto', fontSize: 13, width: 100, cursor: 'pointer' }}
+                          >
+                            <option value="Staff">Staff</option>
+                            <option value="Admin">Admin</option>
+                          </select>
                         </td>
                       </tr>
                     ))}
@@ -257,6 +264,7 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-6)' }}
           >
             {/* Add Category Card */}
             <div className="card" style={{ padding: 'var(--sp-6)' }}>

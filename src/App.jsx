@@ -11,7 +11,7 @@ import EditProductDetailsModal from './components/EditProductDetailsModal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginRequest } from './authConfig';
-import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUsers, fetchTransactions, createProductInSharePoint, fetchCategories, writeAuditLog, createGenericSharePointItem, updateProductDetailsInSharePoint, createCategoryInSharePoint } from './graphService';
+import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUsers, fetchTransactions, createProductInSharePoint, fetchCategories, writeAuditLog, createGenericSharePointItem, updateProductDetailsInSharePoint, createCategoryInSharePoint, updateUserRoleInSharePoint } from './graphService';
 import toast from 'react-hot-toast';
 import CSVImporterModal from './components/CSVImporterModal';
 
@@ -216,6 +216,23 @@ function App() {
   const handleAddProduct = (productData) => {
     if (!accessToken) return;
     addProductMutation.mutate(productData);
+  };
+
+  const editUserRoleMutation = useMutation({
+    mutationFn: ({ userId, newRole }) => updateUserRoleInSharePoint(accessToken, userId, newRole, accounts[0]?.username),
+    onSuccess: () => {
+      toast.success("User role updated!");
+      queryClient.invalidateQueries({ queryKey: ['appUsers'] });
+    },
+    onError: (err) => {
+      console.error(err);
+      toast.error("Failed to update user role.");
+    }
+  });
+
+  const handleEditUserRole = (userId, newRole) => {
+    if (!accessToken) return;
+    editUserRoleMutation.mutate({ userId, newRole });
   };
 
   const addCategoryMutation = useMutation({
@@ -536,6 +553,7 @@ function App() {
                 <AdminPanel 
                   users={appUsers}
                   onAddUser={() => alert("Add user to AppUsers list functionality to be implemented")}
+                  onEditUserRole={handleEditUserRole}
                   accessToken={accessToken}
                   setIsCSVModalOpen={setIsCSVModalOpen}
                   categories={categories}

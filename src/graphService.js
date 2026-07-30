@@ -60,6 +60,25 @@ export async function fetchAppUsers(accessToken, currentUserEmail) {
   }
 }
 
+export async function updateUserRoleInSharePoint(accessToken, userId, newRole, currentUserEmail) {
+  const client = getGraphClient(accessToken);
+  try {
+    const siteId = await getSiteId(client);
+    const listId = await getListId(client, siteId, LIST_USERS);
+
+    await client.api(`/sites/${siteId}/lists/${listId}/items/${userId}`).patch({
+      fields: {
+        Role: newRole
+      }
+    });
+
+    await writeAuditLog(accessToken, currentUserEmail, "UpdateUserRole", `Updated role to ${newRole} for user ID ${userId}`);
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    throw error;
+  }
+}
+
 // ---------------------------------------------------------
 // AUDIT LOGS
 // ---------------------------------------------------------
