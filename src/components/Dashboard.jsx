@@ -15,11 +15,13 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
 };
 
-export default function Dashboard({ inventory, categories = [], lowStockThreshold, onNavigate, transactions = [] }) {
+export default function Dashboard({ inventory, categories = [], lowStockThreshold, onNavigate, transactions = [], userRole = 'Staff' }) {
   const totalItems = inventory.length;
   const lowStockItems = inventory.filter(i => i.closing < lowStockThreshold);
   const outOfStockItems = inventory.filter(i => (parseInt(i.closing) || 0) === 0);
   const totalStock = inventory.reduce((sum, item) => sum + (parseInt(item.closing) || 0), 0);
+
+  let totalCOGS = 0;
 
   const enrichedTransactions = transactions.map(t => {
     const product = inventory.find(i => String(i.id) === String(t.productId));
@@ -29,6 +31,15 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
       item: product?.item || 'Unknown Item',
       displayDate: t.date ? t.date.split('T')[0] : '—'
     };
+  });
+
+  enrichedTransactions.forEach(t => {
+    if ((t.type || '').toLowerCase() === 'sales') {
+      const product = inventory.find(i => String(i.id) === String(t.productId));
+      if (product) {
+        totalCOGS += Math.abs(t.quantity) * (parseFloat(product.price) || 0);
+      }
+    }
   });
 
   // Group transactions by date for the chart
@@ -115,6 +126,15 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
     >
       {/* KPI Cards */}
       <div className="kpi-grid">
+        {userRole === 'Admin' && (
+          <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'all' })}>
+            <div className="kpi-icon indigo">
+              <DollarSign size={20} />
+            </div>
+            <div className="kpi-label">Cost of Goods Sold (COGS)</div>
+            <div className="kpi-value">฿{totalCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          </motion.div>
+        )}
         <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'all' })}>
           <div className="kpi-icon indigo">
             <PackageOpen size={20} />

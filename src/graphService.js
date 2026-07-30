@@ -233,6 +233,24 @@ export async function updateInventoryInSharePoint(accessToken, itemId, updatedDa
     // Log update
     await writeAuditLog(accessToken, userEmail, "UpdateStock", `Updated stock for product ID ${itemId}. New Stock: ${updatedData.closing}`);
 
+    // Check for low stock and trigger LINE Notify
+    const minStockLevel = parseInt(updatedData.minStockLevel) || 10;
+    if (updatedData.closing < minStockLevel) {
+      try {
+        await fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productName: updatedData.item || `Item ID ${itemId}`,
+            stock: updatedData.closing,
+            minStock: minStockLevel
+          })
+        });
+      } catch (notifyErr) {
+        console.error("Error triggering LINE notify:", notifyErr);
+      }
+    }
+
     return true;
   } catch (error) {
     console.error("Error updating stock", error);

@@ -423,6 +423,7 @@ function App() {
                     setActiveTab('inventory');
                   }}
                   transactions={transactions}
+                  userRole={userRole}
                 />
               </motion.div>
             ) : activeTab === 'inventory' ? (
