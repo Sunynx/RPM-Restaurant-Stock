@@ -55,7 +55,7 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
   const handleExportExcel = () => {
     if (!inventory.length) return;
     const exportData = inventory.map(item => ({
-      'Item Code': item.itemCode,
+      'Item Code': item.code,
       'Item Name': item.item,
       'Category': item.category,
       'Unit': item.unit,
@@ -85,7 +85,7 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
     
     inventory.forEach(item => {
       const itemData = [
-        item.itemCode || '-',
+        item.code || '-',
         item.item || '-',
         item.category || '-',
         item.unit || '-',
