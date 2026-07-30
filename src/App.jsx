@@ -315,7 +315,9 @@ function App() {
       {/* Desktop Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <div className="sidebar-brand-logo">R</div>
+          <div className="sidebar-brand-logo">
+            <img src="/pwa-192x192.png" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 'inherit' }} />
+          </div>
           <span className="sidebar-brand-name">RPM Stock</span>
         </div>
 

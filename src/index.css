@@ -283,7 +283,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--indigo-500), var(--indigo-700));
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
