@@ -2120,11 +2120,11 @@ h1, h2, h3, h4, h5, h6 {
   top: calc(100% + 12px);
   right: -10px;
   width: 320px;
-  background: var(--surface-100);
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  z-index: 100;
+  box-shadow: var(--shadow-xl);
+  z-index: 1000;
   overflow: hidden;
   display: flex;
   flex-direction: column;
