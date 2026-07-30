@@ -356,24 +356,6 @@ function App() {
           </div>
 
           <div className="topbar-right">
-            {/* Desktop Search */}
-            <div className="topbar-search">
-              <div className="topbar-search-inner">
-                <Search size={16} className="topbar-search-icon" />
-                <input type="text" className="topbar-search-input" placeholder="Search anything..." />
-              </div>
-            </div>
-
-            {/* Notification Bell */}
-            <button className="topbar-icon-btn" title="Notifications">
-              <Bell size={18} />
-              {lowStockCount > 0 && (
-                <span className="topbar-badge">
-                  {lowStockCount > 9 ? '9+' : lowStockCount}
-                </span>
-              )}
-            </button>
-
             {/* Dark Mode Toggle (Mobile) */}
             <button 
               className="topbar-icon-btn mobile-only"
@@ -382,15 +364,6 @@ function App() {
             >
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-
-            {/* Avatar (Desktop) */}
-            <img 
-              className="topbar-avatar desktop-only"
-              src={`https://ui-avatars.com/api/?name=${accounts[0]?.name || 'User'}&background=6366f1&color=fff&bold=true&size=72`} 
-              alt="Avatar"
-              onClick={handleLogout}
-              title="Click to logout"
-            />
           </div>
         </header>
 

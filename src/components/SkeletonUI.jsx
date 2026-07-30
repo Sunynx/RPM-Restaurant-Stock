@@ -4,7 +4,7 @@ export default function SkeletonUI({ type }) {
       <div>
         {/* KPI Cards */}
         <div className="kpi-grid" style={{ marginBottom: 'var(--sp-6)' }}>
-          {[1, 2, 3, 4].map(i => (
+          {[1, 2, 3, 4, 5].map(i => (
             <div key={i} className="skeleton skeleton-card" style={{ height: 130 }}></div>
           ))}
         </div>
@@ -23,29 +23,49 @@ export default function SkeletonUI({ type }) {
     return (
       <div>
         {/* Toolbar */}
-        <div style={{ display: 'flex', gap: 'var(--sp-3)', marginBottom: 'var(--sp-4)' }}>
-          <div className="skeleton" style={{ height: 40, flex: 1, borderRadius: 'var(--radius-full)' }}></div>
-          <div className="skeleton" style={{ height: 40, width: 80, borderRadius: 'var(--radius-md)' }}></div>
-          <div className="skeleton" style={{ height: 40, width: 80, borderRadius: 'var(--radius-md)' }}></div>
-        </div>
-        {/* Filter Chips */}
-        <div style={{ display: 'flex', gap: 'var(--sp-2)', marginBottom: 'var(--sp-4)' }}>
-          {[1, 2, 3].map(i => (
-            <div key={i} className="skeleton" style={{ height: 34, width: 100, borderRadius: 'var(--radius-full)' }}></div>
-          ))}
+        <div className="inventory-toolbar" style={{ marginBottom: 'var(--sp-4)' }}>
+          <div className="toolbar-top">
+            <div className="skeleton" style={{ height: 36, width: 250, borderRadius: 'var(--radius-md)' }}></div>
+            <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+              <div className="skeleton" style={{ height: 32, width: 80, borderRadius: 'var(--radius-md)' }}></div>
+              <div className="skeleton" style={{ height: 32, width: 80, borderRadius: 'var(--radius-md)' }}></div>
+              <div className="skeleton" style={{ height: 32, width: 80, borderRadius: 'var(--radius-md)' }}></div>
+            </div>
+          </div>
+          <div className="filter-chips">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="skeleton" style={{ height: 32, width: 100, borderRadius: 'var(--radius-full)' }}></div>
+            ))}
+          </div>
         </div>
         {/* Table Rows */}
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div className="skeleton" style={{ height: 48, borderRadius: 0 }}></div>
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} style={{ padding: 'var(--sp-3) var(--sp-4)', borderBottom: '1px solid var(--border-subtle)', display: 'flex', gap: 'var(--sp-4)' }}>
-              <div className="skeleton" style={{ height: 18, width: '30%' }}></div>
-              <div className="skeleton" style={{ height: 18, width: '15%' }}></div>
-              <div className="skeleton" style={{ height: 18, width: '12%' }}></div>
-              <div className="skeleton" style={{ height: 18, width: '15%' }}></div>
-              <div className="skeleton" style={{ height: 18, width: '18%' }}></div>
-            </div>
-          ))}
+        <div className="data-table-container" style={{ border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)' }}>
+          <table className="data-table">
+            <thead>
+               <tr>
+                 <th style={{ width: 44 }}></th>
+                 <th><div className="skeleton" style={{ height: 16, width: '50%' }}></div></th>
+                 <th><div className="skeleton" style={{ height: 16, width: '40%' }}></div></th>
+                 <th><div className="skeleton" style={{ height: 16, width: '30%' }}></div></th>
+                 <th><div className="skeleton" style={{ height: 16, width: '60%' }}></div></th>
+                 <th><div className="skeleton" style={{ height: 16, width: '40%' }}></div></th>
+                 <th style={{ width: 64 }}></th>
+               </tr>
+            </thead>
+            <tbody>
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <tr key={i}>
+                  <td><div className="skeleton" style={{ height: 16, width: 16, borderRadius: 4 }}></div></td>
+                  <td><div className="skeleton" style={{ height: 20, width: '70%' }}></div></td>
+                  <td><div className="skeleton" style={{ height: 16, width: '50%' }}></div></td>
+                  <td><div className="skeleton" style={{ height: 20, width: '40%' }}></div></td>
+                  <td><div className="skeleton" style={{ height: 20, width: '80%' }}></div></td>
+                  <td><div className="skeleton" style={{ height: 24, width: 60, borderRadius: 12 }}></div></td>
+                  <td><div className="skeleton" style={{ height: 28, width: 28, borderRadius: '50%' }}></div></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     );
