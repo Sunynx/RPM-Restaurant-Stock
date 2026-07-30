@@ -284,6 +284,32 @@ export async function updateInventoryInSharePoint(accessToken, itemId, updatedDa
   }
 }
 
+export async function updateProductDetailsInSharePoint(accessToken, itemId, updatedFields, userEmail) {
+  const client = getGraphClient(accessToken);
+  try {
+    const siteId = await getSiteId(client);
+    const productsListId = await getListId(client, siteId, LIST_PRODUCTS);
+
+    await client.api(`/sites/${siteId}/lists/${productsListId}/items/${itemId}/fields`)
+      .patch({
+        Title: updatedFields.code,
+        ProductName: updatedFields.item,
+        CategoryLookupId: updatedFields.categoryId ? parseInt(updatedFields.categoryId) : null,
+        Unit: updatedFields.unit,
+        UnitPrice: parseFloat(updatedFields.price) || 0,
+        MinStockLevel: parseInt(updatedFields.minStockLevel) || 0
+      });
+
+    // Log update
+    await writeAuditLog(accessToken, userEmail, "UpdateProductDetails", `Updated details for product ${updatedFields.code}`);
+
+    return true;
+  } catch (error) {
+    console.error("Error updating product details", error);
+    throw error;
+  }
+}
+
 // ---------------------------------------------------------
 // GENERIC IMPORT (CSV)
 // ---------------------------------------------------------

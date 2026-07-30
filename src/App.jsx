@@ -7,10 +7,11 @@ import AdminPanel from './components/AdminPanel';
 import SkeletonUI from './components/SkeletonUI';
 import AddProductModal from './components/AddProductModal';
 import EditModal from './components/EditModal';
+import EditProductDetailsModal from './components/EditProductDetailsModal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginRequest } from './authConfig';
-import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUsers, fetchTransactions, createProductInSharePoint, fetchCategories, writeAuditLog, createGenericSharePointItem } from './graphService';
+import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUsers, fetchTransactions, createProductInSharePoint, fetchCategories, writeAuditLog, createGenericSharePointItem, updateProductDetailsInSharePoint } from './graphService';
 import toast from 'react-hot-toast';
 import CSVImporterModal from './components/CSVImporterModal';
 
@@ -22,6 +23,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [initialFilters, setInitialFilters] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
+  const [editingProductDetails, setEditingProductDetails] = useState(null);
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [isCSVModalOpen, setIsCSVModalOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -148,6 +150,24 @@ function App() {
   const handleSaveItem = (updatedItem) => {
     if (!accessToken) return;
     updateMutation.mutate(updatedItem);
+  };
+
+  const updateDetailsMutation = useMutation({
+    mutationFn: (updatedFields) => updateProductDetailsInSharePoint(accessToken, editingProductDetails.id, updatedFields, accounts[0]?.username),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      setEditingProductDetails(null);
+      toast.success("Product details updated successfully!");
+    },
+    onError: (error) => {
+      toast.error("Failed to update product details");
+      console.error(error);
+    }
+  });
+
+  const handleSaveProductDetails = (updatedItem) => {
+    if (!accessToken) return;
+    updateDetailsMutation.mutate(updatedItem);
   };
 
   const addProductMutation = useMutation({
@@ -404,6 +424,7 @@ function App() {
                   categories={categories}
                   lowStockThreshold={LOW_STOCK_THRESHOLD}
                   onEdit={setEditingItem}
+                  onEditDetails={setEditingProductDetails}
                   onAddProduct={() => setIsAddingProduct(true)}
                   userRole={userRole}
                   initialFilters={initialFilters}
@@ -483,6 +504,14 @@ function App() {
             categories={categories}
             onClose={() => setIsAddingProduct(false)}
             onSave={handleAddProduct}
+          />
+        )}
+        {editingProductDetails && (
+          <EditProductDetailsModal 
+            item={editingProductDetails}
+            categories={categories}
+            onClose={() => setEditingProductDetails(null)}
+            onSave={handleSaveProductDetails}
           />
         )}
       </AnimatePresence>

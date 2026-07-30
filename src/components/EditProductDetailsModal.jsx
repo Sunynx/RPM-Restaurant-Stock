@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import { X, Save, Loader2, PackagePlus } from 'lucide-react';
+import { X, Save, Loader2, Edit3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function AddProductModal({ categories = [], onClose, onSave }) {
+export default function EditProductDetailsModal({ item, categories = [], onClose, onSave }) {
   const [formData, setFormData] = useState({
-    code: '',
-    item: '',
-    categoryId: '',
-    unit: '',
-    price: '',
-    minStockLevel: '10',
-    stockOnHand: '0'
+    code: item.code || '',
+    item: item.item || '',
+    categoryId: item.categoryId || '',
+    unit: item.unit || '',
+    price: item.price || '',
+    minStockLevel: item.minStockLevel || '10'
   });
   const [saving, setSaving] = useState(false);
 
@@ -18,11 +17,11 @@ export default function AddProductModal({ categories = [], onClose, onSave }) {
     e.preventDefault();
     setSaving(true);
     await onSave({
+      ...item,
       ...formData,
       categoryId: parseInt(formData.categoryId) || null,
       price: parseFloat(formData.price) || 0,
-      minStockLevel: parseInt(formData.minStockLevel) || 0,
-      stockOnHand: parseInt(formData.stockOnHand) || 0
+      minStockLevel: parseInt(formData.minStockLevel) || 0
     });
     setSaving(false);
   };
@@ -45,8 +44,8 @@ export default function AddProductModal({ categories = [], onClose, onSave }) {
         {/* Header */}
         <div className="modal-header">
           <h2 className="modal-title">
-            <PackagePlus size={20} style={{ color: 'var(--primary)' }} />
-            Add New Product
+            <Edit3 size={20} style={{ color: 'var(--primary)' }} />
+            Edit Product Details
           </h2>
           <button className="modal-close" onClick={onClose} type="button">
             <X size={20} />
@@ -54,7 +53,7 @@ export default function AddProductModal({ categories = [], onClose, onSave }) {
         </div>
 
         <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)', marginTop: '-var(--sp-3)' }}>
-          Create a new item in the inventory system.
+          Update the metadata for this product.
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -135,17 +134,6 @@ export default function AddProductModal({ categories = [], onClose, onSave }) {
                 onChange={e => setFormData({...formData, minStockLevel: e.target.value})}
               />
             </div>
-
-            <div className="form-group" style={{ flex: 1 }}>
-              <label className="form-label">Initial Stock</label>
-              <input 
-                type="number" 
-                className="form-input" 
-                min="0"
-                value={formData.stockOnHand}
-                onChange={e => setFormData({...formData, stockOnHand: e.target.value})}
-              />
-            </div>
           </div>
 
           <div className="modal-footer">
@@ -154,7 +142,7 @@ export default function AddProductModal({ categories = [], onClose, onSave }) {
             </button>
             <button type="submit" className="btn btn-primary" disabled={saving}>
               {saving ? <Loader2 size={16} className="spin" /> : <Save size={16} />}
-              Save Product
+              Save Details
             </button>
           </div>
         </form>

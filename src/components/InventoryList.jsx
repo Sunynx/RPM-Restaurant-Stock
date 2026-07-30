@@ -1,12 +1,12 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Search, Edit2, Download, Plus, ArrowUpDown, ArrowUp, AlertCircle, AlertTriangle, CheckCircle2, FileText } from 'lucide-react';
+import { Search, Edit2, Edit3, Package, Download, Plus, ArrowUpDown, ArrowUp, AlertCircle, AlertTriangle, CheckCircle2, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-export default function InventoryList({ inventory, categories, lowStockThreshold, onEdit, onAddProduct, userRole, initialFilters, onFiltersConsumed }) {
+export default function InventoryList({ inventory, categories, lowStockThreshold, onEdit, onEditDetails, onAddProduct, userRole, initialFilters, onFiltersConsumed }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategories, setFilterCategories] = useState([]);
@@ -362,9 +362,16 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                                 )}
                               </td>
                               <td style={{ textAlign: 'center' }}>
-                                <button className="btn-icon" onClick={() => onEdit(item)} title="Edit item">
-                                  <Edit2 size={14} />
-                                </button>
+                                <div style={{ display: 'flex', gap: 'var(--sp-2)', justifyContent: 'center' }}>
+                                  <button className="btn-icon" onClick={() => onEdit(item)} title="Adjust Stock">
+                                    <Package size={14} />
+                                  </button>
+                                  {userRole === 'Admin' && (
+                                    <button className="btn-icon" onClick={() => onEditDetails(item)} title="Edit Details">
+                                      <Edit3 size={14} />
+                                    </button>
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           )
@@ -414,9 +421,16 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                             </div>
                             <div className="mobile-item-stock-label">Stock</div>
                           </div>
-                          <button className="btn-icon" onClick={() => onEdit(item)}>
-                            <Edit2 size={15} />
-                          </button>
+                          <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+                            <button className="btn-icon" onClick={() => onEdit(item)}>
+                              <Package size={15} />
+                            </button>
+                            {userRole === 'Admin' && (
+                              <button className="btn-icon" onClick={() => onEditDetails(item)}>
+                                <Edit3 size={15} />
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </motion.div>
                     );
