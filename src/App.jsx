@@ -11,7 +11,7 @@ import EditProductDetailsModal from './components/EditProductDetailsModal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginRequest } from './authConfig';
-import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUsers, fetchTransactions, createProductInSharePoint, fetchCategories, writeAuditLog, createGenericSharePointItem, updateProductDetailsInSharePoint } from './graphService';
+import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUsers, fetchTransactions, createProductInSharePoint, fetchCategories, writeAuditLog, createGenericSharePointItem, updateProductDetailsInSharePoint, createCategoryInSharePoint } from './graphService';
 import toast from 'react-hot-toast';
 import CSVImporterModal from './components/CSVImporterModal';
 
@@ -208,6 +208,23 @@ function App() {
   const handleAddProduct = (productData) => {
     if (!accessToken) return;
     addProductMutation.mutate(productData);
+  };
+
+  const addCategoryMutation = useMutation({
+    mutationFn: (categoryData) => createCategoryInSharePoint(accessToken, categoryData, accounts[0]?.username),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast.success("Category added successfully!");
+    },
+    onError: (error) => {
+      toast.error("Failed to add category");
+      console.error(error);
+    }
+  });
+
+  const handleAddCategory = (categoryData) => {
+    if (!accessToken) return;
+    addCategoryMutation.mutate(categoryData);
   };
 
   const handleProcessImport = async (listName, dataRows) => {
@@ -444,6 +461,8 @@ function App() {
                   onAddUser={() => alert("Add user to AppUsers list functionality to be implemented")}
                   accessToken={accessToken}
                   setIsCSVModalOpen={setIsCSVModalOpen}
+                  categories={categories}
+                  onAddCategory={handleAddCategory}
                 />
               </motion.div>
             )}

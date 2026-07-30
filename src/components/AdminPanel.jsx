@@ -1,13 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud } from 'lucide-react';
+import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud, FolderTree } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchAuditLogs } from '../graphService';
 
-export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModalOpen }) {
-  const [activeTab, setActiveTab] = useState('users');
+export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModalOpen, categories = [], onAddCategory }) {
+  const [activeTab, setActiveTab] = useState('categories'); // default can stay users, but I'll make it 'categories' for testing or 'users'. Let's stick to 'users'.
+  
+  // Users state
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('Staff');
-  const [loadingAdd, setLoadingAdd] = useState(false);
+  const [loadingAddUser, setLoadingAddUser] = useState(false);
+
+  // Categories state
+  const [catName, setCatName] = useState('');
+  const [catCode, setCatCode] = useState('');
+  const [loadingAddCat, setLoadingAddCat] = useState(false);
   
   const [auditLogs, setAuditLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
@@ -23,17 +30,28 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
     }
   }, [activeTab, accessToken]);
 
-  const handleAdd = async (e) => {
+  const handleAddUser = async (e) => {
     e.preventDefault();
     if (!email) return;
-    setLoadingAdd(true);
+    setLoadingAddUser(true);
     await onAddUser({ email, role });
     setEmail('');
-    setLoadingAdd(false);
+    setLoadingAddUser(false);
+  };
+
+  const handleAddCat = async (e) => {
+    e.preventDefault();
+    if (!catName || !catCode) return;
+    setLoadingAddCat(true);
+    await onAddCategory({ name: catName, code: catCode });
+    setCatName('');
+    setCatCode('');
+    setLoadingAddCat(false);
   };
 
   const tabs = [
     { id: 'users', label: 'Users', icon: Shield },
+    { id: 'categories', label: 'Categories', icon: FolderTree },
     { id: 'data', label: 'Data & Import', icon: Database },
     { id: 'logs', label: 'Audit Logs', icon: FileClock }
   ];
@@ -94,7 +112,7 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
                 Manage access to the inventory system. Only Admins can add or edit products.
               </p>
               
-              <form onSubmit={handleAdd} className="admin-form-row" style={{ paddingLeft: 56 }}>
+              <form onSubmit={handleAddUser} className="admin-form-row" style={{ paddingLeft: 56 }}>
                 <div className="form-group" style={{ flex: 1, minWidth: 200 }}>
                   <label className="form-label">Email Address</label>
                   <input 
@@ -113,8 +131,8 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
                     <option value="Admin">Admin</option>
                   </select>
                 </div>
-                <button type="submit" className="btn btn-primary" disabled={loadingAdd} style={{ height: 44, flexShrink: 0 }}>
-                  {loadingAdd ? <Loader2 size={16} className="spin" /> : <><Plus size={16} /> Add User</>}
+                <button type="submit" className="btn btn-primary" disabled={loadingAddUser} style={{ height: 44, flexShrink: 0 }}>
+                  {loadingAddUser ? <Loader2 size={16} className="spin" /> : <><Plus size={16} /> Add User</>}
                 </button>
               </form>
             </div>
@@ -155,6 +173,89 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
                         <td>
                           <span className={`badge ${u.role === 'Admin' ? 'badge-info' : 'badge-success'}`}>
                             {u.role}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'categories' && (
+          <motion.div
+            key="categories"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Add Category Card */}
+            <div className="card" style={{ padding: 'var(--sp-6)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)', marginBottom: 'var(--sp-2)' }}>
+                <div className="kpi-icon orange">
+                  <FolderTree size={20} />
+                </div>
+                <h2 className="card-title" style={{ fontSize: 18 }}>Category Management</h2>
+              </div>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)', paddingLeft: 56 }}>
+                Create new product categories. They will immediately appear in the dropdown menus.
+              </p>
+              
+              <form onSubmit={handleAddCat} className="admin-form-row" style={{ paddingLeft: 56 }}>
+                <div className="form-group" style={{ width: 140 }}>
+                  <label className="form-label">Code</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. BEV" 
+                    value={catCode}
+                    onChange={e => setCatCode(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ flex: 1, minWidth: 200 }}>
+                  <label className="form-label">Category Name</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. Beverages" 
+                    value={catName}
+                    onChange={e => setCatName(e.target.value)}
+                    required
+                  />
+                </div>
+                <button type="submit" className="btn btn-primary" disabled={loadingAddCat} style={{ height: 44, flexShrink: 0 }}>
+                  {loadingAddCat ? <Loader2 size={16} className="spin" /> : <><Plus size={16} /> Add Category</>}
+                </button>
+              </form>
+            </div>
+
+            {/* Categories Table */}
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div className="data-table-container" style={{ display: 'block' }}>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th style={{ paddingLeft: 'var(--sp-6)' }}>Category Name</th>
+                      <th>Code</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categories.map(c => (
+                      <tr key={c.id}>
+                        <td style={{ paddingLeft: 'var(--sp-6)', fontWeight: 500 }}>
+                          {c.name}
+                        </td>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>
+                          {c.code}
+                        </td>
+                        <td>
+                          <span className={`badge ${c.status === 'Active' ? 'badge-success' : 'badge-neutral'}`}>
+                            {c.status || 'Active'}
                           </span>
                         </td>
                       </tr>

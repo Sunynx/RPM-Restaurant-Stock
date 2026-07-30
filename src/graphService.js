@@ -131,6 +131,35 @@ export async function fetchCategories(accessToken) {
   }
 }
 
+export async function createCategoryInSharePoint(accessToken, categoryData, userEmail) {
+  const client = getGraphClient(accessToken);
+  try {
+    const siteId = await getSiteId(client);
+    const listId = await getListId(client, siteId, LIST_CATEGORIES);
+
+    const response = await client.api(`/sites/${siteId}/lists/${listId}/items`).post({
+      fields: {
+        Title: categoryData.name,
+        CategoryCode: categoryData.code,
+        Status: 'Active'
+      }
+    });
+
+    // Log update
+    await writeAuditLog(accessToken, userEmail, "CreateCategory", `Created new category ${categoryData.name}`);
+
+    return {
+      id: parseInt(response.id),
+      name: response.fields.Title,
+      code: response.fields.CategoryCode,
+      status: response.fields.Status || 'Active'
+    };
+  } catch (error) {
+    console.error("Error creating category", error);
+    throw error;
+  }
+}
+
 // ---------------------------------------------------------
 // PRODUCTS (INVENTORY)
 // ---------------------------------------------------------
