@@ -60,7 +60,14 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
     <div className="admin-container" style={{ maxWidth: 1000, margin: '0 auto' }}>
       
       {/* Tab Navigation */}
-      <div style={{ display: 'flex', gap: 'var(--sp-2)', marginBottom: 'var(--sp-6)', borderBottom: '1px solid var(--border-subtle)' }}>
+      <div style={{ 
+        display: 'flex', 
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: 'var(--sp-2)', 
+        marginBottom: 'var(--sp-6)', 
+        borderBottom: '1px solid var(--border-subtle)' 
+      }}>
         {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
