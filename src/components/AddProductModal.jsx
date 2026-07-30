@@ -1,0 +1,119 @@
+import { useState } from 'react';
+import { X, Save, Loader2, PackagePlus } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+export default function AddProductModal({ categories = [], onClose, onSave }) {
+  const [formData, setFormData] = useState({
+    code: '',
+    item: '',
+    categoryId: '',
+    stockOnHand: 0
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    await onSave({
+      ...formData,
+      categoryId: parseInt(formData.categoryId) || null,
+      stockOnHand: parseInt(formData.stockOnHand) || 0
+    });
+    setSaving(false);
+  };
+
+  return (
+    <motion.div 
+      className="modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div 
+        className="modal-content"
+        initial={{ scale: 0.95, opacity: 0, y: 16 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 16 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      >
+        {/* Header */}
+        <div className="modal-header">
+          <h2 className="modal-title">
+            <PackagePlus size={20} style={{ color: 'var(--primary)' }} />
+            Add New Product
+          </h2>
+          <button className="modal-close" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)', marginTop: '-var(--sp-3)' }}>
+          Create a new item in the inventory system.
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Product Code</label>
+            <input 
+              type="text" 
+              className="form-input" 
+              placeholder="e.g. 1001"
+              value={formData.code}
+              onChange={e => setFormData({...formData, code: e.target.value})}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">Product Name</label>
+            <input 
+              type="text" 
+              className="form-input" 
+              placeholder="e.g. Red Wine"
+              value={formData.item}
+              onChange={e => setFormData({...formData, item: e.target.value})}
+              required
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: 'var(--sp-4)' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Category</label>
+              <select 
+                className="form-input" 
+                value={formData.categoryId}
+                onChange={e => setFormData({...formData, categoryId: e.target.value})}
+                required
+              >
+                <option value="">Select Category</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Initial Stock</label>
+              <input 
+                type="number" 
+                className="form-input" 
+                min="0"
+                value={formData.stockOnHand}
+                onChange={e => setFormData({...formData, stockOnHand: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <div className="modal-footer">
+            <button type="button" className="btn btn-ghost" onClick={onClose} disabled={saving}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={saving}>
+              {saving ? <Loader2 size={16} className="spin" /> : <Save size={16} />}
+              Save Product
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
+  );
+}

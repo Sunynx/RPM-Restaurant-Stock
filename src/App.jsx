@@ -1,0 +1,526 @@
+import { useState, useEffect, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Package, LayoutDashboard, LogIn, LogOut, Loader2, Users, Sun, Moon, UploadCloud, Bell, Search, MoreHorizontal } from 'lucide-react';
+import Dashboard from './components/Dashboard';
+import InventoryList from './components/InventoryList';
+import AdminPanel from './components/AdminPanel';
+import SkeletonUI from './components/SkeletonUI';
+import AddProductModal from './components/AddProductModal';
+import EditModal from './components/EditModal';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useMsal, useIsAuthenticated } from '@azure/msal-react';
+import { loginRequest } from './authConfig';
+import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUsers, fetchTransactions, createProductInSharePoint, fetchCategories, writeAuditLog, createGenericSharePointItem } from './graphService';
+import toast from 'react-hot-toast';
+import CSVImporterModal from './components/CSVImporterModal';
+
+function App() {
+  const { instance, accounts } = useMsal();
+  const isAuthenticated = useIsAuthenticated();
+  const queryClient = useQueryClient();
+
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [initialFilters, setInitialFilters] = useState(null);
+  const [editingItem, setEditingItem] = useState(null);
+  const [isAddingProduct, setIsAddingProduct] = useState(false);
+  const [isCSVModalOpen, setIsCSVModalOpen] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState({ current: 0, total: 0, errors: 0 });
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
+  const [accessToken, setAccessToken] = useState(null);
+  
+  const LOW_STOCK_THRESHOLD = 10;
+
+  const handleLogin = () => {
+    // Clear any stuck interaction states from previous failed redirects
+    try {
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.includes("interaction.status")) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (e) {
+      console.warn("Failed to clear MSAL interaction status", e);
+    }
+
+    instance.loginRedirect(loginRequest).catch(e => {
+      console.error("Login redirect error:", e);
+    });
+  };
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  const handleLogout = () => {
+    const currentAccount = instance.getActiveAccount() || accounts[0];
+    instance.logoutRedirect({ 
+      postLogoutRedirectUri: window.location.origin,
+      account: currentAccount
+    });
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && accounts[0]) {
+      instance.acquireTokenSilent({
+        ...loginRequest,
+        account: accounts[0]
+      }).then((response) => {
+        setAccessToken(response.accessToken);
+      }).catch((error) => {
+        console.error("Token silent error:", error);
+        if (error.name === "InteractionRequiredAuthError") {
+           instance.acquireTokenRedirect(loginRequest);
+        }
+      });
+    }
+  }, [isAuthenticated, accounts, instance]);
+
+  const { data: inventory = [], isLoading: isLoadingInventory } = useQuery({
+    queryKey: ['inventory'],
+    queryFn: () => fetchInventoryFromSharePoint(accessToken),
+    enabled: !!accessToken,
+  });
+
+  const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => fetchCategories(accessToken),
+    enabled: !!accessToken,
+  });
+
+  const { data: appUsers = [], isLoading: isLoadingUsers } = useQuery({
+    queryKey: ['appUsers'],
+    queryFn: () => fetchAppUsers(accessToken, accounts[0].username),
+    enabled: !!accessToken && !!accounts[0]?.username,
+  });
+
+  const { data: transactions = [], isLoading: isLoadingTransactions } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: () => fetchTransactions(accessToken),
+    enabled: !!accessToken,
+  });
+
+  const loading = isLoadingInventory || isLoadingUsers || isLoadingTransactions || isLoadingCategories;
+
+  const userRole = useMemo(() => {
+    if (!accounts[0]) return 'Staff';
+    const me = appUsers.find(u => u.email.toLowerCase() === accounts[0].username.toLowerCase());
+    return me ? me.role : 'Staff';
+  }, [appUsers, accounts]);
+
+  const lowStockCount = useMemo(() => {
+    return inventory.filter(item => item.closing < LOW_STOCK_THRESHOLD).length;
+  }, [inventory]);
+
+  const updateMutation = useMutation({
+    mutationFn: (updatedItem) => updateInventoryInSharePoint(accessToken, updatedItem.id, updatedItem, accounts[0]?.username),
+    onMutate: async (updatedItem) => {
+      await queryClient.cancelQueries({ queryKey: ['inventory'] });
+      const previousInventory = queryClient.getQueryData(['inventory']);
+      const optimisticItem = { ...updatedItem, sales: 0, ent: 0, issued: 0 };
+      queryClient.setQueryData(['inventory'], old => 
+        old?.map(item => item.id === updatedItem.id ? optimisticItem : item)
+      );
+      setEditingItem(null);
+      return { previousInventory };
+    },
+    onError: (err, updatedItem, context) => {
+      queryClient.setQueryData(['inventory'], context.previousInventory);
+      toast.error("Failed to update item in SharePoint. Check console.");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+    },
+    onSuccess: () => {
+      toast.success("Item updated successfully!");
+    }
+  });
+
+  const handleSaveItem = (updatedItem) => {
+    if (!accessToken) return;
+    updateMutation.mutate(updatedItem);
+  };
+
+  const addProductMutation = useMutation({
+    mutationFn: (productData) => createProductInSharePoint(accessToken, productData, accounts[0]?.username),
+    onMutate: async (newProduct) => {
+      await queryClient.cancelQueries({ queryKey: ['inventory'] });
+      const previousInventory = queryClient.getQueryData(['inventory']);
+      
+      const optimisticItem = { 
+        ...newProduct, 
+        id: 'temp-' + Date.now(),
+        closing: newProduct.stockOnHand || 0,
+        opening: newProduct.stockOnHand || 0,
+        sales: 0, 
+        ent: 0, 
+        issued: 0 
+      };
+      
+      queryClient.setQueryData(['inventory'], old => [optimisticItem, ...(old || [])]);
+      setIsAddingProduct(false); // Close modal instantly
+      
+      return { previousInventory };
+    },
+    onError: (err, newProduct, context) => {
+      if (context?.previousInventory) {
+        queryClient.setQueryData(['inventory'], context.previousInventory);
+      }
+      toast.error("Failed to add product");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+    },
+    onSuccess: () => {
+      toast.success("Product added successfully!");
+    }
+  });
+
+  const handleAddProduct = (productData) => {
+    if (!accessToken) return;
+    addProductMutation.mutate(productData);
+  };
+
+  const handleProcessImport = async (listName, dataRows) => {
+    if (!accessToken) return;
+    
+    if (listName === 'Inventory_Products' && categories.length === 0) {
+      toast.error("Categories are not loaded yet! Please refresh the page or make sure Categories are imported first.");
+      return;
+    }
+
+    setIsImporting(true);
+    setImportProgress({ current: 0, total: dataRows.length, errors: 0 });
+    
+    let current = 0;
+    let errors = 0;
+
+    for (const row of dataRows) {
+      try {
+        // Clean empty fields that might break SP
+        const fields = {};
+        Object.keys(row).forEach(key => {
+          if (row[key] !== null && row[key] !== undefined && row[key] !== '') {
+            fields[key] = row[key];
+          }
+        });
+
+        // Enforce data types for SharePoint text columns
+        if (fields.Title !== undefined) fields.Title = String(fields.Title);
+        if (fields.ProductName !== undefined) fields.ProductName = String(fields.ProductName);
+        if (fields.Unit !== undefined) fields.Unit = String(fields.Unit);
+
+        // Map CategoryLookupId dynamically for Products
+        if (listName === 'Inventory_Products' && fields.CategoryLookupId) {
+          const rawId = parseInt(fields.CategoryLookupId);
+          if ([1, 2, 3].includes(rawId)) {
+            const catCode = `CAT-00${rawId}`;
+            const actualCategory = categories.find(c => c.code === catCode);
+            if (actualCategory && actualCategory.id) {
+              fields.CategoryLookupId = parseInt(actualCategory.id);
+            } else {
+              console.warn(`Category not found for code: ${catCode}. Dropping CategoryLookupId.`);
+              delete fields.CategoryLookupId;
+            }
+          }
+        }
+
+        console.log(`Payload for ${listName}:`, fields);
+        await createGenericSharePointItem(accessToken, listName, fields);
+      } catch (err) {
+        console.error("Import error for row", row, err);
+        errors++;
+      }
+      current++;
+      setImportProgress({ current, total: dataRows.length, errors });
+    }
+
+    setIsImporting(false);
+    toast.success(`Import completed! ${current - errors} succeeded, ${errors} failed.`);
+    if (listName === 'Inventory_Products' || listName === 'Inventory_Categories') {
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    }
+  };
+
+  // Page title mapping
+  const pageTitle = activeTab === 'dashboard' ? 'Dashboard' : activeTab === 'inventory' ? 'Inventory' : 'Admin';
+
+  // --- Login Screen ---
+  if (!isAuthenticated) {
+    return (
+      <div className="login-screen">
+        <div className="login-card">
+          <div className="login-logo">R</div>
+          <h1 className="login-title">RPM Stock</h1>
+          <p className="login-subtitle">Inventory Management System</p>
+          <button className="login-btn" onClick={handleLogin}>
+            <LogIn size={18} />
+            Login with Microsoft 365
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Main App ---
+  return (
+    <div className="app-shell">
+      {/* Desktop Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-brand">
+          <div className="sidebar-brand-logo">R</div>
+          <span className="sidebar-brand-name">RPM Stock</span>
+        </div>
+
+        <nav className="sidebar-nav">
+          <div 
+            className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <LayoutDashboard size={18} />
+            <span>Dashboard</span>
+          </div>
+          <div 
+            className={`sidebar-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}
+            onClick={() => setActiveTab('inventory')}
+          >
+            <Package size={18} />
+            <span>Inventory</span>
+          </div>
+
+          {userRole === 'Admin' && (
+            <>
+              <div className="sidebar-divider" />
+              <div 
+                className={`sidebar-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
+                onClick={() => setActiveTab('admin')}
+              >
+                <Users size={18} />
+                <span>Admin</span>
+              </div>
+            </>
+          )}
+
+          <div className="sidebar-divider" />
+          
+          <div 
+            className="sidebar-nav-item"
+            onClick={() => setIsCSVModalOpen(true)}
+          >
+            <UploadCloud size={18} />
+            <span>CSV Uploader</span>
+          </div>
+
+          <div 
+            className="theme-toggle"
+            onClick={() => setIsDarkMode(!isDarkMode)}
+          >
+            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+            <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+          </div>
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="sidebar-user" onClick={handleLogout} title="Click to logout">
+            <img 
+              className="sidebar-user-avatar"
+              src={`https://ui-avatars.com/api/?name=${accounts[0]?.name || 'User'}&background=6366f1&color=fff&bold=true&size=72`} 
+              alt="Avatar" 
+            />
+            <div className="sidebar-user-info">
+              <div className="sidebar-user-name">{accounts[0]?.name || 'User'}</div>
+              <div className="sidebar-user-email">{accounts[0]?.username || ''}</div>
+            </div>
+            <LogOut size={16} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="main-area">
+        {/* Topbar */}
+        <header className="topbar">
+          <div className="topbar-left">
+            <h2 className="topbar-title">{pageTitle}</h2>
+            {loading && <Loader2 size={16} className="spin" style={{ color: 'var(--primary)' }} />}
+          </div>
+
+          <div className="topbar-right">
+            {/* Desktop Search */}
+            <div className="topbar-search">
+              <div className="topbar-search-inner">
+                <Search size={16} className="topbar-search-icon" />
+                <input type="text" className="topbar-search-input" placeholder="Search anything..." />
+              </div>
+            </div>
+
+            {/* Notification Bell */}
+            <button className="topbar-icon-btn" title="Notifications">
+              <Bell size={18} />
+              {lowStockCount > 0 && (
+                <span className="topbar-badge">
+                  {lowStockCount > 9 ? '9+' : lowStockCount}
+                </span>
+              )}
+            </button>
+
+            {/* Dark Mode Toggle (Mobile) */}
+            <button 
+              className="topbar-icon-btn mobile-only"
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              title="Toggle theme"
+            >
+              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
+            {/* Avatar (Desktop) */}
+            <img 
+              className="topbar-avatar desktop-only"
+              src={`https://ui-avatars.com/api/?name=${accounts[0]?.name || 'User'}&background=6366f1&color=fff&bold=true&size=72`} 
+              alt="Avatar"
+              onClick={handleLogout}
+              title="Click to logout"
+            />
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="content-area">
+          <AnimatePresence mode="wait">
+            {loading && inventory.length === 0 ? (
+              <motion.div
+                key="skeleton"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <SkeletonUI type={activeTab} />
+              </motion.div>
+            ) : activeTab === 'dashboard' ? (
+              <motion.div
+                key="dashboard"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <Dashboard 
+                  inventory={inventory} 
+                  categories={categories}
+                  lowStockThreshold={LOW_STOCK_THRESHOLD} 
+                  onNavigate={(filters = null) => {
+                    if (filters) setInitialFilters(filters);
+                    setActiveTab('inventory');
+                  }}
+                  transactions={transactions}
+                />
+              </motion.div>
+            ) : activeTab === 'inventory' ? (
+              <motion.div
+                key="inventory"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <InventoryList 
+                  inventory={inventory}
+                  categories={categories}
+                  lowStockThreshold={LOW_STOCK_THRESHOLD}
+                  onEdit={setEditingItem}
+                  onAddProduct={() => setIsAddingProduct(true)}
+                  userRole={userRole}
+                  initialFilters={initialFilters}
+                  onFiltersConsumed={() => setInitialFilters(null)}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="admin"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <AdminPanel 
+                  users={appUsers}
+                  onAddUser={() => alert("Add user to AppUsers list functionality to be implemented")}
+                  onRemoveUser={() => alert("Remove user functionality to be implemented")}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* CSV Modal */}
+          <AnimatePresence>
+            {isCSVModalOpen && (
+              <CSVImporterModal 
+                onClose={() => setIsCSVModalOpen(false)} 
+                onImport={handleProcessImport}
+                isImporting={isImporting}
+                importProgress={importProgress}
+              />
+            )}
+          </AnimatePresence>
+        </main>
+      </div>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="bottom-nav">
+        <button 
+          className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dashboard')}
+        >
+          <LayoutDashboard size={22} />
+          <span>Dashboard</span>
+        </button>
+        <button 
+          className={`bottom-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}
+          onClick={() => setActiveTab('inventory')}
+        >
+          <Package size={22} />
+          <span>Stock</span>
+        </button>
+        <button 
+          className={`bottom-nav-item ${activeTab === 'admin' || activeTab === 'csv' ? 'active' : ''}`}
+          onClick={() => setIsCSVModalOpen(true)}
+        >
+          <UploadCloud size={22} />
+          <span>Import</span>
+        </button>
+      </nav>
+
+      {/* Modals */}
+      <AnimatePresence>
+        {editingItem && (
+          <EditModal 
+            item={editingItem} 
+            categories={categories}
+            onClose={() => setEditingItem(null)} 
+            onSave={handleSaveItem}
+            userRole={userRole}
+          />
+        )}
+        {isAddingProduct && (
+          <AddProductModal 
+            categories={categories}
+            onClose={() => setIsAddingProduct(false)}
+            onSave={handleAddProduct}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export default App;

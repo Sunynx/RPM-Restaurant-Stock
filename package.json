@@ -1,0 +1,45 @@
+{
+  "name": "inventory-web-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@azure/msal-browser": "^5.17.1",
+    "@azure/msal-react": "^5.5.3",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "@tanstack/react-query": "^5.101.4",
+    "@tanstack/react-virtual": "^3.14.8",
+    "framer-motion": "^12.42.2",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "lucide-react": "^1.26.0",
+    "papaparse": "^5.5.4",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-hot-toast": "^2.6.0",
+    "recharts": "^3.10.0",
+    "vite-plugin-pwa": "^1.3.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "jsdom": "^29.1.1",
+    "oxlint": "^1.71.0",
+    "vite": "^8.1.1",
+    "vitest": "^4.1.10"
+  }
+}
