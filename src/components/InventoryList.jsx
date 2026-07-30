@@ -1,10 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Search, Edit2, Edit3, Package, Download, Plus, ArrowUpDown, ArrowUp, AlertCircle, AlertTriangle, CheckCircle2, FileText } from 'lucide-react';
+import { Search, Edit2, Edit3, Package, Plus, ArrowUpDown, ArrowUp, AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 
 export default function InventoryList({ inventory, categories, lowStockThreshold, onEdit, onEditDetails, onAddProduct, userRole, initialFilters, onFiltersConsumed }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -109,53 +106,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
   const lowCount = inventory.filter(i => parseInt(i.closing) > 0 && parseInt(i.closing) < lowStockThreshold).length;
   const outCount = inventory.filter(i => parseInt(i.closing) === 0).length;
 
-  const handleExport = () => {
-    const dataToExport = sortedInventory.map(item => ({
-      Code: item.code,
-      ItemName: item.item,
-      Category: getCategoryLabel(item.categoryId),
-      Opening: item.stockOnHand,
-      Sales: item.sales,
-      Closing: item.closing,
-      Status: item.closing < lowStockThreshold ? 'Low Stock' : 'Optimal'
-    }));
-    const ws = XLSX.utils.json_to_sheet(dataToExport);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Inventory");
-    XLSX.writeFile(wb, "Inventory_Export.xlsx");
-  };
 
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Inventory Status Report", 14, 15);
-    
-    const tableColumn = ["Code", "Item Name", "Category", "Opening", "Sales", "Closing", "Status"];
-    const tableRows = [];
-
-    sortedInventory.forEach(item => {
-      const status = item.closing < lowStockThreshold ? 'Low Stock' : (item.closing == 0 ? 'Out of Stock' : 'Optimal');
-      const itemData = [
-        item.code || '',
-        item.item || '',
-        getCategoryLabel(item.categoryId),
-        item.stockOnHand || '0',
-        item.sales || '0',
-        item.closing || '0',
-        status
-      ];
-      tableRows.push(itemData);
-    });
-
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 20,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [99, 102, 241] },
-    });
-
-    doc.save("Inventory_Export.pdf");
-  };
 
   const rowVirtualizer = useVirtualizer({
     count: sortedInventory.length,
@@ -211,12 +162,6 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
             </div>
             
             <div className="toolbar-actions">
-              <button className="btn btn-ghost btn-sm" onClick={handleExport}>
-                <Download size={15} /> Excel
-              </button>
-              <button className="btn btn-ghost btn-sm" onClick={handleExportPDF} style={{ color: 'var(--danger)' }}>
-                <FileText size={15} /> PDF
-              </button>
               {userRole === 'Admin' && (
                 <button className="btn btn-primary btn-sm" onClick={onAddProduct}>
                   <Plus size={15} /> Add
