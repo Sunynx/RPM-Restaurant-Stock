@@ -90,6 +90,7 @@ export async function fetchAuditLogs(accessToken) {
     const listId = await getListId(client, siteId, LIST_AUDIT_LOGS);
     
     const response = await client.api(`/sites/${siteId}/lists/${listId}/items`)
+      .header('Prefer', 'HonorNonIndexedQueriesWarningMayFailRandomly')
       .expand('fields')
       .orderby('fields/LogDate desc')
       .top(50)
