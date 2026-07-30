@@ -465,6 +465,7 @@ function App() {
                   setIsCSVModalOpen={setIsCSVModalOpen}
                   categories={categories}
                   onAddCategory={handleAddCategory}
+                  inventory={inventory}
                 />
               </motion.div>
             )}

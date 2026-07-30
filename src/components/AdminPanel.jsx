@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud, FolderTree } from 'lucide-react';
+import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud, FolderTree, FileSpreadsheet, FileText, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchAuditLogs } from '../graphService';
+import { utils, writeFile } from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
-export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModalOpen, categories = [], onAddCategory }) {
+export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModalOpen, categories = [], onAddCategory, inventory = [] }) {
   const [activeTab, setActiveTab] = useState('categories'); // default can stay users, but I'll make it 'categories' for testing or 'users'. Let's stick to 'users'.
   
   // Users state
@@ -49,10 +52,66 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
     setLoadingAddCat(false);
   };
 
+  const handleExportExcel = () => {
+    if (!inventory.length) return;
+    const exportData = inventory.map(item => ({
+      'Item Code': item.itemCode,
+      'Item Name': item.item,
+      'Category': item.category,
+      'Unit': item.unit,
+      'Price': item.price,
+      'Closing Stock': item.closing,
+      'Min Stock Level': item.minStockLevel,
+      'Remarks': item.remarks
+    }));
+    const ws = utils.json_to_sheet(exportData);
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, "Inventory");
+    writeFile(wb, `RPM_Inventory_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  const handleExportPDF = () => {
+    if (!inventory.length) return;
+    const doc = new jsPDF('landscape');
+    
+    doc.setFontSize(18);
+    doc.text('RPM Inventory Report', 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    
+    const tableColumn = ["Code", "Item Name", "Category", "Unit", "Price", "Stock", "Min Stock"];
+    const tableRows = [];
+    
+    inventory.forEach(item => {
+      const itemData = [
+        item.itemCode || '-',
+        item.item || '-',
+        item.category || '-',
+        item.unit || '-',
+        item.price || '-',
+        item.closing || '0',
+        item.minStockLevel || '0'
+      ];
+      tableRows.push(itemData);
+    });
+    
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 40,
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [30, 58, 138] }
+    });
+    
+    doc.save(`RPM_Inventory_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
   const tabs = [
     { id: 'users', label: 'Users', icon: Shield },
     { id: 'categories', label: 'Categories', icon: FolderTree },
-    { id: 'data', label: 'Data & Import', icon: Database },
+    { id: 'data', label: 'Data & Reports', icon: Database },
     { id: 'logs', label: 'Audit Logs', icon: FileClock }
   ];
 
@@ -281,11 +340,13 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-6)' }}
           >
+            {/* Import Section */}
             <div className="card" style={{ padding: 'var(--sp-6)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)', marginBottom: 'var(--sp-2)' }}>
                 <div className="kpi-icon emerald">
-                  <Database size={20} />
+                  <UploadCloud size={20} />
                 </div>
                 <h2 className="card-title" style={{ fontSize: 18 }}>Data Import</h2>
               </div>
@@ -300,6 +361,37 @@ export default function AdminPanel({ users, onAddUser, accessToken, setIsCSVModa
                 >
                   <UploadCloud size={18} />
                   Open CSV Uploader
+                </button>
+              </div>
+            </div>
+
+            {/* Export Section */}
+            <div className="card" style={{ padding: 'var(--sp-6)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)', marginBottom: 'var(--sp-2)' }}>
+                <div className="kpi-icon indigo">
+                  <Download size={20} />
+                </div>
+                <h2 className="card-title" style={{ fontSize: 18 }}>Export Reports</h2>
+              </div>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)', paddingLeft: 56 }}>
+                Download your current inventory data as an Excel spreadsheet or a PDF report.
+              </p>
+              <div style={{ paddingLeft: 56, display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
+                <button 
+                  className="btn"
+                  onClick={handleExportExcel}
+                  style={{ gap: 'var(--sp-2)', background: '#10b981', color: 'white', borderColor: '#10b981' }}
+                >
+                  <FileSpreadsheet size={18} />
+                  Export to Excel
+                </button>
+                <button 
+                  className="btn"
+                  onClick={handleExportPDF}
+                  style={{ gap: 'var(--sp-2)', background: '#ef4444', color: 'white', borderColor: '#ef4444' }}
+                >
+                  <FileText size={18} />
+                  Export to PDF
                 </button>
               </div>
             </div>
