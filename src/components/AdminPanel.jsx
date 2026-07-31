@@ -185,7 +185,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                   <input 
                     type="email" 
                     className="form-input" 
-                    placeholder="user@example.com" 
+                    placeholder="user@royalphuketmarina.com" 
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
@@ -425,38 +425,59 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                   <Loader2 size={24} className="spin" style={{ color: 'var(--primary)' }} />
                 </div>
               ) : (
-                <div className="data-table-container" style={{ display: 'block', maxHeight: 600, overflowY: 'auto' }}>
-                  <table className="data-table">
-                    <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 1 }}>
-                      <tr>
-                        <th style={{ paddingLeft: 'var(--sp-6)' }}>Date</th>
-                        <th>User</th>
-                        <th>Action Type</th>
-                        <th>Details</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {auditLogs.length > 0 ? auditLogs.map(log => (
-                        <tr key={log.id}>
-                          <td style={{ paddingLeft: 'var(--sp-6)', whiteSpace: 'nowrap' }}>
-                            {new Date(log.date).toLocaleString()}
-                          </td>
-                          <td style={{ fontWeight: 500 }}>{log.user}</td>
-                          <td>
-                            <span className="badge badge-neutral">{log.title}</span>
-                          </td>
-                          <td style={{ color: 'var(--text-secondary)' }}>{log.details}</td>
-                        </tr>
-                      )) : (
+                <>
+                  {/* Desktop View */}
+                  <div className="data-table-container desktop-only" style={{ maxHeight: 600, overflowY: 'auto' }}>
+                    <table className="data-table">
+                      <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 1 }}>
                         <tr>
-                          <td colSpan="4" style={{ textAlign: 'center', padding: 'var(--sp-8)', color: 'var(--text-secondary)' }}>
-                            No audit logs found.
-                          </td>
+                          <th style={{ paddingLeft: 'var(--sp-6)' }}>Date</th>
+                          <th>User</th>
+                          <th>Action Type</th>
+                          <th>Details</th>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {auditLogs.length > 0 ? auditLogs.map(log => (
+                          <tr key={log.id}>
+                            <td style={{ paddingLeft: 'var(--sp-6)', whiteSpace: 'nowrap' }}>
+                              {new Date(log.date).toLocaleString()}
+                            </td>
+                            <td style={{ fontWeight: 500 }}>{log.user}</td>
+                            <td>
+                              <span className="badge badge-neutral">{log.title}</span>
+                            </td>
+                            <td style={{ color: 'var(--text-secondary)' }}>{log.details}</td>
+                          </tr>
+                        )) : (
+                          <tr>
+                            <td colSpan="4" style={{ textAlign: 'center', padding: 'var(--sp-8)', color: 'var(--text-secondary)' }}>
+                              No audit logs found.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {/* Mobile View */}
+                  <div className="mobile-only" style={{ padding: 'var(--sp-4)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
+                    {auditLogs.length > 0 ? auditLogs.map(log => (
+                      <div key={log.id} style={{ border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: 'var(--sp-4)', background: 'var(--bg-subtle)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--sp-2)' }}>
+                          <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{new Date(log.date).toLocaleString()}</span>
+                          <span className="badge badge-neutral" style={{ flexShrink: 0, marginLeft: 'var(--sp-2)' }}>{log.title}</span>
+                        </div>
+                        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: '2px', wordBreak: 'break-all' }}>{log.user}</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{log.details}</div>
+                      </div>
+                    )) : (
+                      <div style={{ textAlign: 'center', padding: 'var(--sp-8)', color: 'var(--text-secondary)' }}>
+                        No audit logs found.
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           </motion.div>
