@@ -184,6 +184,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -201,6 +202,8 @@ body {
   background-color: var(--bg-body);
   min-height: 100vh;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
+  -webkit-touch-callout: none;
 }
 
 button {
@@ -209,6 +212,9 @@ button {
   border: none;
   background: none;
   color: inherit;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
 }
 
 input, select, textarea {
