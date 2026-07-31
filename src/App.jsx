@@ -345,29 +345,19 @@ function App() {
   if (!isAuthenticated) {
     return (
       <div className="login-screen">
-        <div className="login-hero">
-          <div className="login-hero-content">
-            <div className="login-hero-logo">
-              <img src="/rpm-logo.svg" alt="RPM Logo" />
-            </div>
-            <div className="login-hero-tagline">Inventory Management System</div>
+        <div className="login-card">
+          <div className="login-logo">
+            <img src="/rpm-logo.svg" alt="RPM Logo" />
           </div>
-          <div className="login-hero-footer">
-            <span>© 2026 Royal Phuket Marina</span>
-          </div>
+          <div className="login-divider" />
+          <p className="login-subtitle">Sign in to manage inventory</p>
+          <button className="login-btn" onClick={handleLogin}>
+            <LogIn size={18} />
+            <span>Login with Microsoft 365</span>
+          </button>
+          <p className="login-footer-text">Secured by Microsoft Azure AD</p>
         </div>
-        <div className="login-panel">
-          <div className="login-panel-inner">
-            <div className="login-welcome">
-              <p className="login-subtitle">Sign in to manage inventory</p>
-            </div>
-            <button className="login-btn" onClick={handleLogin}>
-              <LogIn size={20} />
-              <span>Login with Microsoft 365</span>
-            </button>
-            <p className="login-footer-text">Secured by Microsoft Azure AD</p>
-          </div>
-        </div>
+        <div className="login-copyright">© 2026 Royal Phuket Marina</div>
       </div>
     );
   }

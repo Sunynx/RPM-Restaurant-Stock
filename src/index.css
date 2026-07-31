@@ -1378,199 +1378,122 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ============================================================
-   Login Screen — Split Layout
+   Login Screen — Centered Card
    ============================================================ */
 .login-screen {
-  display: flex;
-  min-height: 100dvh;
-  width: 100%;
-}
-
-/* --- Hero Panel (Left / Top on mobile) --- */
-.login-hero {
-  flex: 1;
-  background-color: #1C345D;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 100dvh;
+  background: #1C345D;
+  padding: var(--sp-6);
   position: relative;
-  overflow: hidden;
-  padding: var(--sp-8);
 }
 
-.login-hero::before {
-  content: '';
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
-  top: -150px;
-  right: -150px;
-  pointer-events: none;
-}
-
-.login-hero::after {
-  content: '';
-  position: absolute;
-  width: 350px;
-  height: 350px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
-  bottom: -100px;
-  left: -100px;
-  pointer-events: none;
-}
-
-.login-hero-content {
+.login-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 48px 40px 40px;
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.12),
+    0 12px 48px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-6);
-  z-index: 1;
+  gap: 20px;
 }
 
-.login-hero-logo {
-  width: 280px;
-  height: 100px;
-  border-radius: var(--radius-xl);
+.login-logo {
+  width: 240px;
+  height: 86px;
+  border-radius: 14px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
-.login-hero-logo img {
+.login-logo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
 }
 
-.login-hero-tagline {
-  font-size: 15px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
-  letter-spacing: 0.04em;
-  text-align: center;
-}
-
-.login-hero-footer {
-  position: absolute;
-  bottom: var(--sp-6);
-  z-index: 1;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.3);
-}
-
-/* --- Login Panel (Right / Bottom on mobile) --- */
-.login-panel {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-body);
-  padding: var(--sp-8);
-}
-
-.login-panel-inner {
-  width: 100%;
-  max-width: 380px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-8);
-}
-
-.login-welcome {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
-
-.login-title {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -0.04em;
-  margin: 0;
+.login-divider {
+  width: 48px;
+  height: 2px;
+  background: #e2e8f0;
+  border-radius: 1px;
 }
 
 .login-subtitle {
-  font-size: 15px;
-  color: var(--text-secondary);
+  font-size: 14px;
+  color: #64748b;
   margin: 0;
+  letter-spacing: 0.01em;
 }
 
 .login-btn {
   width: 100%;
-  height: 52px;
-  border-radius: var(--radius-lg);
+  height: 48px;
+  border-radius: 12px;
   background: #1C345D;
   color: #fff;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sp-3);
-  transition: all var(--duration-fast) var(--ease-out);
+  gap: 10px;
+  transition: all 0.2s ease;
   border: none;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(28, 52, 93, 0.3);
+  margin-top: 4px;
 }
 
 .login-btn:hover {
   background: #253f6e;
-  box-shadow: 0 4px 16px rgba(28, 52, 93, 0.4);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(28, 52, 93, 0.35);
+  transform: translateY(-1px);
 }
 
 .login-btn:active {
   transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(28, 52, 93, 0.3);
 }
 
 .login-footer-text {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  text-align: center;
+  font-size: 11px;
+  color: #94a3b8;
   margin: 0;
 }
 
-/* --- Login Responsive: Mobile --- */
-@media (max-width: 767px) {
+.login-copyright {
+  position: absolute;
+  bottom: 20px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 480px) {
   .login-screen {
-    flex-direction: column;
+    padding: var(--sp-4);
   }
 
-  .login-hero {
-    flex: none;
-    min-height: 240px;
-    padding: var(--sp-10) var(--sp-6) var(--sp-8);
-    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+  .login-card {
+    padding: 36px 28px 32px;
+    border-radius: 16px;
   }
 
-  .login-hero-logo {
-    width: 220px;
-    height: 80px;
-  }
-
-  .login-hero-tagline {
-    font-size: 13px;
-  }
-
-  .login-hero-footer {
-    display: none;
-  }
-
-  .login-panel {
-    flex: 1;
-    padding: var(--sp-8) var(--sp-6);
-    align-items: center;
-  }
-
-  .login-title {
-    font-size: 26px;
+  .login-logo {
+    width: 200px;
+    height: 72px;
   }
 }
+
+
 
 /* ============================================================
    Batch Action Bar
