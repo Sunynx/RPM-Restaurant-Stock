@@ -277,7 +277,7 @@ h1, h2, h3, h4, h5, h6 {
 /* --- Sidebar (hidden on mobile) --- */
 .sidebar {
   display: none;
-  background-color: #1C345D;
+  background-color: var(--primary);
   color: #fff;
 }
 
@@ -287,6 +287,8 @@ h1, h2, h3, h4, h5, h6 {
   gap: var(--sp-3);
   padding: var(--sp-8) var(--sp-6) var(--sp-6);
 }
+
+
 
 .sidebar-brand-logo {
   width: 36px;
@@ -355,7 +357,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--primary);
+  background-color: var(--indigo-400);
 }
 
 .sidebar-section-title {
@@ -398,7 +400,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-full);
   object-fit: cover;
   flex-shrink: 0;
-  background: #3A4B6B;
+  background: rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
