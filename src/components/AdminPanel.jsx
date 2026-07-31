@@ -210,14 +210,14 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th style={{ paddingLeft: 'var(--sp-6)' }}>User</th>
+                      <th style={{ paddingLeft: 'var(--sp-4)' }}>User</th>
                       <th>Role</th>
                     </tr>
                   </thead>
                   <tbody>
                     {users.map(u => (
                       <tr key={u.id || u.email}>
-                        <td style={{ paddingLeft: 'var(--sp-6)' }}>
+                        <td style={{ paddingLeft: 'var(--sp-4)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
                             <div style={{ 
                               width: 32, 
@@ -234,10 +234,10 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                             }}>
                               {(u.email || '?')[0].toUpperCase()}
                             </div>
-                            <span style={{ fontWeight: 500 }}>{u.email}</span>
+                            <div style={{ fontWeight: 500, wordBreak: 'break-all', lineHeight: 1.2 }}>{u.email}</div>
                           </div>
                         </td>
-                        <td>
+                        <td style={{ paddingRight: 'var(--sp-4)' }}>
                           <select 
                             value={u.role} 
                             onChange={(e) => onEditUserRole && onEditUserRole(u.id, e.target.value, u.email)}
