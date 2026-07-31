@@ -20,6 +20,7 @@ export const LIST_USERS = "Inventory_Users";
 export const LIST_AUDIT_LOGS = "Inventory_AuditLogs";
 
 let cachedSiteId = null;
+let cachedListIds = {};
 
 async function getSiteId(client) {
   if (cachedSiteId) return cachedSiteId;
@@ -32,9 +33,11 @@ async function getSiteId(client) {
 }
 
 async function getListId(client, siteId, listName) {
+  if (cachedListIds[listName]) return cachedListIds[listName];
   const listsResponse = await client.api(`/sites/${siteId}/lists`).filter(`displayName eq '${listName}'`).get();
   if (listsResponse.value.length === 0) throw new Error(`List '${listName}' not found!`);
-  return listsResponse.value[0].id;
+  cachedListIds[listName] = listsResponse.value[0].id;
+  return cachedListIds[listName];
 }
 
 // ---------------------------------------------------------
@@ -325,9 +328,11 @@ export async function updateInventoryInSharePoint(accessToken, itemId, updatedDa
       await client.api(`/sites/${siteId}/lists/${txListId}/items`).post({ fields: txFields });
     };
 
-    if (updatedData.sales > 0) await createTransaction('Sales', -updatedData.sales);
-    if (updatedData.ent > 0) await createTransaction('ENT', -updatedData.ent);
-    if (updatedData.issued > 0) await createTransaction('Receive', updatedData.issued);
+    const txPromises = [];
+    if (updatedData.sales > 0) txPromises.push(createTransaction('Sales', -updatedData.sales));
+    if (updatedData.ent > 0) txPromises.push(createTransaction('ENT', -updatedData.ent));
+    if (updatedData.issued > 0) txPromises.push(createTransaction('Receive', updatedData.issued));
+    await Promise.all(txPromises);
 
     // Write to audit log
     await writeAuditLog(accessToken, userEmail, "UpdateStock", `Updated stock for product ${updatedData.code} (${updatedData.item}). New Stock: ${updatedData.closing}`);

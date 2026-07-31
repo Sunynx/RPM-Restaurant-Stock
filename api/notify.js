@@ -5,12 +5,12 @@ export default async function handler(req, res) {
 
   try {
     const { productName, stock, minStock } = req.body;
-    // For Vercel, LINE_NOTIFY_TOKEN should be set in Environment Variables
-    // But since the user gave it directly, we can use it or fall back
-    const token = process.env.LINE_NOTIFY_TOKEN || 'QO5lKMUsFaM8V7431hUT8THnQcTqiGoSe+CcjuRo7m1hfOqXZ5iQLLWN4Ky5yBcNJ8eLdrSKWMX7rf/Hn7WzeRZoHOZyPevaRcH35RUbrPoXZjbkM3DK0Aoqd6OLbIFgEFgThHatRagko5EHNeJ9UAdB04t89/1O/w1cDnyilFU=';
+    // For Vercel, LINE_NOTIFY_TOKEN must be set in Environment Variables
+    const token = process.env.LINE_NOTIFY_TOKEN;
 
     if (!token) {
-      return res.status(500).json({ error: 'LINE token is missing' });
+      console.error('LINE token is missing. Please set LINE_NOTIFY_TOKEN in Vercel Environment Variables.');
+      return res.status(500).json({ error: 'LINE token is missing in Environment Variables' });
     }
 
     const message = `⚠️ สินค้าใกล้หมดสต็อก!\n\n📦 ${productName}\n📉 คงเหลือ: ${stock}\n⚠️ เกณฑ์แจ้งเตือน: ${minStock}`;
