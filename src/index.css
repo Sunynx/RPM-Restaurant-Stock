@@ -192,6 +192,7 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -202,6 +203,7 @@ body {
   background-color: var(--bg-body);
   min-height: 100vh;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
   -webkit-touch-callout: none;
 }
 
