@@ -70,7 +70,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
 
         {/* Current Stock Display */}
         <div className="stock-display-current">
-          <span className="stock-display-label">Stock ปัจจุบัน</span>
+          <span className="stock-display-label">Current Stock</span>
           <span className="stock-display-number">{currentStock}</span>
         </div>
 
@@ -87,8 +87,8 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                   <Plus size={22} />
                 </div>
                 <div>
-                  <div className="stock-mode-title">รับของเข้า</div>
-                  <div className="stock-mode-desc">Add Stock</div>
+                  <div className="stock-mode-title">Add Stock</div>
+                  <div className="stock-mode-desc">Receive new items</div>
                 </div>
               </button>
               <button 
@@ -100,8 +100,8 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                   <Minus size={22} />
                 </div>
                 <div>
-                  <div className="stock-mode-title">ตัดออก</div>
-                  <div className="stock-mode-desc">Use / Deduct</div>
+                  <div className="stock-mode-title">Deduct Stock</div>
+                  <div className="stock-mode-desc">Use / Remove items</div>
                 </div>
               </button>
             </div>
@@ -123,8 +123,8 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                   <div className={`stock-mode-icon-sm ${mode}`}>
                     {mode === 'add' ? <Plus size={14} /> : <Minus size={14} />}
                   </div>
-                  <span>{mode === 'add' ? 'รับของเข้า (Add Stock)' : 'ตัดออก (Deduct)'}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-tertiary)' }}>เปลี่ยน</span>
+                  <span>{mode === 'add' ? 'Add Stock' : 'Deduct Stock'}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-tertiary)' }}>Change</span>
                 </button>
 
                 {/* Reason (only for Use mode) */}
@@ -136,7 +136,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                       onClick={() => setReason('sales')}
                     >
                       <ShoppingCart size={14} />
-                      ขาย (Sales)
+                      Sales
                     </button>
                     <button 
                       type="button"
@@ -144,7 +144,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                       onClick={() => setReason('ent')}
                     >
                       <Trash2 size={14} />
-                      เสีย / ENT
+                      Spoilage / ENT
                     </button>
                   </div>
                 )}
@@ -207,7 +207,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                     </div>
                     {willGoNegative && (
                       <p className="stock-preview-warning">
-                        ⚠️ สต็อกจะติดลบ — ตรวจสอบจำนวนอีกครั้ง
+                        ⚠️ Stock will be negative — Please verify
                       </p>
                     )}
                   </motion.div>
@@ -216,14 +216,14 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                 {/* Admin Override */}
                 {userRole === 'Admin' && qty > 0 && (
                   <div className="stock-admin-override">
-                    <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>Admin: แก้ไขผลลัพธ์โดยตรง</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>Admin: Override result directly</span>
                   </div>
                 )}
 
                 {/* Actions */}
                 <div className="stock-actions">
                   <button type="button" className="btn btn-ghost" onClick={onClose} style={{ flex: 1 }}>
-                    ยกเลิก
+                    Cancel
                   </button>
                   <button 
                     type="submit" 
@@ -232,9 +232,9 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                     style={{ flex: 2, opacity: canSave ? 1 : 0.4 }}
                   >
                     {mode === 'add' ? (
-                      <><Plus size={16} /> เพิ่ม {qty > 0 ? qty : ''} ชิ้น</>
+                      <><Plus size={16} /> Add {qty > 0 ? qty : ''}</>
                     ) : (
-                      <><Minus size={16} /> ตัด {qty > 0 ? qty : ''} ชิ้น</>
+                      <><Minus size={16} /> Deduct {qty > 0 ? qty : ''}</>
                     )}
                   </button>
                 </div>
