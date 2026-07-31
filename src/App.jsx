@@ -49,12 +49,9 @@ function App() {
       console.warn("Failed to clear MSAL interaction status", e);
     }
 
-    try {
-      await instance.loginPopup(loginRequest);
-    } catch (e) {
-      console.error("Login popup failed, falling back to redirect:", e);
-      instance.loginRedirect(loginRequest);
-    }
+    instance.loginRedirect(loginRequest).catch(e => {
+      console.error("Login redirect failed:", e);
+    });
   };
 
   useEffect(() => {
@@ -72,21 +69,14 @@ function App() {
     queryClient.clear();
     setAccessToken(null);
 
-    // 2. Perform smooth logout without leaving the page
+    // 2. Perform stable redirect logout
     const currentAccount = instance.getActiveAccount() || accounts[0];
     
-    try {
-      await instance.logoutPopup({ 
-        account: currentAccount,
-        logoutHint: currentAccount?.idTokenClaims?.login_hint || currentAccount?.username
-      });
-    } catch (e) {
-      console.error("Popup logout failed, falling back to redirect", e);
-      instance.logoutRedirect({ 
-        postLogoutRedirectUri: window.location.origin,
-        account: currentAccount
-      });
-    }
+    instance.logoutRedirect({ 
+      postLogoutRedirectUri: window.location.origin,
+      account: currentAccount,
+      logoutHint: currentAccount?.idTokenClaims?.login_hint || currentAccount?.username
+    });
   };
 
   useEffect(() => {
