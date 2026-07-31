@@ -346,10 +346,9 @@ function App() {
     return (
       <div className="login-screen">
         <div className="login-card">
-          <div className="login-logo">
-            <img src="/rpm-logo.svg" alt="RPM Logo" />
+          <div className="login-logo" style={{ marginBottom: 'var(--sp-4)' }}>
+            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', maxWidth: 200, height: 'auto' }} />
           </div>
-          <h1 className="login-title">RPM Stock</h1>
           <p className="login-subtitle">Inventory Management System</p>
           <button className="login-btn" onClick={handleLogin}>
             <LogIn size={18} />
@@ -371,10 +370,9 @@ function App() {
       {/* Desktop Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <div className="sidebar-brand-logo">
-            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 'inherit' }} />
+          <div className="sidebar-brand-logo" style={{ width: 140, height: 40, background: 'transparent' }}>
+            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
-          <span className="sidebar-brand-name">RPM Stock</span>
         </div>
 
         <nav className="sidebar-nav">
