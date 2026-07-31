@@ -19,6 +19,11 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
   const totalItems = inventory.length;
   const lowStockItems = inventory.filter(i => i.closing < lowStockThreshold);
   const outOfStockItems = inventory.filter(i => (parseInt(i.closing) || 0) === 0);
+
+  const handleNavigate = (params) => {
+    if (window.innerWidth <= 768) return;
+    onNavigate(params);
+  };
   const totalStock = inventory.reduce((sum, item) => sum + (parseInt(item.closing) || 0), 0);
 
   let totalCOGS = 0;
@@ -151,7 +156,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
           <div className="kpi-value">{totalItems}</div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'low' })}>
+        <motion.div variants={itemVariants} className="kpi-card" onClick={() => handleNavigate({ filterStatus: 'low' })}>
           <div className="kpi-icon amber">
             <AlertTriangle size={20} />
           </div>
@@ -164,7 +169,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
           )}
         </motion.div>
 
-        <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'out' })}>
+        <motion.div variants={itemVariants} className="kpi-card" onClick={() => handleNavigate({ filterStatus: 'out' })}>
           <div className="kpi-icon rose">
             <AlertCircle size={20} />
           </div>
@@ -218,7 +223,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
                     barSize={14}
                     onClick={(data) => {
                       if (data?.name) {
-                        onNavigate({ searchTerm: data.name });
+                        handleNavigate({ searchTerm: data.name });
                       }
                     }}
                     style={{ cursor: 'pointer' }}
@@ -290,9 +295,9 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
             {recentTransactions.map((tx, idx) => (
               <div 
                 key={idx}
-                onClick={() => onNavigate({ searchTerm: tx.item || tx.code })}
+                onClick={() => handleNavigate({ searchTerm: tx.item || tx.code })}
                 style={{ 
-                  display: 'flex', 
+                  display: 'flex',  
                   alignItems: 'center', 
                   padding: 'var(--sp-4)', 
                   borderBottom: '1px solid var(--border-subtle)',
