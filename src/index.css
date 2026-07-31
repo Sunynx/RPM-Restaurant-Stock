@@ -1876,7 +1876,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .bottom-nav { display: none; }
-  .mobile-only { display: none; }
+  .mobile-only { display: none !important; }
   .desktop-only { display: block; }
 
   .topbar-search { display: block; }
@@ -2100,6 +2100,12 @@ h1, h2, h3, h4, h5, h6 {
 .notification-bell-wrapper {
   position: relative;
   display: inline-flex;
+}
+
+@media (max-width: 767px) {
+  .notification-bell-wrapper {
+    display: none !important;
+  }
 }
 
 .notification-badge {

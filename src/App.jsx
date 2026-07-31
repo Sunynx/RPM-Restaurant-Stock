@@ -578,6 +578,56 @@ function App() {
                   onFiltersConsumed={() => setInitialFilters(null)}
                 />
               </motion.div>
+            ) : activeTab === 'notifications' ? (
+              <motion.div
+                key="notifications"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <div className="card">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--sp-4)' }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 700 }}>Notifications</h3>
+                    {alertItems.length > 0 && <span className="badge badge-error">{alertItems.length}</span>}
+                  </div>
+                  <div style={{ margin: '0 calc(-1 * var(--sp-4))' }}>
+                    {alertItems.length === 0 ? (
+                      <div style={{ padding: 'var(--sp-8)', textAlign: 'center', color: 'var(--text-tertiary)' }}>
+                        You're all caught up!
+                      </div>
+                    ) : (
+                      <div>
+                        {alertItems.map(item => (
+                          <div 
+                            key={item.id} 
+                            className="notification-item"
+                            onClick={() => {
+                              handleNotificationClick(item);
+                              setActiveTab('inventory');
+                            }}
+                            style={{ padding: 'var(--sp-4)', borderBottom: '1px solid var(--border-subtle)' }}
+                          >
+                            {item.closing === 0 ? (
+                              <AlertCircle size={20} style={{ color: 'var(--danger)', marginTop: 2, flexShrink: 0 }} />
+                            ) : (
+                              <AlertTriangle size={20} style={{ color: 'var(--warning)', marginTop: 2, flexShrink: 0 }} />
+                            )}
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)', wordBreak: 'break-word', lineHeight: 1.4 }}>
+                                {item.item}
+                              </div>
+                              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
+                                {item.closing === 0 ? 'Out of stock!' : `Low stock: ${item.closing} left (Min: ${item.minStockLevel || 0})`}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
             ) : (
               <motion.div
                 key="admin"
@@ -629,6 +679,18 @@ function App() {
         >
           <Package size={22} />
           <span>Stock</span>
+        </button>
+        <button 
+          className={`bottom-nav-item ${activeTab === 'notifications' ? 'active' : ''} mobile-only`}
+          onClick={() => setActiveTab('notifications')}
+        >
+          <div style={{ position: 'relative' }}>
+            <Bell size={22} />
+            {alertItems.length > 0 && (
+              <div style={{ position: 'absolute', top: -2, right: -2, width: 10, height: 10, background: 'var(--danger)', borderRadius: '50%', border: '2px solid var(--bg-body)' }} />
+            )}
+          </div>
+          <span>Alerts</span>
         </button>
         {userRole === 'Admin' && (
           <button 
