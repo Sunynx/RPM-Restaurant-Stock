@@ -166,7 +166,6 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                     onChange={(e) => setQuantity(e.target.value)}
                     placeholder="0"
                     min="0"
-                    autoFocus
                   />
                   <button 
                     type="button" 
