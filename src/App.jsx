@@ -369,9 +369,9 @@ function App() {
     <div className="app-shell">
       {/* Desktop Sidebar */}
       <aside className="sidebar">
-        <div className="sidebar-brand">
-          <div className="sidebar-brand-logo" style={{ width: 140, height: 40, background: 'transparent' }}>
-            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        <div className="sidebar-brand" style={{ padding: 0, height: 80 }}>
+          <div className="sidebar-brand-logo" style={{ width: '100%', height: '100%', background: 'transparent' }}>
+            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
           </div>
         </div>
 
