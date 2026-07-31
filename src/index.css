@@ -277,6 +277,8 @@ h1, h2, h3, h4, h5, h6 {
 /* --- Sidebar (hidden on mobile) --- */
 .sidebar {
   display: none;
+  background-color: #1C345D;
+  color: #fff;
 }
 
 .sidebar-brand {
@@ -323,39 +325,52 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
   position: relative;
 }
 
 .sidebar-nav-item:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
 }
 
 .sidebar-nav-item.active {
-  background: var(--primary-light);
-  color: var(--primary);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
   font-weight: 600;
 }
 
 .sidebar-nav-item.active::before {
+  display: none;
+}
+
+.sidebar-nav-item.active::after {
   content: '';
   position: absolute;
-  left: 0;
+  right: var(--sp-4);
   top: 50%;
   transform: translateY(-50%);
-  width: 3px;
-  height: 20px;
-  background: var(--primary);
-  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--primary);
+}
+
+.sidebar-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: var(--sp-4) var(--sp-4) var(--sp-2);
 }
 
 .sidebar-divider {
   height: 1px;
-  background: var(--border-default);
-  margin: var(--sp-4) var(--sp-4);
+  background: rgba(255, 255, 255, 0.1);
+  margin: var(--sp-4) 0;
 }
 
 .sidebar-footer {
@@ -374,7 +389,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .sidebar-user:hover {
-  background: var(--bg-hover);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-user-avatar {
@@ -383,6 +398,13 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-full);
   object-fit: cover;
   flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .sidebar-user-info {
@@ -393,7 +415,7 @@ h1, h2, h3, h4, h5, h6 {
 .sidebar-user-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: rgba(255, 255, 255, 0.95);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -401,7 +423,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .sidebar-user-email {
   font-size: 11px;
-  color: var(--text-tertiary);
+  color: rgba(255, 255, 255, 0.5);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

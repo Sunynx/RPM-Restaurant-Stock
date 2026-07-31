@@ -374,8 +374,10 @@ function App() {
             <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
           </div>
         </div>
+        <div className="sidebar-divider" style={{ margin: 0 }}></div>
 
         <nav className="sidebar-nav">
+          <div className="sidebar-section-title">General</div>
           <div 
             className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
@@ -383,6 +385,8 @@ function App() {
             <LayoutDashboard size={18} />
             <span>Dashboard</span>
           </div>
+
+          <div className="sidebar-section-title" style={{ marginTop: 'var(--sp-2)' }}>Operations</div>
           <div 
             className={`sidebar-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}
             onClick={() => setActiveTab('inventory')}
@@ -393,7 +397,7 @@ function App() {
 
           {userRole === 'Admin' && (
             <>
-              <div className="sidebar-divider" />
+              <div className="sidebar-section-title" style={{ marginTop: 'var(--sp-2)' }}>Other</div>
               <div 
                 className={`sidebar-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
                 onClick={() => setActiveTab('admin')}
@@ -408,11 +412,9 @@ function App() {
 
         <div className="sidebar-footer">
           <div className="sidebar-user" onClick={handleLogout} title="Click to logout">
-            <img 
-              className="sidebar-user-avatar"
-              src={`https://ui-avatars.com/api/?name=${accounts[0]?.name || 'User'}&background=6366f1&color=fff&bold=true&size=72`} 
-              alt="Avatar" 
-            />
+            <div className="sidebar-user-avatar">
+              {(accounts[0]?.name || 'User').substring(0, 2).toUpperCase()}
+            </div>
             <div className="sidebar-user-info">
               <div className="sidebar-user-name">{accounts[0]?.name || 'User'}</div>
               <div className="sidebar-user-email">{accounts[0]?.username || ''}</div>
