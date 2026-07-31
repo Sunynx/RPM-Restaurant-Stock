@@ -68,7 +68,8 @@ function App() {
     const currentAccount = instance.getActiveAccount() || accounts[0];
     instance.logoutRedirect({ 
       postLogoutRedirectUri: window.location.origin,
-      account: currentAccount
+      account: currentAccount,
+      logoutHint: currentAccount?.idTokenClaims?.login_hint || currentAccount?.username
     });
   };
 
