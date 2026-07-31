@@ -305,8 +305,8 @@ export async function updateInventoryInSharePoint(accessToken, itemId, updatedDa
     if (updatedData.ent > 0) await createTransaction('ENT', -updatedData.ent);
     if (updatedData.issued > 0) await createTransaction('Receive', updatedData.issued);
 
-    // Log update
-    await writeAuditLog(accessToken, userEmail, "UpdateStock", `Updated stock for product ID ${itemId}. New Stock: ${updatedData.closing}`);
+    // Write to audit log
+    await writeAuditLog(accessToken, userEmail, "UpdateStock", `Updated stock for product ${updatedData.code} (${updatedData.item}). New Stock: ${updatedData.closing}`);
 
     // Check for low stock and trigger LINE Notify
     const minStockLevel = parseInt(updatedData.minStockLevel) || 10;
