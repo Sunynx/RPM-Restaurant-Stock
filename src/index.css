@@ -1956,7 +1956,7 @@ h1, h2, h3, h4, h5, h6 {
    Admin Panel
    ============================================================ */
 .admin-container {
-  max-width: 800px;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
