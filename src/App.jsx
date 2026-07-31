@@ -345,14 +345,22 @@ function App() {
   if (!isAuthenticated) {
     return (
       <div className="login-screen">
+        <div className="login-bg-circle login-bg-circle--1" />
+        <div className="login-bg-circle login-bg-circle--2" />
+        <div className="login-bg-circle login-bg-circle--3" />
         <div className="login-card">
+          <div className="login-icon-badge">
+            <LogIn size={24} />
+          </div>
           <div className="login-logo">
             <img src="/rpm-logo.svg" alt="RPM Logo" />
           </div>
-          <div className="login-divider" />
-          <p className="login-subtitle">Sign in to manage inventory</p>
+          <div className="login-text">
+            <h2 className="login-title">Inventory System</h2>
+            <p className="login-subtitle">Sign in to manage inventory</p>
+          </div>
           <button className="login-btn" onClick={handleLogin}>
-            <LogIn size={18} />
+            <svg width="20" height="20" viewBox="0 0 23 23" fill="none"><path d="M1 1h10v10H1V1z" fill="#f25022"/><path d="M12 1h10v10H12V1z" fill="#7fba00"/><path d="M1 12h10v10H1V12z" fill="#00a4ef"/><path d="M12 12h10v10H12V12z" fill="#ffb900"/></svg>
             <span>Login with Microsoft 365</span>
           </button>
           <p className="login-footer-text">Secured by Microsoft Azure AD</p>

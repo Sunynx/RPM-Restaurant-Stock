@@ -1378,7 +1378,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ============================================================
-   Login Screen — Centered Card
+   Login Screen — Glassmorphism Card
    ============================================================ */
 .login-screen {
   display: flex;
@@ -1386,30 +1386,87 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: center;
   min-height: 100dvh;
-  background: #1C345D;
+  background: linear-gradient(160deg, #dbeafe 0%, #e0f2fe 30%, #f0f9ff 60%, #e8f4fd 100%);
   padding: var(--sp-6);
   position: relative;
+  overflow: hidden;
 }
 
+/* Decorative background circles */
+.login-bg-circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  pointer-events: none;
+}
+
+.login-bg-circle--1 {
+  width: 600px;
+  height: 600px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.login-bg-circle--2 {
+  width: 450px;
+  height: 450px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.login-bg-circle--3 {
+  width: 300px;
+  height: 300px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Card */
 .login-card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 48px 40px 40px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 24px;
+  padding: 56px 40px 36px;
   text-align: center;
   max-width: 420px;
   width: 100%;
   box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.12),
-    0 12px 48px rgba(0, 0, 0, 0.08);
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
+  z-index: 1;
 }
 
+/* Floating icon badge */
+.login-icon-badge {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1C345D;
+}
+
+/* Logo */
 .login-logo {
-  width: 240px;
-  height: 86px;
+  width: 220px;
+  height: 78px;
   border-radius: 14px;
   overflow: hidden;
   flex-shrink: 0;
@@ -1422,24 +1479,32 @@ h1, h2, h3, h4, h5, h6 {
   object-position: center;
 }
 
-.login-divider {
-  width: 48px;
-  height: 2px;
-  background: #e2e8f0;
-  border-radius: 1px;
+/* Text group */
+.login-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .login-subtitle {
   font-size: 14px;
   color: #64748b;
   margin: 0;
-  letter-spacing: 0.01em;
 }
 
+/* Button */
 .login-btn {
   width: 100%;
-  height: 48px;
-  border-radius: 12px;
+  height: 50px;
+  border-radius: 14px;
   background: #1C345D;
   color: #fff;
   font-size: 14px;
@@ -1448,7 +1513,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   border: none;
   cursor: pointer;
   margin-top: 4px;
@@ -1456,12 +1521,13 @@ h1, h2, h3, h4, h5, h6 {
 
 .login-btn:hover {
   background: #253f6e;
-  box-shadow: 0 4px 16px rgba(28, 52, 93, 0.35);
-  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(28, 52, 93, 0.3);
+  transform: translateY(-2px);
 }
 
 .login-btn:active {
   transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(28, 52, 93, 0.2);
 }
 
 .login-footer-text {
@@ -1474,25 +1540,34 @@ h1, h2, h3, h4, h5, h6 {
   position: absolute;
   bottom: 20px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
+  color: #94a3b8;
+  z-index: 1;
 }
 
+/* Mobile */
 @media (max-width: 480px) {
   .login-screen {
     padding: var(--sp-4);
   }
 
   .login-card {
-    padding: 36px 28px 32px;
-    border-radius: 16px;
+    padding: 48px 24px 28px;
+    border-radius: 20px;
   }
 
   .login-logo {
-    width: 200px;
-    height: 72px;
+    width: 180px;
+    height: 64px;
   }
-}
 
+  .login-title {
+    font-size: 20px;
+  }
+
+  .login-bg-circle--1 { width: 400px; height: 400px; }
+  .login-bg-circle--2 { width: 300px; height: 300px; }
+  .login-bg-circle--3 { width: 200px; height: 200px; }
+}
 
 
 /* ============================================================
