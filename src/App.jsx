@@ -406,15 +406,6 @@ function App() {
             </>
           )}
 
-          <div className="sidebar-divider" />
-
-          <div 
-            className="theme-toggle"
-            onClick={() => setIsDarkMode(!isDarkMode)}
-          >
-            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-            <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-          </div>
         </nav>
 
         <div className="sidebar-footer">
@@ -443,6 +434,15 @@ function App() {
           </div>
 
           <div className="topbar-right">
+            {/* Theme Toggle */}
+            <button 
+              className="topbar-icon-btn" 
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
             {/* Notifications */}
             <div className="notification-bell-wrapper">
               <button 
