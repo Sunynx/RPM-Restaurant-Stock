@@ -49,11 +49,11 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
     }
   };
 
-  const toggleSelect = (code) => {
+  const toggleSelect = (id) => {
     setSelectedItems(prev => {
       const next = new Set(prev);
-      if (next.has(code)) next.delete(code);
-      else next.add(code);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -62,7 +62,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
     if (selectedItems.size === sortedInventory.length) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(sortedInventory.map(i => i.code)));
+      setSelectedItems(new Set(sortedInventory.map(i => i.id)));
     }
   };
 
@@ -270,7 +270,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                           const closing = parseInt(item.closing) || 0;
                           const isLowStock = closing > 0 && closing < lowStockThreshold;
                           const isOutOfStock = closing === 0;
-                          const isSelected = selectedItems.has(item.code);
+                          const isSelected = selectedItems.has(item.id);
                           
                           return (
                             <tr 
@@ -283,7 +283,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                                 <input 
                                   type="checkbox" 
                                   checked={isSelected}
-                                  onChange={() => toggleSelect(item.code)}
+                                  onChange={() => toggleSelect(item.id)}
                                 />
                               </td>
                               <td style={{ fontWeight: 500 }}>{item.item}</td>
