@@ -341,7 +341,7 @@ function App() {
       <div className="login-screen">
         <div className="login-card">
           <div className="login-logo">
-            <img src="/logo.png" alt="RPM Logo" />
+            <img src="/pwa-192x192.png" alt="RPM Logo" />
           </div>
           <h1 className="login-title">RPM Stock</h1>
           <p className="login-subtitle">Inventory Management System</p>
