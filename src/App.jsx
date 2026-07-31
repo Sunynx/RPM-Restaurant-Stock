@@ -488,8 +488,8 @@ function App() {
                             ) : (
                               <AlertTriangle size={16} style={{ color: 'var(--warning)', marginTop: 2, flexShrink: 0 }} />
                             )}
-                            <div style={{ overflow: 'hidden' }}>
-                              <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', wordBreak: 'break-word', lineHeight: 1.4 }}>
                                 {item.item}
                               </div>
                               <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
