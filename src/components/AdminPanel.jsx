@@ -175,11 +175,11 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                 </div>
                 <h2 className="card-title" style={{ fontSize: 18 }}>User Management</h2>
               </div>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)', paddingLeft: 56 }}>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)' }}>
                 Manage access to the inventory system. Only Admins can add or edit products.
               </p>
               
-              <form onSubmit={handleAddUser} className="admin-form-row" style={{ paddingLeft: 56 }}>
+              <form onSubmit={handleAddUser} className="admin-form-row">
                 <div className="form-group" style={{ flex: 1, minWidth: 200 }}>
                   <label className="form-label">Email Address</label>
                   <input 
@@ -274,11 +274,11 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                 </div>
                 <h2 className="card-title" style={{ fontSize: 18 }}>Category Management</h2>
               </div>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)', paddingLeft: 56 }}>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)' }}>
                 Create new product categories. They will immediately appear in the dropdown menus.
               </p>
               
-              <form onSubmit={handleAddCat} className="admin-form-row" style={{ paddingLeft: 56 }}>
+              <form onSubmit={handleAddCat} className="admin-form-row">
                 <div className="form-group" style={{ width: 140 }}>
                   <label className="form-label">Code</label>
                   <input 

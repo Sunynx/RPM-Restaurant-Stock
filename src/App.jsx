@@ -505,15 +505,6 @@ function App() {
               </AnimatePresence>
             </div>
 
-            {/* Dark Mode Toggle (Mobile) */}
-            <button 
-              className="topbar-icon-btn mobile-only"
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              title="Toggle theme"
-            >
-              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-            
             {/* Logout (Mobile) */}
             <button 
               className="topbar-icon-btn mobile-only"
