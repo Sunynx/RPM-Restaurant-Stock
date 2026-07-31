@@ -60,6 +60,30 @@ export async function fetchAppUsers(accessToken, currentUserEmail) {
   }
 }
 
+export async function addUserToSharePoint(accessToken, userData, currentUserEmail) {
+  const client = getGraphClient(accessToken);
+  try {
+    const siteId = await getSiteId(client);
+    const listId = await getListId(client, siteId, LIST_USERS);
+
+    const response = await client.api(`/sites/${siteId}/lists/${listId}/items`).post({
+      fields: {
+        Title: userData.email,
+        DisplayName: userData.email.split('@')[0],
+        Role: userData.role,
+        Status: 'Active'
+      }
+    });
+
+    await writeAuditLog(accessToken, currentUserEmail, "AddUser", `Added new user ${userData.email} with role ${userData.role}`);
+    
+    return response;
+  } catch (error) {
+    console.error("Error adding user:", error);
+    throw error;
+  }
+}
+
 export async function updateUserRoleInSharePoint(accessToken, userId, newRole, currentUserEmail) {
   const client = getGraphClient(accessToken);
   try {

@@ -11,7 +11,7 @@ import EditProductDetailsModal from './components/EditProductDetailsModal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginRequest } from './authConfig';
-import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUsers, fetchTransactions, createProductInSharePoint, fetchCategories, writeAuditLog, createGenericSharePointItem, updateProductDetailsInSharePoint, createCategoryInSharePoint, updateUserRoleInSharePoint } from './graphService';
+import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUsers, fetchTransactions, createProductInSharePoint, fetchCategories, writeAuditLog, createGenericSharePointItem, updateProductDetailsInSharePoint, createCategoryInSharePoint, updateUserRoleInSharePoint, addUserToSharePoint } from './graphService';
 import toast from 'react-hot-toast';
 import CSVImporterModal from './components/CSVImporterModal';
 
@@ -234,6 +234,23 @@ function App() {
   const handleEditUserRole = (userId, newRole) => {
     if (!accessToken) return;
     editUserRoleMutation.mutate({ userId, newRole });
+  };
+
+  const addUserMutation = useMutation({
+    mutationFn: (userData) => addUserToSharePoint(accessToken, userData, accounts[0]?.username),
+    onSuccess: () => {
+      toast.success("User added successfully!");
+      queryClient.invalidateQueries({ queryKey: ['appUsers'] });
+    },
+    onError: (err) => {
+      console.error(err);
+      toast.error("Failed to add user.");
+    }
+  });
+
+  const handleAddUser = (userData) => {
+    if (!accessToken) return;
+    addUserMutation.mutate(userData);
   };
 
   const addCategoryMutation = useMutation({
@@ -553,7 +570,7 @@ function App() {
               >
                 <AdminPanel 
                   users={appUsers}
-                  onAddUser={() => alert("Add user to AppUsers list functionality to be implemented")}
+                  onAddUser={handleAddUser}
                   onEditUserRole={handleEditUserRole}
                   accessToken={accessToken}
                   setIsCSVModalOpen={setIsCSVModalOpen}
