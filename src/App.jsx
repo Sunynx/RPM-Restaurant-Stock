@@ -349,12 +349,6 @@ function App() {
         <div className="login-bg-circle login-bg-circle--2" />
         <div className="login-bg-circle login-bg-circle--3" />
         <div className="login-card">
-          <div className="login-icon-badge">
-            <LogIn size={24} />
-          </div>
-          <div className="login-logo">
-            <img src="/rpm-logo.svg" alt="RPM Logo" />
-          </div>
           <div className="login-text">
             <h2 className="login-title">Inventory System</h2>
             <p className="login-subtitle">Sign in to manage inventory</p>
