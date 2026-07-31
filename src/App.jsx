@@ -346,8 +346,8 @@ function App() {
     return (
       <div className="login-screen">
         <div className="login-card">
-          <div className="login-logo" style={{ marginBottom: 'var(--sp-4)' }}>
-            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', maxWidth: 200, height: 'auto' }} />
+          <div className="login-logo" style={{ marginBottom: 'var(--sp-6)', width: 280, height: 100, borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
+            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
           </div>
           <p className="login-subtitle">Inventory Management System</p>
           <button className="login-btn" onClick={handleLogin}>
