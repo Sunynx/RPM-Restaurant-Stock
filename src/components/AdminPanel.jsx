@@ -7,7 +7,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 export default function AdminPanel({ users, onAddUser, onEditUserRole, accessToken, setIsCSVModalOpen, categories = [], onAddCategory, inventory = [] }) {
-  const [activeTab, setActiveTab] = useState('categories'); // default can stay users, but I'll make it 'categories' for testing or 'users'. Let's stick to 'users'.
+  const [activeTab, setActiveTab] = useState('users');
   
   // Users state
   const [email, setEmail] = useState('');
