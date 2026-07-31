@@ -37,14 +37,14 @@
   --border-strong:  var(--slate-300);
   --border-subtle:  var(--slate-100);
 
-  /* Brand */
-  --indigo-50:  #eef2ff;
-  --indigo-100: #e0e7ff;
-  --indigo-200: #c7d2fe;
-  --indigo-400: #818cf8;
-  --indigo-500: #6366f1;
-  --indigo-600: #4f46e5;
-  --indigo-700: #4338ca;
+  /* Brand (Navy Blue for RPM) */
+  --indigo-50:  #f0f6fc;
+  --indigo-100: #e1edfa;
+  --indigo-200: #c4def6;
+  --indigo-400: #54a0ea;
+  --indigo-500: #1a4f8b;
+  --indigo-600: #123761;
+  --indigo-700: #0b223c;
 
   --primary:       var(--indigo-500);
   --primary-hover: var(--indigo-600);
@@ -1403,17 +1403,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .login-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, var(--indigo-500), var(--indigo-700));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 800;
-  font-size: 22px;
+  width: 80px;
+  height: auto;
   margin: 0 auto var(--sp-5);
+  display: flex;
+  justify-content: center;
+}
+
+.login-logo img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
 .login-title {

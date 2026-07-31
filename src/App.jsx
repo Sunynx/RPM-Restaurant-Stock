@@ -340,7 +340,9 @@ function App() {
     return (
       <div className="login-screen">
         <div className="login-card">
-          <div className="login-logo">R</div>
+          <div className="login-logo">
+            <img src="/logo.png" alt="RPM Logo" />
+          </div>
           <h1 className="login-title">RPM Stock</h1>
           <p className="login-subtitle">Inventory Management System</p>
           <button className="login-btn" onClick={handleLogin}>
