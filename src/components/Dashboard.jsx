@@ -300,27 +300,24 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
                   gap: 'var(--sp-4)'
                 }}
               >
-                <div style={{
-                  width: 40, height: 40, borderRadius: 'var(--radius-lg)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  background: tx.type?.toLowerCase() === 'receive' ? 'var(--success-light)' : 
-                              tx.type?.toLowerCase() === 'sales' ? 'var(--info-light)' : 'var(--warning-light)',
-                  color: tx.type?.toLowerCase() === 'receive' ? 'var(--success)' : 
-                         tx.type?.toLowerCase() === 'sales' ? 'var(--info)' : 'var(--warning)'
-                }}>
-                  {tx.type?.toLowerCase() === 'receive' ? <ArrowDownRight size={20} /> : 
-                   tx.type?.toLowerCase() === 'sales' ? <ArrowUpRight size={20} /> : 
-                   <Activity size={20} />}
-                </div>
-                
                 <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span className={`badge ${
+                      tx.type?.toLowerCase() === 'receive' ? 'badge-success' : 
+                      tx.type?.toLowerCase() === 'sales' ? 'badge-info' : 
+                      'badge-warning'
+                    }`} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4 }}>
+                      {tx.type?.toUpperCase() || 'OTHER'}
+                    </span>
+                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                      {tx.displayDate}
+                    </span>
+                  </div>
                   <div style={{ fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {tx.item}
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'flex', gap: 8, marginTop: 2 }}>
-                    <span>#{tx.code || '—'}</span>
-                    <span>•</span>
-                    <span>{tx.displayDate}</span>
+                  <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 2 }}>
+                    Code: #{tx.code || '—'}
                   </div>
                 </div>
 
