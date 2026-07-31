@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Package, LayoutDashboard, LogIn, LogOut, Loader2, Users, Sun, Moon, UploadCloud, Bell, Search, MoreHorizontal, AlertCircle, AlertTriangle } from 'lucide-react';
+import { Package, LayoutDashboard, LogIn, LogOut, Loader2, Users, Sun, Moon, UploadCloud, Bell, Search, MoreHorizontal, AlertCircle, AlertTriangle, CheckCircle } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import InventoryList from './components/InventoryList';
 import AdminPanel from './components/AdminPanel';
@@ -430,7 +430,19 @@ function App() {
         <header className="topbar">
           <div className="topbar-left">
             <h2 className="topbar-title">{pageTitle}</h2>
-            {loading && <Loader2 size={16} className="spin" style={{ color: 'var(--primary)' }} />}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: loading ? 'var(--primary)' : 'var(--text-tertiary)', marginLeft: 'var(--sp-2)' }}>
+              {loading ? (
+                <>
+                  <Loader2 size={16} className="spin" />
+                  <span className="mobile-hide" style={{ fontWeight: 500 }}>Syncing...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle size={16} style={{ color: 'var(--success)' }} />
+                  <span className="mobile-hide">Synced</span>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="topbar-right">
