@@ -116,7 +116,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
   ];
 
   return (
-    <div className="admin-container" style={{ maxWidth: 1000, margin: '0 auto' }}>
+    <div className="admin-container" style={{ width: '100%', margin: '0 auto' }}>
       
       {/* Tab Navigation */}
       <div style={{ 
