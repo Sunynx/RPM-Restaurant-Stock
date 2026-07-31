@@ -359,8 +359,7 @@ function App() {
         <div className="login-panel">
           <div className="login-panel-inner">
             <div className="login-welcome">
-              <h1 className="login-title">Welcome Back</h1>
-              <p className="login-subtitle">Sign in to manage your inventory</p>
+              <p className="login-subtitle">Sign in to manage inventory</p>
             </div>
             <button className="login-btn" onClick={handleLogin}>
               <LogIn size={20} />

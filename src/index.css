@@ -1564,8 +1564,7 @@ h1, h2, h3, h4, h5, h6 {
   .login-panel {
     flex: 1;
     padding: var(--sp-8) var(--sp-6);
-    align-items: flex-start;
-    padding-top: var(--sp-10);
+    align-items: center;
   }
 
   .login-title {
