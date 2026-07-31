@@ -202,7 +202,6 @@ body {
   background-color: var(--bg-body);
   min-height: 100vh;
   overflow-x: hidden;
-  overscroll-behavior-y: none;
   -webkit-touch-callout: none;
 }
 
