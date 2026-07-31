@@ -338,7 +338,6 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
 
                     return (
                       <motion.div 
-                        layout
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
