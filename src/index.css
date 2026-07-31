@@ -398,7 +398,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-full);
   object-fit: cover;
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.2);
+  background: #3A4B6B;
   display: flex;
   align-items: center;
   justify-content: center;

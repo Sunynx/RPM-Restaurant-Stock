@@ -369,14 +369,14 @@ function App() {
     <div className="app-shell">
       {/* Desktop Sidebar */}
       <aside className="sidebar">
-        <div className="sidebar-brand" style={{ padding: 0, height: 80 }}>
+        <div className="sidebar-brand" style={{ padding: 'var(--sp-6) var(--sp-4) var(--sp-4)', height: 90 }}>
           <div className="sidebar-brand-logo" style={{ width: '100%', height: '100%', background: 'transparent' }}>
-            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
+            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center' }} />
           </div>
         </div>
-        <div className="sidebar-divider" style={{ margin: 0 }}></div>
+        <div className="sidebar-divider" style={{ margin: '0 var(--sp-4)' }}></div>
 
-        <nav className="sidebar-nav">
+        <nav className="sidebar-nav" style={{ marginTop: 'var(--sp-4)' }}>
           <div 
             className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
