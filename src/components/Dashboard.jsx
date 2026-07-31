@@ -131,7 +131,8 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
     >
       {/* KPI Cards */}
       <div className="kpi-grid">
-        {userRole === 'Admin' && (
+        {/* Temporarily hidden for future use */}
+        {false && userRole === 'Admin' && (
           <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'all' })}>
             <div className="kpi-icon indigo">
               <DollarSign size={20} />
