@@ -347,7 +347,7 @@ function App() {
       <div className="login-screen">
         <div className="login-card">
           <div className="login-logo">
-            <img src="/pwa-192x192.png" alt="RPM Logo" />
+            <img src="/rpm-logo.svg" alt="RPM Logo" />
           </div>
           <h1 className="login-title">RPM Stock</h1>
           <p className="login-subtitle">Inventory Management System</p>
@@ -372,7 +372,7 @@ function App() {
       <aside className="sidebar">
         <div className="sidebar-brand">
           <div className="sidebar-brand-logo">
-            <img src="/pwa-192x192.png" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 'inherit' }} />
+            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 'inherit' }} />
           </div>
           <span className="sidebar-brand-name">RPM Stock</span>
         </div>
