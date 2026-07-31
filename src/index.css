@@ -555,9 +555,7 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: space-around;
   align-items: center;
   height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: var(--bg-card);
   border-top: 1px solid var(--border-default);
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 40;
