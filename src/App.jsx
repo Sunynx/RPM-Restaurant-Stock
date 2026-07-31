@@ -345,15 +345,29 @@ function App() {
   if (!isAuthenticated) {
     return (
       <div className="login-screen">
-        <div className="login-card">
-          <div className="login-logo" style={{ marginBottom: 'var(--sp-6)', width: 280, height: 100, borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
-            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
+        <div className="login-hero">
+          <div className="login-hero-content">
+            <div className="login-hero-logo">
+              <img src="/rpm-logo.svg" alt="RPM Logo" />
+            </div>
+            <div className="login-hero-tagline">Inventory Management System</div>
           </div>
-          <p className="login-subtitle">Inventory Management System</p>
-          <button className="login-btn" onClick={handleLogin}>
-            <LogIn size={18} />
-            Login with Microsoft 365
-          </button>
+          <div className="login-hero-footer">
+            <span>© 2026 Royal Phuket Marina</span>
+          </div>
+        </div>
+        <div className="login-panel">
+          <div className="login-panel-inner">
+            <div className="login-welcome">
+              <h1 className="login-title">Welcome Back</h1>
+              <p className="login-subtitle">Sign in to manage your inventory</p>
+            </div>
+            <button className="login-btn" onClick={handleLogin}>
+              <LogIn size={20} />
+              <span>Login with Microsoft 365</span>
+            </button>
+            <p className="login-footer-text">Secured by Microsoft Azure AD</p>
+          </div>
         </div>
       </div>
     );
