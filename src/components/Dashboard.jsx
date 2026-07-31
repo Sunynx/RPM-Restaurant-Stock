@@ -286,45 +286,53 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
         </div>
         
         {recentTransactions.length > 0 ? (
-          <div className="dashboard-table-wrapper">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Code</th>
-                  <th>Item</th>
-                  <th>Date</th>
-                  <th>Quantity</th>
-                  <th>Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentTransactions.map((tx, idx) => (
-                  <tr 
-                    key={idx}
-                    onClick={() => onNavigate({ searchTerm: tx.item || tx.code })}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <td style={{ fontWeight: 600, fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-                      {tx.code || '—'}
-                    </td>
-                    <td style={{ fontWeight: 500 }}>{tx.item}</td>
-                    <td style={{ color: 'var(--text-secondary)' }}>{tx.displayDate}</td>
-                    <td style={{ fontWeight: 700 }}>{tx.quantity}</td>
-                    <td>
-                      <span className={`badge ${
-                        tx.type?.toLowerCase() === 'receive' ? 'badge-success' : 
-                        tx.type?.toLowerCase() === 'sales' ? 'badge-info' : 
-                        'badge-warning'
-                      }`}>
-                        {tx.type?.toLowerCase() === 'receive' ? 'Received' : 
-                         tx.type?.toLowerCase() === 'sales' ? 'Sales' : 
-                         tx.type || 'Other'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="activity-list" style={{ display: 'flex', flexDirection: 'column' }}>
+            {recentTransactions.map((tx, idx) => (
+              <div 
+                key={idx}
+                onClick={() => onNavigate({ searchTerm: tx.item || tx.code })}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  padding: 'var(--sp-4)', 
+                  borderBottom: '1px solid var(--border-subtle)',
+                  cursor: 'pointer',
+                  gap: 'var(--sp-4)'
+                }}
+              >
+                <div style={{
+                  width: 40, height: 40, borderRadius: 'var(--radius-lg)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  background: tx.type?.toLowerCase() === 'receive' ? 'var(--success-light)' : 
+                              tx.type?.toLowerCase() === 'sales' ? 'var(--info-light)' : 'var(--warning-light)',
+                  color: tx.type?.toLowerCase() === 'receive' ? 'var(--success)' : 
+                         tx.type?.toLowerCase() === 'sales' ? 'var(--info)' : 'var(--warning)'
+                }}>
+                  {tx.type?.toLowerCase() === 'receive' ? <ArrowDownRight size={20} /> : 
+                   tx.type?.toLowerCase() === 'sales' ? <ArrowUpRight size={20} /> : 
+                   <Activity size={20} />}
+                </div>
+                
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {tx.item}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'flex', gap: 8, marginTop: 2 }}>
+                    <span>#{tx.code || '—'}</span>
+                    <span>•</span>
+                    <span>{tx.displayDate}</span>
+                  </div>
+                </div>
+
+                <div style={{ 
+                  fontWeight: 700, 
+                  fontSize: 16,
+                  color: tx.quantity > 0 ? 'var(--success)' : tx.quantity < 0 ? 'var(--danger)' : 'var(--text-primary)'
+                }}>
+                  {tx.quantity > 0 ? `+${tx.quantity}` : tx.quantity}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div style={{ padding: 'var(--sp-10)', textAlign: 'center', color: 'var(--text-tertiary)' }}>
