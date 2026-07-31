@@ -2124,8 +2124,9 @@ h1, h2, h3, h4, h5, h6 {
 .notifications-dropdown {
   position: absolute;
   top: calc(100% + 12px);
-  right: -10px;
-  width: 320px;
+  right: -16px;
+  width: calc(100vw - 32px);
+  max-width: 320px;
   background: var(--bg-elevated);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);

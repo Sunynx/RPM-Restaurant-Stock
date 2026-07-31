@@ -513,6 +513,16 @@ function App() {
             >
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+            
+            {/* Logout (Mobile) */}
+            <button 
+              className="topbar-icon-btn mobile-only"
+              onClick={handleLogout}
+              title="Logout"
+              style={{ color: 'var(--danger)' }}
+            >
+              <LogOut size={18} />
+            </button>
           </div>
         </header>
 
@@ -620,13 +630,15 @@ function App() {
           <Package size={22} />
           <span>Stock</span>
         </button>
-        <button 
-          className={`bottom-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
-          onClick={() => setActiveTab('admin')}
-        >
-          <Users size={22} />
-          <span>Admin</span>
-        </button>
+        {userRole === 'Admin' && (
+          <button 
+            className={`bottom-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
+            onClick={() => setActiveTab('admin')}
+          >
+            <Users size={22} />
+            <span>Admin</span>
+          </button>
+        )}
       </nav>
 
       {/* Modals */}
