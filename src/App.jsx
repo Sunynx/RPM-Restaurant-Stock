@@ -377,7 +377,6 @@ function App() {
         <div className="sidebar-divider" style={{ margin: 0 }}></div>
 
         <nav className="sidebar-nav">
-          <div className="sidebar-section-title">General</div>
           <div 
             className={`sidebar-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => setActiveTab('dashboard')}
@@ -385,8 +384,6 @@ function App() {
             <LayoutDashboard size={18} />
             <span>Dashboard</span>
           </div>
-
-          <div className="sidebar-section-title" style={{ marginTop: 'var(--sp-2)' }}>Operations</div>
           <div 
             className={`sidebar-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}
             onClick={() => setActiveTab('inventory')}
@@ -397,7 +394,6 @@ function App() {
 
           {userRole === 'Admin' && (
             <>
-              <div className="sidebar-section-title" style={{ marginTop: 'var(--sp-2)' }}>Other</div>
               <div 
                 className={`sidebar-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
                 onClick={() => setActiveTab('admin')}
