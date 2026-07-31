@@ -421,13 +421,13 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-4);
-  padding: var(--sp-4) var(--sp-4);
+  padding: calc(var(--sp-4) + env(safe-area-inset-top)) var(--sp-4) var(--sp-4) var(--sp-4);
   background: var(--bg-card);
   border-bottom: 1px solid var(--border-default);
   position: sticky;
   top: 0;
   z-index: 30;
-  min-height: var(--topbar-height);
+  min-height: calc(var(--topbar-height) + env(safe-area-inset-top));
 }
 
 .topbar-left {
@@ -555,7 +555,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  height: var(--bottom-nav-height);
+  height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
