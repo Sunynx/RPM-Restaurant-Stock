@@ -273,7 +273,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                           
                           return (
                             <tr 
-                              key={item.id || item.code || virtualRow.index} 
+                              key={item.id} 
                               ref={rowVirtualizer.measureElement} 
                               data-index={virtualRow.index} 
                               className={isSelected ? 'selected' : ''}
@@ -342,7 +342,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        key={item.code} 
+                        key={item.id} 
                         className="mobile-item-card"
                       >
                         <div className="mobile-item-info">
