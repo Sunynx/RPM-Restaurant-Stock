@@ -240,7 +240,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                         <td>
                           <select 
                             value={u.role} 
-                            onChange={(e) => onEditUserRole && onEditUserRole(u.id, e.target.value)}
+                            onChange={(e) => onEditUserRole && onEditUserRole(u.id, e.target.value, u.email)}
                             className="form-input"
                             style={{ padding: '4px 8px', height: 'auto', fontSize: 13, width: 100, cursor: 'pointer' }}
                           >

@@ -87,7 +87,7 @@ export async function addUserToSharePoint(accessToken, userData, currentUserEmai
   }
 }
 
-export async function updateUserRoleInSharePoint(accessToken, userId, newRole, currentUserEmail) {
+export async function updateUserRoleInSharePoint(accessToken, userId, newRole, currentUserEmail, targetEmail) {
   const client = getGraphClient(accessToken);
   try {
     const siteId = await getSiteId(client);
@@ -99,7 +99,7 @@ export async function updateUserRoleInSharePoint(accessToken, userId, newRole, c
       }
     });
 
-    await writeAuditLog(accessToken, currentUserEmail, "UpdateUserRole", `Updated role to ${newRole} for user ID ${userId}`);
+    await writeAuditLog(accessToken, currentUserEmail, "UpdateUserRole", `Updated role to ${newRole} for user ${targetEmail || `ID ${userId}`}`);
   } catch (error) {
     console.error("Error updating user role:", error);
     throw error;

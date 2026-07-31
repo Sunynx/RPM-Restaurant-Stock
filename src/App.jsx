@@ -226,7 +226,7 @@ function App() {
   };
 
   const editUserRoleMutation = useMutation({
-    mutationFn: ({ userId, newRole }) => updateUserRoleInSharePoint(accessToken, userId, newRole, accounts[0]?.username),
+    mutationFn: ({ userId, newRole, targetEmail }) => updateUserRoleInSharePoint(accessToken, userId, newRole, accounts[0]?.username, targetEmail),
     onSuccess: () => {
       toast.success("User role updated!");
       queryClient.invalidateQueries({ queryKey: ['appUsers'] });
@@ -237,9 +237,9 @@ function App() {
     }
   });
 
-  const handleEditUserRole = (userId, newRole) => {
+  const handleEditUserRole = (userId, newRole, targetEmail) => {
     if (!accessToken) return;
-    editUserRoleMutation.mutate({ userId, newRole });
+    editUserRoleMutation.mutate({ userId, newRole, targetEmail });
   };
 
   const addUserMutation = useMutation({
