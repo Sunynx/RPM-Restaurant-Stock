@@ -157,6 +157,8 @@ function App() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
     },
     onSuccess: () => {
       toast.success("Item updated successfully!");
@@ -172,6 +174,7 @@ function App() {
     mutationFn: (updatedFields) => updateProductDetailsInSharePoint(accessToken, editingProductDetails.id, updatedFields, accounts[0]?.username),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
       setEditingProductDetails(null);
       toast.success("Product details updated successfully!");
     },
@@ -215,6 +218,7 @@ function App() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
     },
     onSuccess: () => {
       toast.success("Product added successfully!");
