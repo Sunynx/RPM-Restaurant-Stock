@@ -10,6 +10,20 @@ import autoTable from 'jspdf-autotable';
 
 const CHART_COLORS = ['#4f6ef7', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899'];
 
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, value }) => {
+  if (!value) return null;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={13} fontWeight="bold">
+      {value}
+    </text>
+  );
+};
+
 export default function ReportPanel({ inventory, categories = [] }) {
   const { instance, accounts } = useMsal();
   const [logs, setLogs] = useState([]);
@@ -599,7 +613,8 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 outerRadius={80}
                 paddingAngle={3}
                 dataKey="value"
-                label={({ name, value }) => `${name}: ${value}`}
+                labelLine={false}
+                label={renderCustomizedLabel}
               >
                 {stockStatusData.map((entry, idx) => (
                   <Cell key={idx} fill={entry.color} />
