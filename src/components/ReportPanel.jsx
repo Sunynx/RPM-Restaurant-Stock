@@ -105,25 +105,32 @@ export default function ReportPanel({ inventory }) {
         ].join(','));
       });
     } else if (type === 'inventory') {
-      csvRows = [['Timestamp', 'Code', 'Product Name', 'Unit', 'Price', 'Stock', 'Status', 'Last Action'].join(',')];
+      csvRows = [['Code', 'Product Name', 'Unit', 'Price', 'Stock', 'Min Level', 'Status'].join(',')];
       inventory.forEach(p => {
         const stockVal = parseInt(p.stockOnHand) || 0;
         const minVal = parseInt(p.minStockLevel) || 0;
         let status = 'Active';
         if (stockVal <= 0) status = 'Out of Stock';
         else if (stockVal <= minVal) status = 'Low Stock';
-        
-        // Find the most recent transaction for this product
-        const productTxs = transactions.filter(t => String(t.productId) === String(p.id));
-        productTxs.sort((a, b) => new Date(b.date) - new Date(a.date));
-        const lastTx = productTxs[0];
-        
-        const timestamp = lastTx ? new Date(lastTx.date).toLocaleString() : '—';
-        const lastAction = lastTx ? `${lastTx.type} / ${lastTx.performedBy}` : '—';
-
         csvRows.push([
-          `"${timestamp}"`, `"${p.code}"`, `"${p.item}"`, `"${p.unit}"`, p.price, stockVal, `"${status}"`, `"${lastAction}"`
+          `"${p.code}"`, `"${p.item}"`, `"${p.unit}"`, p.price, stockVal, minVal, `"${status}"`
         ].join(','));
+      });
+    } else if (type === 'daily-summary') {
+      csvRows = [['Date & Time', 'Action', 'Product Name', 'Quantity', 'Performed By'].join(',')];
+      const today = new Date();
+      transactions.forEach(tx => {
+        const txDate = new Date(tx.date);
+        if (txDate.toDateString() === today.toDateString()) {
+          const product = inventory.find(p => String(p.id) === String(tx.productId));
+          csvRows.push([
+            txDate.toLocaleString(),
+            `"${tx.type}"`,
+            `"${product ? product.item : tx.productId}"`,
+            tx.quantity,
+            `"${tx.performedBy}"`
+          ].join(','));
+        }
       });
     } else {
       csvRows = [['Date', 'User', 'Action', 'Details', 'Status'].join(',')];
@@ -173,6 +180,13 @@ export default function ReportPanel({ inventory }) {
             System Report
           </h2>
           <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
+            <button 
+              className="btn btn-primary" 
+              onClick={() => handleExportCSV('daily-summary')} 
+              style={{ padding: '8px 14px', fontSize: 13, marginRight: 'var(--sp-2)' }}
+            >
+              <Download size={16} style={{ marginRight: 6 }} /> Daily Report Export
+            </button>
             <select 
               className="form-input" 
               style={{ padding: '8px 14px', minWidth: 130, fontWeight: 600, borderRadius: 'var(--radius-lg)' }}
