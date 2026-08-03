@@ -24,9 +24,10 @@ let cachedListIds = {};
 
 async function getSiteId(client) {
   if (cachedSiteId) return cachedSiteId;
-  const response = await client.api(`/sites?search=${SHAREPOINT_SITE_NAME}`).get();
-  if (response.value && response.value.length > 0) {
-    cachedSiteId = response.value[0].id;
+  // Bypass Microsoft Search index delay by querying the exact URL path
+  const response = await client.api(`/sites/royalphuketmarina2002.sharepoint.com:/sites/RPMapplication`).get();
+  if (response && response.id) {
+    cachedSiteId = response.id;
     return cachedSiteId;
   }
   throw new Error("SharePoint Site not found!");
