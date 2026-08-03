@@ -285,9 +285,6 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
             <h3 className="card-title">Recent Activity</h3>
             <p className="card-subtitle">Latest inventory transactions</p>
           </div>
-          <button className="btn btn-ghost btn-sm" onClick={() => onNavigate()}>
-            View All
-          </button>
         </div>
         
         {recentTransactions.length > 0 ? (

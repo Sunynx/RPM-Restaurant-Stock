@@ -89,7 +89,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                   <Plus size={22} />
                 </div>
                 <div>
-                  <div className="stock-mode-title">Add Stock</div>
+                  <div className="stock-mode-title">Receive</div>
                   <div className="stock-mode-desc">Receive new products</div>
                 </div>
               </button>
@@ -127,7 +127,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                   <div className={`stock-mode-icon-sm ${mode}`}>
                     {mode === 'add' ? <Plus size={14} /> : <Minus size={14} />}
                   </div>
-                  <span>{mode === 'add' ? 'Add Stock' : 'Sales / ENT'}</span>
+                  <span>{mode === 'add' ? 'Receive' : 'Sales / ENT'}</span>
                   <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-tertiary)' }}>Change</span>
                 </button>
 
@@ -233,12 +233,6 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                   </div>
                 )}
 
-                {/* Admin Override */}
-                {userRole === 'Admin' && qty > 0 && (
-                  <div className="stock-admin-override">
-                    <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>Admin: Override result directly</span>
-                  </div>
-                )}
 
                 {/* Actions */}
                 <div className="stock-actions">
