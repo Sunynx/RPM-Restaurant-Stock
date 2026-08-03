@@ -349,7 +349,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
       pdf.setTextColor(255);
       pdf.setFontSize(12);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('⚠ Stock Alerts — Low Stock & Out of Stock Items', margin, 12);
+      pdf.text('⚠ Stock Alerts - Low Stock & Out of Stock Items', margin, 12);
 
       const alertItems = inventory.filter(p => {
         const s = parseInt(p.stockOnHand) || 0;
@@ -397,7 +397,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         let status = 'Good';
         if (s <= 0) status = 'Out of Stock';
         else if (s <= m) status = 'Low Stock';
-        return [p.code || '', p.item || '', p.unit || '', `฿${(p.price || 0).toLocaleString()}`, String(s), String(m), status];
+        return [p.code || '', p.item || '', p.unit || '', `THB ${(p.price || 0).toLocaleString()}`, String(s), String(m), status];
       });
 
       autoTable(pdf, {
@@ -437,7 +437,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
             product ? product.item : `#${tx.productId}`,
             String(tx.quantity),
             tx.performedBy || '',
-            tx.remarks || '—',
+            tx.remarks || '-',
           ];
         });
 
