@@ -6,6 +6,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
   const [mode, setMode] = useState(null); // null = choose, 'add' = receive, 'use' = deduct
   const [quantity, setQuantity] = useState('');
   const [reason, setReason] = useState('sales'); // 'sales' | 'ent'
+  const [remark, setRemark] = useState('');
 
   const currentStock = parseInt(item.stockOnHand) || 0;
   const qty = parseInt(quantity) || 0;
@@ -16,7 +17,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
     return currentStock;
   }, [mode, currentStock, qty]);
 
-  const canSave = qty > 0 && (mode === 'add' || mode === 'use');
+  const canSave = qty > 0 && (mode === 'add' || (mode === 'use' && (!willGoNegative || remark.trim() !== '')));
   const willGoNegative = mode === 'use' && newStock < 0;
 
   const handleSubmit = (e) => {
@@ -28,7 +29,8 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
       issued: mode === 'add' ? qty : 0,
       sales: mode === 'use' && reason === 'sales' ? qty : 0,
       ent: mode === 'use' && reason === 'ent' ? qty : 0,
-      closing: newStock
+      closing: newStock,
+      remarks: remark.trim()
     };
     onSave(saveData);
   };
@@ -88,22 +90,24 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                 </div>
                 <div>
                   <div className="stock-mode-title">Add Stock</div>
-                  <div className="stock-mode-desc">Receive new items</div>
+                  <div className="stock-mode-desc">Receive new products</div>
                 </div>
               </button>
-              <button 
-                type="button"
-                className="stock-mode-btn use"
-                onClick={() => setMode('use')}
-              >
-                <div className="stock-mode-icon use">
-                  <Minus size={22} />
-                </div>
-                <div>
-                  <div className="stock-mode-title">Deduct Stock</div>
-                  <div className="stock-mode-desc">Use / Remove items</div>
-                </div>
-              </button>
+              {currentStock > 0 && (
+                <button 
+                  type="button"
+                  className="stock-mode-btn use"
+                  onClick={() => setMode('use')}
+                >
+                  <div className="stock-mode-icon use">
+                    <Minus size={22} />
+                  </div>
+                  <div>
+                    <div className="stock-mode-title">Deduct Stock</div>
+                    <div className="stock-mode-desc">Use / Remove products</div>
+                  </div>
+                </button>
+              )}
             </div>
           ) : (
             <AnimatePresence mode="wait">
@@ -118,7 +122,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                 <button 
                   type="button"
                   className="stock-mode-back"
-                  onClick={() => { setMode(null); setQuantity(''); setReason('sales'); }}
+                  onClick={() => { setMode(null); setQuantity(''); setReason('sales'); setRemark(''); }}
                 >
                   <div className={`stock-mode-icon-sm ${mode}`}>
                     {mode === 'add' ? <Plus size={14} /> : <Minus size={14} />}
@@ -210,6 +214,23 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                       </p>
                     )}
                   </motion.div>
+                )}
+
+                {/* Remark (Required if negative) */}
+                {mode === 'use' && willGoNegative && (
+                  <div style={{ marginTop: 'var(--sp-4)', padding: '0 var(--sp-4)' }}>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--danger)', marginBottom: 'var(--sp-2)' }}>
+                      Remark Required (Stock will be {newStock})
+                    </label>
+                    <input 
+                      type="text" 
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', background: 'var(--bg-body)', color: 'var(--text-primary)', outline: 'none' }}
+                      placeholder="Please enter a reason for negative stock..."
+                      value={remark}
+                      onChange={(e) => setRemark(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
                 )}
 
                 {/* Admin Override */}

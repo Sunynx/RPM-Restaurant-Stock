@@ -316,22 +316,23 @@ export async function updateInventoryInSharePoint(accessToken, itemId, updatedDa
       });
 
     // 2. Insert Transactions
-    const createTransaction = async (type, quantity) => {
+    const createTransaction = async (type, quantity, remarks = '') => {
       const txFields = {
         Title: `TX-${Date.now()}`,
         TransactionDate: new Date().toISOString(),
         TransactionType: type,
         ProductLookupId: parseInt(itemId), // This must be the SharePoint list item ID of the product
         Quantity: quantity,
-        PerformedBy: userEmail
+        PerformedBy: userEmail,
+        Remarks: remarks
       };
       await client.api(`/sites/${siteId}/lists/${txListId}/items`).post({ fields: txFields });
     };
 
     const txPromises = [];
-    if (updatedData.sales > 0) txPromises.push(createTransaction('Sales', -updatedData.sales));
-    if (updatedData.ent > 0) txPromises.push(createTransaction('ENT', -updatedData.ent));
-    if (updatedData.issued > 0) txPromises.push(createTransaction('Receive', updatedData.issued));
+    if (updatedData.sales > 0) txPromises.push(createTransaction('Sales', -updatedData.sales, updatedData.remarks));
+    if (updatedData.ent > 0) txPromises.push(createTransaction('ENT', -updatedData.ent, updatedData.remarks));
+    if (updatedData.issued > 0) txPromises.push(createTransaction('Receive', updatedData.issued, updatedData.remarks));
     await Promise.all(txPromises);
 
     // Write to audit log

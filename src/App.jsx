@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Package, LayoutDashboard, LogIn, LogOut, Loader2, Users, Sun, Moon, UploadCloud, Bell, Search, MoreHorizontal, AlertCircle, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Package, LayoutDashboard, LogIn, LogOut, Loader2, Users, Sun, Moon, UploadCloud, Bell, Search, MoreHorizontal, AlertCircle, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import InventoryList from './components/InventoryList';
 import AdminPanel from './components/AdminPanel';
+import ReportPanel from './components/ReportPanel';
 import SkeletonUI from './components/SkeletonUI';
 import AddProductModal from './components/AddProductModal';
 import EditModal from './components/EditModal';
@@ -339,7 +340,7 @@ function App() {
   };
 
   // Page title mapping
-  const pageTitle = activeTab === 'dashboard' ? 'Dashboard' : activeTab === 'inventory' ? 'Inventory' : 'Admin';
+  const pageTitle = activeTab === 'dashboard' ? 'Dashboard' : activeTab === 'inventory' ? 'Inventory' : activeTab === 'report' ? 'Report' : 'Admin';
 
   // --- Login Screen ---
   if (!isAuthenticated) {
@@ -405,6 +406,13 @@ function App() {
               >
                 <Users size={18} />
                 <span>Admin</span>
+              </div>
+              <div 
+                className={`sidebar-nav-item ${activeTab === 'report' ? 'active' : ''}`}
+                onClick={() => setActiveTab('report')}
+              >
+                <FileText size={18} />
+                <span>Report</span>
               </div>
             </>
           )}
@@ -632,7 +640,7 @@ function App() {
                   </div>
                 </div>
               </motion.div>
-            ) : (
+            ) : activeTab === 'admin' ? (
               <motion.div
                 key="admin"
                 initial={{ opacity: 0, y: 8 }}
@@ -650,6 +658,16 @@ function App() {
                   onAddCategory={handleAddCategory}
                   inventory={inventory}
                 />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="report"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <ReportPanel inventory={inventory} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -703,6 +721,15 @@ function App() {
           >
             <Users size={22} />
             <span>Admin</span>
+          </button>
+        )}
+        {userRole === 'Admin' && (
+          <button 
+            className={`bottom-nav-item ${activeTab === 'report' ? 'active' : ''}`}
+            onClick={() => setActiveTab('report')}
+          >
+            <FileText size={22} />
+            <span>Report</span>
           </button>
         )}
       </nav>

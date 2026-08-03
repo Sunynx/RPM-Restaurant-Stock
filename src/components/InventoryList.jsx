@@ -154,7 +154,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                 <input 
                   type="text" 
                   className="search-input" 
-                  placeholder="Search items or code..." 
+                  placeholder="Search products or code..." 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -210,7 +210,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
           {sortedInventory.length === 0 ? (
             <div style={{ textAlign: 'center', padding: 'var(--sp-12)', color: 'var(--text-tertiary)' }}>
               <Search size={32} style={{ marginBottom: 8, opacity: 0.3 }} />
-              <p>No items found.</p>
+              <p>No products found.</p>
             </div>
           ) : (
             <>
@@ -224,7 +224,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                     style={{ overflow: 'hidden' }}
                   >
                     <div className="batch-bar" style={{ borderRadius: 0 }}>
-                      <span className="batch-bar-label">{selectedItems.size} item(s) selected</span>
+                      <span className="batch-bar-label">{selectedItems.size} product(s) selected</span>
                       <div className="batch-bar-actions">
                         <button className="btn btn-sm" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }} onClick={() => alert("Bulk Update coming soon!")}>
                           Bulk Update

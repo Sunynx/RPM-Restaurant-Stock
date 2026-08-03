@@ -142,21 +142,20 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
           </motion.div>
         )}
         <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'all' })}>
+          <div className="kpi-icon emerald">
+            <Box size={20} />
+          </div>
+          <div className="kpi-label">Total Products</div>
+          <div className="kpi-value">{totalItems}</div>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'all' })}>
           <div className="kpi-icon indigo">
             <PackageOpen size={20} />
           </div>
           <div className="kpi-label">Total Stock (Vol.)</div>
           <div className="kpi-value">{totalStock.toLocaleString()}</div>
         </motion.div>
-
-        <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'all' })}>
-          <div className="kpi-icon emerald">
-            <Box size={20} />
-          </div>
-          <div className="kpi-label">Total Items</div>
-          <div className="kpi-value">{totalItems}</div>
-        </motion.div>
-
         <motion.div variants={itemVariants} className="kpi-card" onClick={() => handleNavigate({ filterStatus: 'low' })}>
           <div className="kpi-icon amber">
             <AlertTriangle size={20} />
@@ -191,7 +190,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
           <div className="chart-header">
             <div>
               <h3 className="chart-title">Top Movers</h3>
-              <p className="chart-subtitle">Most used items by volume</p>
+              <p className="chart-subtitle">Most used products by volume</p>
             </div>
           </div>
           <div className="chart-area">
