@@ -316,7 +316,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 <Download size={14} style={{ marginRight: 4 }} /> Export
               </button>
             </div>
-            <div className="data-table-container" style={{ overflowX: 'auto' }}>
+            <div className="data-table-container" style={{ display: 'block', overflowX: 'auto' }}>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -362,7 +362,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 <Download size={14} style={{ marginRight: 4 }} /> Export
               </button>
             </div>
-            <div className="data-table-container" style={{ overflowX: 'auto' }}>
+            <div className="data-table-container" style={{ display: 'block', overflowX: 'auto' }}>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -429,7 +429,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 </button>
               </div>
             </div>
-            <div className="data-table-container" style={{ overflowX: 'auto' }}>
+            <div className="data-table-container" style={{ display: 'block', overflowX: 'auto' }}>
               <table className="data-table">
                 <thead>
                   <tr>
