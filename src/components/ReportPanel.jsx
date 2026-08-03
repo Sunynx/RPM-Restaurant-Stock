@@ -349,7 +349,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
       pdf.setTextColor(255);
       pdf.setFontSize(12);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('⚠ Stock Alerts - Low Stock & Out of Stock Items', margin, 12);
+      pdf.text('Stock Alerts - Low Stock & Out of Stock Items', margin, 12);
 
       const alertItems = inventory.filter(p => {
         const s = parseInt(p.stockOnHand) || 0;
