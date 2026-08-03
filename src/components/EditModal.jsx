@@ -103,7 +103,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                     <Minus size={22} />
                   </div>
                   <div>
-                    <div className="stock-mode-title">Deduct Stock</div>
+                    <div className="stock-mode-title">Sales / ENT</div>
                     <div className="stock-mode-desc">Use / Remove products</div>
                   </div>
                 </button>
@@ -127,7 +127,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                   <div className={`stock-mode-icon-sm ${mode}`}>
                     {mode === 'add' ? <Plus size={14} /> : <Minus size={14} />}
                   </div>
-                  <span>{mode === 'add' ? 'Add Stock' : 'Deduct Stock'}</span>
+                  <span>{mode === 'add' ? 'Add Stock' : 'Sales / ENT'}</span>
                   <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-tertiary)' }}>Change</span>
                 </button>
 
@@ -254,7 +254,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                     {mode === 'add' ? (
                       <><Plus size={16} /> Save {qty > 0 ? qty : ''}</>
                     ) : (
-                      <><Minus size={16} /> Deduct {qty > 0 ? qty : ''}</>
+                      <><Minus size={16} /> Save {qty > 0 ? qty : ''}</>
                     )}
                   </button>
                 </div>
