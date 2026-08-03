@@ -162,7 +162,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
             </div>
             
             <div className="toolbar-actions">
-              {userRole === 'Admin' && (
+              {['Admin', 'Manager'].includes(userRole) && (
                 <button className="btn btn-primary btn-sm" onClick={onAddProduct}>
                   <Plus size={15} /> Add
                 </button>
@@ -253,9 +253,9 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                       <SortHeader label="Product Name" sortKey="item" />
                       <SortHeader label="Code" sortKey="code" />
                       <SortHeader label="Quantity" sortKey="closing" />
-                      {userRole === 'Admin' && <SortHeader label="Price" sortKey="price" />}
-                      {/* {userRole === 'Admin' && <th style={{ textAlign: 'right' }}>Value</th>} */}
-                      {false && userRole === 'Admin' && <th style={{ textAlign: 'right' }}>Value</th>}
+                      {['Admin', 'Manager'].includes(userRole) && <SortHeader label="Price" sortKey="price" />}
+                      {/* {['Admin', 'Manager'].includes(userRole) && <th style={{ textAlign: 'right' }}>Value</th>} */}
+                      {false && ['Admin', 'Manager'].includes(userRole) && <th style={{ textAlign: 'right' }}>Value</th>}
                       <SortHeader label="Category" sortKey="categoryId" />
                       <th>Status</th>
                       <th style={{ textAlign: 'center', width: 64 }}>Action</th>
@@ -289,9 +289,9 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                               <td style={{ fontWeight: 500 }}>{item.item}</td>
                               <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>{item.code}</td>
                               <td style={{ fontWeight: 700 }}>{item.closing}</td>
-                              {userRole === 'Admin' && <td style={{ color: 'var(--text-secondary)' }}>฿{item.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>}
-                              {/* {userRole === 'Admin' && <td style={{ fontWeight: 600, textAlign: 'right' }}>฿{(item.closing * (item.price || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>} */}
-                              {false && userRole === 'Admin' && <td style={{ fontWeight: 600, textAlign: 'right' }}>฿{(item.closing * (item.price || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>}
+                              {['Admin', 'Manager'].includes(userRole) && <td style={{ color: 'var(--text-secondary)' }}>฿{item.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>}
+                              {/* {['Admin', 'Manager'].includes(userRole) && <td style={{ fontWeight: 600, textAlign: 'right' }}>฿{(item.closing * (item.price || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>} */}
+                              {false && ['Admin', 'Manager'].includes(userRole) && <td style={{ fontWeight: 600, textAlign: 'right' }}>฿{(item.closing * (item.price || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>}
                               <td style={{ color: 'var(--text-secondary)' }}>{getCategoryLabel(item.categoryId)}</td>
                               <td>
                                 {isOutOfStock ? (
@@ -313,7 +313,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                                   <button className="btn-icon" onClick={() => onEdit(item)} title="Adjust Stock">
                                     <Package size={14} />
                                   </button>
-                                  {userRole === 'Admin' && (
+                                  {['Admin', 'Manager'].includes(userRole) && (
                                     <button className="btn-icon" onClick={() => onEditDetails(item)} title="Edit Details">
                                       <Edit3 size={14} />
                                     </button>
@@ -354,7 +354,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                           </div>
                           <div className="mobile-item-meta">
                             {item.code} · {getCategoryLabel(item.categoryId)}
-                            {userRole === 'Admin' && ` · ฿${item.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                            {['Admin', 'Manager'].includes(userRole) && ` · ฿${item.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                           </div>
                         </div>
                         
@@ -371,7 +371,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                             <button className="btn-icon" onClick={() => onEdit(item)}>
                               <Package size={15} />
                             </button>
-                            {userRole === 'Admin' && (
+                            {['Admin', 'Manager'].includes(userRole) && (
                               <button className="btn-icon" onClick={() => onEditDetails(item)}>
                                 <Edit3 size={15} />
                               </button>
