@@ -250,7 +250,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                           onChange={toggleSelectAll}
                         />
                       </th>
-                      <SortHeader label="Item Name" sortKey="item" />
+                      <SortHeader label="Product Name" sortKey="item" />
                       <SortHeader label="Code" sortKey="code" />
                       <SortHeader label="Quantity" sortKey="closing" />
                       {userRole === 'Admin' && <SortHeader label="Price" sortKey="price" />}

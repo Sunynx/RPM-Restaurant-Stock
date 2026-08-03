@@ -252,7 +252,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                     style={{ flex: 2, opacity: canSave ? 1 : 0.4 }}
                   >
                     {mode === 'add' ? (
-                      <><Plus size={16} /> Add {qty > 0 ? qty : ''}</>
+                      <><Plus size={16} /> Save {qty > 0 ? qty : ''}</>
                     ) : (
                       <><Minus size={16} /> Deduct {qty > 0 ? qty : ''}</>
                     )}
