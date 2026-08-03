@@ -235,6 +235,7 @@ function App() {
     onSuccess: () => {
       toast.success("User role updated!");
       queryClient.invalidateQueries({ queryKey: ['appUsers'] });
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
     },
     onError: (err) => {
       console.error(err);
@@ -252,6 +253,7 @@ function App() {
     onSuccess: () => {
       toast.success("User added successfully!");
       queryClient.invalidateQueries({ queryKey: ['appUsers'] });
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
     },
     onError: (err) => {
       console.error(err);
@@ -268,6 +270,7 @@ function App() {
     mutationFn: (categoryData) => createCategoryInSharePoint(accessToken, categoryData, accounts[0]?.username),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
       toast.success("Category added successfully!");
     },
     onError: (error) => {
@@ -340,6 +343,7 @@ function App() {
     if (listName === 'Inventory_Products' || listName === 'Inventory_Categories') {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
     }
   };
 
