@@ -406,7 +406,7 @@ function App() {
             <span>Inventory</span>
           </div>
 
-          {userRole === 'Admin' && (
+          {['Admin', 'Manager'].includes(userRole) && (
             <>
               <div 
                 className={`sidebar-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
@@ -665,6 +665,7 @@ function App() {
                   categories={categories}
                   onAddCategory={handleAddCategory}
                   inventory={inventory}
+                  userRole={userRole}
                 />
               </motion.div>
             ) : (
@@ -722,7 +723,7 @@ function App() {
           </div>
           <span>Alerts</span>
         </button>
-        {userRole === 'Admin' && (
+        {['Admin', 'Manager'].includes(userRole) && (
           <button 
             className={`bottom-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
             onClick={() => setActiveTab('admin')}
@@ -731,7 +732,7 @@ function App() {
             <span>Admin</span>
           </button>
         )}
-        {userRole === 'Admin' && (
+        {['Admin', 'Manager'].includes(userRole) && (
           <button 
             className={`bottom-nav-item ${activeTab === 'report' ? 'active' : ''}`}
             onClick={() => setActiveTab('report')}

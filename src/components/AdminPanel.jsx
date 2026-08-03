@@ -6,8 +6,8 @@ import { utils, writeFile } from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-export default function AdminPanel({ users, onAddUser, onEditUserRole, accessToken, setIsCSVModalOpen, categories = [], onAddCategory, inventory = [] }) {
-  const [activeTab, setActiveTab] = useState('users');
+export default function AdminPanel({ users, onAddUser, onEditUserRole, accessToken, setIsCSVModalOpen, categories = [], onAddCategory, inventory = [], userRole }) {
+  const [activeTab, setActiveTab] = useState(userRole === 'Manager' ? 'categories' : 'users');
   
   // Users state
   const [email, setEmail] = useState('');
@@ -108,12 +108,14 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
     doc.save(`RPM_Inventory_Report_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
-  const tabs = [
-    { id: 'users', label: 'Users', icon: Shield },
+  const allTabs = [
+    { id: 'users', label: 'Users', icon: Shield, adminOnly: true },
     { id: 'categories', label: 'Categories', icon: FolderTree },
-    { id: 'data', label: 'Data & Reports', icon: Database },
-    { id: 'logs', label: 'Audit Logs', icon: FileClock }
+    { id: 'data', label: 'Data & Reports', icon: Database, adminOnly: true },
+    { id: 'logs', label: 'Audit Logs', icon: FileClock, adminOnly: true }
   ];
+
+  const tabs = allTabs.filter(tab => userRole === 'Admin' || !tab.adminOnly);
 
   return (
     <div className="admin-container" style={{ width: '100%', margin: '0 auto' }}>
