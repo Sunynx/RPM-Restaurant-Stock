@@ -348,7 +348,9 @@ export async function updateInventoryInSharePoint(accessToken, itemId, updatedDa
           body: JSON.stringify({
             productName: updatedData.item || `Item ID ${itemId}`,
             stock: updatedData.closing,
-            minStock: minStockLevel
+            minStock: minStockLevel,
+            productCode: updatedData.code || '-',
+            unit: updatedData.unit || 'pcs'
           })
         });
       } catch (notifyErr) {

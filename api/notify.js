@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { productName, stock, minStock } = req.body;
+      const { productName, stock, minStock, productCode, unit } = req.body;
     // For Vercel, LINE_NOTIFY_TOKEN must be set in Environment Variables
     const token = process.env.LINE_NOTIFY_TOKEN;
 
@@ -13,7 +13,10 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'LINE token is missing in Environment Variables' });
     }
 
-    const message = `⚠️ สินค้าใกล้หมดสต็อก!\n\n📦 ${productName}\n📉 คงเหลือ: ${stock}\n⚠️ เกณฑ์แจ้งเตือน: ${minStock}`;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const timestamp = `${dateStr} ${timeStr}`;
 
     // LINE Messaging API - Broadcast (Flex Message)
     const response = await fetch('https://api.line.me/v2/bot/message/broadcast', {
@@ -37,7 +40,7 @@ export default async function handler(req, res) {
                 contents: [
                   {
                     type: "text",
-                    text: stock <= 0 ? "🚨 สินค้าหมดสต็อก (Out of Stock)" : "⚠️ สินค้าใกล้หมดสต็อก (Low Stock)",
+                    text: stock <= 0 ? "🚨 แจ้งเตือนสินค้าหมดสต็อก" : "⚠️ แจ้งเตือนสินค้าใกล้หมด",
                     weight: "bold",
                     color: "#FFFFFF",
                     size: "md"
@@ -69,19 +72,18 @@ export default async function handler(req, res) {
                         contents: [
                           {
                             type: "text",
-                            text: "คงเหลือ",
+                            text: "รหัสสินค้า",
                             color: "#aaaaaa",
                             size: "sm",
-                            flex: 2
+                            flex: 1
                           },
                           {
                             type: "text",
-                            text: `${stock}`,
+                            text: productCode || '-',
                             wrap: true,
-                            color: stock <= 0 ? "#EF4444" : "#F59E0B",
-                            weight: "bold",
-                            size: "md",
-                            flex: 5
+                            color: "#666666",
+                            size: "sm",
+                            flex: 2
                           }
                         ]
                       },
@@ -92,22 +94,63 @@ export default async function handler(req, res) {
                         contents: [
                           {
                             type: "text",
-                            text: "เกณฑ์แจ้งเตือน",
+                            text: "คงเหลือ",
                             color: "#aaaaaa",
                             size: "sm",
-                            flex: 2
+                            flex: 1
                           },
                           {
                             type: "text",
-                            text: `${minStock}`,
+                            text: `${stock} ${unit || 'pcs'}`,
+                            wrap: true,
+                            color: stock <= 0 ? "#EF4444" : "#F59E0B",
+                            weight: "bold",
+                            size: "sm",
+                            flex: 2
+                          }
+                        ]
+                      },
+                      {
+                        type: "box",
+                        layout: "baseline",
+                        spacing: "sm",
+                        contents: [
+                          {
+                            type: "text",
+                            text: "อัปเดตเมื่อ",
+                            color: "#aaaaaa",
+                            size: "sm",
+                            flex: 1
+                          },
+                          {
+                            type: "text",
+                            text: timestamp,
                             wrap: true,
                             color: "#666666",
                             size: "sm",
-                            flex: 5
+                            flex: 2
                           }
                         ]
                       }
                     ]
+                  }
+                ]
+              },
+              footer: {
+                type: "box",
+                layout: "vertical",
+                spacing: "sm",
+                contents: [
+                  {
+                    type: "button",
+                    style: "primary",
+                    height: "sm",
+                    action: {
+                      type: "uri",
+                      label: "เปิดระบบสินค้าคงคลัง",
+                      uri: "https://rpm-restaurant-stock.vercel.app/"
+                    },
+                    color: "#1C345D"
                   }
                 ]
               }
