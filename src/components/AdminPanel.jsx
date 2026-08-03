@@ -197,6 +197,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                   <label className="form-label">Role</label>
                   <select className="form-input" value={role} onChange={e => setRole(e.target.value)}>
                     <option value="Staff">Staff</option>
+                    <option value="Manager">Manager</option>
                     <option value="Admin">Admin</option>
                   </select>
                 </div>
@@ -225,8 +226,8 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                               width: 32, 
                               height: 32, 
                               borderRadius: 'var(--radius-full)', 
-                              background: u.role === 'Admin' ? 'var(--indigo-100)' : 'var(--emerald-100)',
-                              color: u.role === 'Admin' ? 'var(--indigo-600)' : 'var(--emerald-600)',
+                              background: u.role === 'Admin' ? 'var(--indigo-100)' : u.role === 'Manager' ? 'var(--amber-100)' : 'var(--emerald-100)',
+                              color: u.role === 'Admin' ? 'var(--indigo-600)' : u.role === 'Manager' ? 'var(--amber-600)' : 'var(--emerald-600)',
                               display: 'flex', 
                               alignItems: 'center', 
                               justifyContent: 'center', 
@@ -247,6 +248,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                             style={{ padding: '4px 8px', height: 'auto', fontSize: 13, width: 100, cursor: 'pointer' }}
                           >
                             <option value="Staff">Staff</option>
+                            <option value="Manager">Manager</option>
                             <option value="Admin">Admin</option>
                           </select>
                         </td>
