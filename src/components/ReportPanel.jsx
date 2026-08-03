@@ -96,7 +96,7 @@ export default function ReportPanel({ inventory }) {
       filteredTransactions.forEach(tx => {
         const product = inventory.find(p => String(p.id) === String(tx.productId));
         csvRows.push([
-          new Date(tx.date).toLocaleString(),
+          `"${new Date(tx.date).toLocaleString()}"`,
           `"${tx.type}"`,
           `"${product ? product.item : tx.productId}"`,
           tx.quantity,
@@ -124,7 +124,7 @@ export default function ReportPanel({ inventory }) {
         if (txDate.toDateString() === today.toDateString()) {
           const product = inventory.find(p => String(p.id) === String(tx.productId));
           csvRows.push([
-            txDate.toLocaleString(),
+            `"${txDate.toLocaleString()}"`,
             `"${tx.type}"`,
             `"${product ? product.item : tx.productId}"`,
             tx.quantity,
@@ -136,7 +136,7 @@ export default function ReportPanel({ inventory }) {
       csvRows = [['Date', 'User', 'Action', 'Details', 'Status'].join(',')];
       filteredLogs.forEach(log => {
         csvRows.push([
-          new Date(log.date).toLocaleString(),
+          `"${new Date(log.date).toLocaleString()}"`,
           `"${log.user}"`, `"${log.title}"`,
           `"${(log.details || '').replace(/"/g, '""')}"`,
           `"${log.status}"`
