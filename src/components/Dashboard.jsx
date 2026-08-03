@@ -149,11 +149,11 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
           <div className="kpi-value">{totalItems}</div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'all' })}>
+        <motion.div variants={itemVariants} className="kpi-card" onClick={() => handleNavigate({ filterStatus: 'all' })}>
           <div className="kpi-icon indigo">
             <PackageOpen size={20} />
           </div>
-          <div className="kpi-label">Total Stock (Vol.)</div>
+          <div className="kpi-label">Total Quantity</div>
           <div className="kpi-value">{totalStock.toLocaleString()}</div>
         </motion.div>
         <motion.div variants={itemVariants} className="kpi-card" onClick={() => handleNavigate({ filterStatus: 'low' })}>
