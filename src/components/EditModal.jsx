@@ -17,8 +17,8 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
     return currentStock;
   }, [mode, currentStock, qty]);
 
-  const canSave = qty > 0 && (mode === 'add' || (mode === 'use' && (!willGoNegative || remark.trim() !== '')));
   const willGoNegative = mode === 'use' && newStock < 0;
+  const canSave = qty > 0 && (mode === 'add' || (mode === 'use' && (!willGoNegative || (remark && remark.trim() !== ''))));
 
   const handleSubmit = (e) => {
     e.preventDefault();
