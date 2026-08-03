@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
     const message = `⚠️ สินค้าใกล้หมดสต็อก!\n\n📦 ${productName}\n📉 คงเหลือ: ${stock}\n⚠️ เกณฑ์แจ้งเตือน: ${minStock}`;
 
-    // LINE Messaging API - Broadcast
+    // LINE Messaging API - Broadcast (Flex Message)
     const response = await fetch('https://api.line.me/v2/bot/message/broadcast', {
       method: 'POST',
       headers: {
@@ -25,8 +25,93 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         messages: [
           {
-            type: 'text',
-            text: message
+            type: "flex",
+            altText: `🚨 แจ้งเตือนสินค้าสต็อกต่ำ: ${productName}`,
+            contents: {
+              type: "bubble",
+              size: "mega",
+              header: {
+                type: "box",
+                layout: "vertical",
+                backgroundColor: stock <= 0 ? "#EF4444" : "#F59E0B",
+                contents: [
+                  {
+                    type: "text",
+                    text: stock <= 0 ? "🚨 สินค้าหมดสต็อก (Out of Stock)" : "⚠️ สินค้าใกล้หมดสต็อก (Low Stock)",
+                    weight: "bold",
+                    color: "#FFFFFF",
+                    size: "md"
+                  }
+                ]
+              },
+              body: {
+                type: "box",
+                layout: "vertical",
+                spacing: "md",
+                contents: [
+                  {
+                    type: "text",
+                    text: productName,
+                    weight: "bold",
+                    size: "xl",
+                    wrap: true
+                  },
+                  {
+                    type: "box",
+                    layout: "vertical",
+                    margin: "lg",
+                    spacing: "sm",
+                    contents: [
+                      {
+                        type: "box",
+                        layout: "baseline",
+                        spacing: "sm",
+                        contents: [
+                          {
+                            type: "text",
+                            text: "คงเหลือ",
+                            color: "#aaaaaa",
+                            size: "sm",
+                            flex: 2
+                          },
+                          {
+                            type: "text",
+                            text: `${stock}`,
+                            wrap: true,
+                            color: stock <= 0 ? "#EF4444" : "#F59E0B",
+                            weight: "bold",
+                            size: "md",
+                            flex: 5
+                          }
+                        ]
+                      },
+                      {
+                        type: "box",
+                        layout: "baseline",
+                        spacing: "sm",
+                        contents: [
+                          {
+                            type: "text",
+                            text: "เกณฑ์แจ้งเตือน",
+                            color: "#aaaaaa",
+                            size: "sm",
+                            flex: 2
+                          },
+                          {
+                            type: "text",
+                            text: `${minStock}`,
+                            wrap: true,
+                            color: "#666666",
+                            size: "sm",
+                            flex: 5
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
           }
         ]
       })
