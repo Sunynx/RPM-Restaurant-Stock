@@ -131,16 +131,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
     >
       {/* KPI Cards */}
       <div className="kpi-grid">
-        {/* Temporarily hidden for future use */}
-        {false && userRole === 'Admin' && (
-          <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'all' })}>
-            <div className="kpi-icon indigo">
-              <DollarSign size={20} />
-            </div>
-            <div className="kpi-label">Cost of Goods Sold (COGS)</div>
-            <div className="kpi-value">฿{totalCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-          </motion.div>
-        )}
+
         <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'all' })}>
           <div className="kpi-icon emerald">
             <Box size={20} />

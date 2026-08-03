@@ -4,7 +4,7 @@ export default function SkeletonUI({ type }) {
       <div>
         {/* KPI Cards */}
         <div className="kpi-grid" style={{ marginBottom: 'var(--sp-6)' }}>
-          {[1, 2, 3, 4, 5].map(i => (
+          {[1, 2, 3, 4].map(i => (
             <div key={i} className="skeleton skeleton-card" style={{ height: 130 }}></div>
           ))}
         </div>
