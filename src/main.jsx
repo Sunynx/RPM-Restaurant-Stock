@@ -35,7 +35,7 @@ msalInstance.initialize().then(() => {
 
   createRoot(document.getElementById('root')).render(
     <StrictMode>
-      <Toaster position="bottom-right" toastOptions={{ style: { background: 'var(--bg-card)', color: 'var(--text-primary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-lg)', fontSize: '14px', fontWeight: 500 } }} />
+      <Toaster position="top-right" toastOptions={{ style: { background: 'var(--bg-card)', color: 'var(--text-primary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-lg)', fontSize: '14px', fontWeight: 500 } }} />
       <QueryClientProvider client={queryClient}>
         <MsalProvider instance={msalInstance}>
           <App />
