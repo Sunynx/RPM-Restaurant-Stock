@@ -209,7 +209,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
             </div>
             System Report
           </h2>
-          <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
             <button 
               className="btn btn-primary" 
               onClick={() => handleExportCSV('daily-summary')} 
@@ -296,7 +296,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 className={`btn ${activeSection === tab.key ? 'btn-primary' : 'btn-ghost'}`}
                 onClick={() => setActiveSection(tab.key)}
                 style={{ 
-                  display: 'flex', alignItems: 'center', gap: 6, 
+                  display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
                   padding: '8px 16px', borderRadius: 'var(--radius-lg)',
                   fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap'
                 }}
@@ -316,7 +316,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 <Download size={14} style={{ marginRight: 4 }} /> Export
               </button>
             </div>
-            <div className="data-table-container" style={{ display: 'block' }}>
+            <div className="data-table-container" style={{ overflowX: 'auto' }}>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -362,7 +362,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 <Download size={14} style={{ marginRight: 4 }} /> Export
               </button>
             </div>
-            <div className="data-table-container" style={{ display: 'block' }}>
+            <div className="data-table-container" style={{ overflowX: 'auto' }}>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -429,7 +429,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 </button>
               </div>
             </div>
-            <div className="data-table-container" style={{ display: 'block' }}>
+            <div className="data-table-container" style={{ overflowX: 'auto' }}>
               <table className="data-table">
                 <thead>
                   <tr>
