@@ -667,7 +667,7 @@ function App() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
               >
-                <ReportPanel inventory={inventory} />
+                <ReportPanel inventory={inventory} categories={categories} />
               </motion.div>
             )}
           </AnimatePresence>

@@ -5,7 +5,7 @@ import { fetchAuditLogs, fetchTransactions } from '../graphService';
 import toast from 'react-hot-toast';
 import { useMsal } from '@azure/msal-react';
 
-export default function ReportPanel({ inventory }) {
+export default function ReportPanel({ inventory, categories = [] }) {
   const { instance, accounts } = useMsal();
   const [logs, setLogs] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -123,7 +123,8 @@ export default function ReportPanel({ inventory }) {
         const txDate = new Date(tx.date);
         if (txDate.toDateString() === today.toDateString()) {
           const product = inventory.find(p => String(p.id) === String(tx.productId));
-          const category = product ? product.category : '—';
+          const categoryObj = categories.find(c => c.id === product?.categoryId);
+          const category = categoryObj ? categoryObj.name : '—';
           const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
           csvRows.push([
             `"${txDate.toLocaleString('en-GB')}"`,
