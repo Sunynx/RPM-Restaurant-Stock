@@ -105,15 +105,24 @@ export default function ReportPanel({ inventory }) {
         ].join(','));
       });
     } else if (type === 'inventory') {
-      csvRows = [['Code', 'Product Name', 'Unit', 'Price', 'Stock', 'Min Level', 'Status'].join(',')];
+      csvRows = [['Timestamp', 'Code', 'Product Name', 'Unit', 'Price', 'Stock', 'Status', 'Last Action'].join(',')];
       inventory.forEach(p => {
         const stockVal = parseInt(p.stockOnHand) || 0;
         const minVal = parseInt(p.minStockLevel) || 0;
         let status = 'Active';
         if (stockVal <= 0) status = 'Out of Stock';
         else if (stockVal <= minVal) status = 'Low Stock';
+        
+        // Find the most recent transaction for this product
+        const productTxs = transactions.filter(t => String(t.productId) === String(p.id));
+        productTxs.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const lastTx = productTxs[0];
+        
+        const timestamp = lastTx ? new Date(lastTx.date).toLocaleString() : '—';
+        const lastAction = lastTx ? `${lastTx.type} / ${lastTx.performedBy}` : '—';
+
         csvRows.push([
-          `"${p.code}"`, `"${p.item}"`, `"${p.unit}"`, p.price, stockVal, minVal, `"${status}"`
+          `"${timestamp}"`, `"${p.code}"`, `"${p.item}"`, `"${p.unit}"`, p.price, stockVal, `"${status}"`, `"${lastAction}"`
         ].join(','));
       });
     } else {
