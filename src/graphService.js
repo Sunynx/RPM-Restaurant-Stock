@@ -351,7 +351,8 @@ export async function updateInventoryInSharePoint(accessToken, itemId, updatedDa
             stock: updatedData.closing,
             minStock: minStockLevel,
             productCode: updatedData.code || '-',
-            unit: updatedData.unit || 'pcs'
+            unit: updatedData.unit || 'pcs',
+            updatedBy: userEmail
           })
         });
       } catch (notifyErr) {

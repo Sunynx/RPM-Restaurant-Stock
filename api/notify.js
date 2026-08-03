@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   }
 
   try {
-      const { productName, stock, minStock, productCode, unit } = req.body;
+      const { productName, stock, minStock, productCode, unit, updatedBy } = req.body;
     // For Vercel, LINE_NOTIFY_TOKEN must be set in Environment Variables
     const token = process.env.LINE_NOTIFY_TOKEN;
 
@@ -164,6 +164,28 @@ export default async function handler(req, res) {
       const errText = await response.text();
       console.error('LINE API Error:', errText);
       return res.status(response.status).json({ error: 'Failed to send LINE message', details: errText });
+    }
+
+    // Call Power Automate Webhook if configured
+    const webhookUrl = process.env.POWER_AUTOMATE_WEBHOOK_URL;
+    if (webhookUrl) {
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productName,
+            productCode: productCode || '-',
+            stock,
+            minStock,
+            unit: unit || 'pcs',
+            updatedBy: updatedBy || 'Unknown User',
+            timestamp
+          })
+        });
+      } catch (err) {
+        console.error('Failed to trigger Power Automate webhook:', err);
+      }
     }
 
     return res.status(200).json({ success: true });
