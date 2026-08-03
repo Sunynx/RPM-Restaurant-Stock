@@ -138,6 +138,30 @@ export default function ReportPanel({ inventory, categories = [] }) {
           ].join(','));
         }
       });
+    } else if (type === 'monthly-summary') {
+      csvRows = [['Date & Time', 'Category', 'Action', 'Product Name', 'Quantity', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
+      const today = new Date();
+      const thisMonth = today.getMonth();
+      const thisYear = today.getFullYear();
+      transactions.forEach(tx => {
+        const txDate = new Date(tx.date);
+        if (txDate.getMonth() === thisMonth && txDate.getFullYear() === thisYear) {
+          const product = inventory.find(p => String(p.id) === String(tx.productId));
+          const categoryObj = categories.find(c => c.id === product?.categoryId);
+          const category = categoryObj ? categoryObj.name : '—';
+          const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
+          csvRows.push([
+            `"${txDate.toLocaleString('en-GB')}"`,
+            `"${category}"`,
+            `"${tx.type}"`,
+            `"${product ? product.item : tx.productId}"`,
+            tx.quantity,
+            currentStock,
+            `"${tx.performedBy}"`,
+            `"${(tx.remarks || '').replace(/"/g, '""')}"`
+          ].join(','));
+        }
+      });
     } else {
       csvRows = [['Date', 'User', 'Action', 'Details', 'Status'].join(',')];
       filteredLogs.forEach(log => {
@@ -192,6 +216,13 @@ export default function ReportPanel({ inventory, categories = [] }) {
               style={{ padding: '8px 14px', fontSize: 13, marginRight: 'var(--sp-2)' }}
             >
               <Download size={16} style={{ marginRight: 6 }} /> Daily Report Export
+            </button>
+            <button 
+              className="btn btn-primary" 
+              onClick={() => handleExportCSV('monthly-summary')} 
+              style={{ padding: '8px 14px', fontSize: 13, marginRight: 'var(--sp-2)' }}
+            >
+              <Download size={16} style={{ marginRight: 6 }} /> Monthly Report Export
             </button>
             <select 
               className="form-input" 
