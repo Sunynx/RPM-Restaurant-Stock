@@ -99,7 +99,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
       return s > m;
     }).length;
     return [
-      { name: 'Active', value: active, color: '#10b981' },
+      { name: 'Good', value: active, color: '#10b981' },
       { name: 'Low Stock', value: stats.lowStock, color: '#f59e0b' },
       { name: 'Out of Stock', value: stats.outOfStock, color: '#ef4444' },
     ].filter(d => d.value > 0);
@@ -134,7 +134,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
       inventory.forEach(p => {
         const stockVal = parseInt(p.stockOnHand) || 0;
         const minVal = parseInt(p.minStockLevel) || 0;
-        let status = 'Active';
+        let status = 'Good';
         if (stockVal <= 0) status = 'Out of Stock';
         else if (stockVal <= minVal) status = 'Low Stock';
         csvRows.push([
@@ -142,7 +142,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         ].join(','));
       });
     } else if (type === 'daily-summary') {
-      csvRows = [['Date & Time', 'Category', 'Action', 'Product Name', 'Qty', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
+      csvRows = [['Date & Time', 'Category', 'Product Name', 'Action', 'Qty', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
       const today = new Date();
       transactions.forEach(tx => {
         const txDate = new Date(tx.date);
@@ -155,8 +155,8 @@ export default function ReportPanel({ inventory, categories = [] }) {
           csvRows.push([
             `"${txDate.toLocaleString('en-GB')}"`,
             `"${category}"`,
-            `"${tx.type}"`,
             `"${product ? product.item : tx.productId}"`,
+            `"${tx.type}"`,
             tx.quantity,
             unitPrice,
             currentStock,
@@ -166,7 +166,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         }
       });
     } else if (type === 'monthly-summary') {
-      csvRows = [['Date & Time', 'Category', 'Action', 'Product Name', 'Qty', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
+      csvRows = [['Date & Time', 'Category', 'Product Name', 'Action', 'Qty', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
       const today = new Date();
       const thisMonth = today.getMonth();
       const thisYear = today.getFullYear();
@@ -181,8 +181,8 @@ export default function ReportPanel({ inventory, categories = [] }) {
           csvRows.push([
             `"${txDate.toLocaleString('en-GB')}"`,
             `"${category}"`,
-            `"${tx.type}"`,
             `"${product ? product.item : tx.productId}"`,
+            `"${tx.type}"`,
             tx.quantity,
             unitPrice,
             currentStock,
@@ -290,7 +290,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
       y += 6;
 
       const statusItems = [
-        { label: 'Active', count: stats.totalProducts - stats.lowStock - stats.outOfStock, color: [16, 185, 129] },
+        { label: 'Good', count: stats.totalProducts - stats.lowStock - stats.outOfStock, color: [16, 185, 129] },
         { label: 'Low Stock', count: stats.lowStock, color: [245, 158, 11] },
         { label: 'Out of Stock', count: stats.outOfStock, color: [239, 68, 68] },
       ];
@@ -394,7 +394,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
       const invRows = inventory.map(p => {
         const s = parseInt(p.stockOnHand) || 0;
         const m = parseInt(p.minStockLevel) || 0;
-        let status = 'Active';
+        let status = 'Good';
         if (s <= 0) status = 'Out of Stock';
         else if (s <= m) status = 'Low Stock';
         return [p.code || '', p.item || '', p.unit || '', `฿${(p.price || 0).toLocaleString()}`, String(s), String(m), status];
@@ -589,12 +589,12 @@ export default function ReportPanel({ inventory, categories = [] }) {
         {/* Pie Chart: Stock Status */}
         <div className="card" style={{ padding: 'var(--sp-4)' }} ref={pieChartRef}>
           <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 'var(--sp-3)', color: 'var(--text-secondary)' }}>Stock Health</h3>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={260}>
             <PieChart>
               <Pie
                 data={stockStatusData}
                 cx="50%"
-                cy="50%"
+                cy="55%"
                 innerRadius={50}
                 outerRadius={80}
                 paddingAngle={3}
@@ -606,6 +606,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 ))}
               </Pie>
               <Tooltip />
+              <Legend verticalAlign="bottom" height={30} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -799,7 +800,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                     inventorySearched.map(p => {
                       const stockVal = parseInt(p.stockOnHand) || 0;
                       const minVal = parseInt(p.minStockLevel) || 0;
-                      let status = 'Active';
+                      let status = 'Good';
                       let badgeClass = 'badge-success';
                       if (stockVal <= 0) { status = 'Out of Stock'; badgeClass = 'badge-danger'; }
                       else if (stockVal <= minVal) { status = 'Low Stock'; badgeClass = 'badge-warning'; }
