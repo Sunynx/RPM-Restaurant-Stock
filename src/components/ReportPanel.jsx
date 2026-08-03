@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useMsal } from '@azure/msal-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 const CHART_COLORS = ['#4f6ef7', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#ec4899'];
 
@@ -142,7 +142,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         ].join(','));
       });
     } else if (type === 'daily-summary') {
-      csvRows = [['Date & Time', 'Category', 'Action', 'Product Name', 'Quantity', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
+      csvRows = [['Date & Time', 'Category', 'Action', 'Product Name', 'Qty', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
       const today = new Date();
       transactions.forEach(tx => {
         const txDate = new Date(tx.date);
@@ -151,12 +151,14 @@ export default function ReportPanel({ inventory, categories = [] }) {
           const categoryObj = categories.find(c => c.id === product?.categoryId);
           const category = categoryObj ? categoryObj.name : '—';
           const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
+          const unitPrice = product ? (product.price || 0) : 0;
           csvRows.push([
             `"${txDate.toLocaleString('en-GB')}"`,
             `"${category}"`,
             `"${tx.type}"`,
             `"${product ? product.item : tx.productId}"`,
             tx.quantity,
+            unitPrice,
             currentStock,
             `"${tx.performedBy}"`,
             `"${(tx.remarks || '').replace(/"/g, '""')}"`
@@ -164,7 +166,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         }
       });
     } else if (type === 'monthly-summary') {
-      csvRows = [['Date & Time', 'Category', 'Action', 'Product Name', 'Quantity', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
+      csvRows = [['Date & Time', 'Category', 'Action', 'Product Name', 'Qty', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
       const today = new Date();
       const thisMonth = today.getMonth();
       const thisYear = today.getFullYear();
@@ -175,12 +177,14 @@ export default function ReportPanel({ inventory, categories = [] }) {
           const categoryObj = categories.find(c => c.id === product?.categoryId);
           const category = categoryObj ? categoryObj.name : '—';
           const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
+          const unitPrice = product ? (product.price || 0) : 0;
           csvRows.push([
             `"${txDate.toLocaleString('en-GB')}"`,
             `"${category}"`,
             `"${tx.type}"`,
             `"${product ? product.item : tx.productId}"`,
             tx.quantity,
+            unitPrice,
             currentStock,
             `"${tx.performedBy}"`,
             `"${(tx.remarks || '').replace(/"/g, '""')}"`
@@ -358,7 +362,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
       });
 
       if (alertItems.length > 0) {
-        pdf.autoTable({
+        autoTable(pdf, {
           startY: 24,
           head: [['Code', 'Product Name', 'Unit', 'Stock', 'Min Level', 'Status']],
           body: alertItems,
@@ -396,7 +400,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         return [p.code || '', p.item || '', p.unit || '', `฿${(p.price || 0).toLocaleString()}`, String(s), String(m), status];
       });
 
-      pdf.autoTable({
+      autoTable(pdf, {
         startY: 24,
         head: [['Code', 'Product', 'Unit', 'Price', 'Stock', 'Min', 'Status']],
         body: invRows,
@@ -437,7 +441,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
           ];
         });
 
-        pdf.autoTable({
+        autoTable(pdf, {
           startY: 24,
           head: [['Date & Time', 'Type', 'Product', 'Qty', 'By', 'Remarks']],
           body: txRows,
