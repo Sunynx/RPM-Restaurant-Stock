@@ -117,18 +117,23 @@ export default function ReportPanel({ inventory }) {
         ].join(','));
       });
     } else if (type === 'daily-summary') {
-      csvRows = [['Date & Time', 'Action', 'Product Name', 'Quantity', 'Performed By'].join(',')];
+      csvRows = [['Date & Time', 'Category', 'Action', 'Product Name', 'Quantity', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
       const today = new Date();
       transactions.forEach(tx => {
         const txDate = new Date(tx.date);
         if (txDate.toDateString() === today.toDateString()) {
           const product = inventory.find(p => String(p.id) === String(tx.productId));
+          const category = product ? product.category : '—';
+          const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
           csvRows.push([
             `"${txDate.toLocaleString()}"`,
+            `"${category}"`,
             `"${tx.type}"`,
             `"${product ? product.item : tx.productId}"`,
             tx.quantity,
-            `"${tx.performedBy}"`
+            currentStock,
+            `"${tx.performedBy}"`,
+            `"${(tx.remarks || '').replace(/"/g, '""')}"`
           ].join(','));
         }
       });
