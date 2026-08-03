@@ -96,7 +96,7 @@ export default function ReportPanel({ inventory }) {
       filteredTransactions.forEach(tx => {
         const product = inventory.find(p => String(p.id) === String(tx.productId));
         csvRows.push([
-          `"${new Date(tx.date).toLocaleString()}"`,
+          `"${new Date(tx.date).toLocaleString('en-GB')}"`,
           `"${tx.type}"`,
           `"${product ? product.item : tx.productId}"`,
           tx.quantity,
@@ -126,7 +126,7 @@ export default function ReportPanel({ inventory }) {
           const category = product ? product.category : '—';
           const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
           csvRows.push([
-            `"${txDate.toLocaleString()}"`,
+            `"${txDate.toLocaleString('en-GB')}"`,
             `"${category}"`,
             `"${tx.type}"`,
             `"${product ? product.item : tx.productId}"`,
@@ -141,7 +141,7 @@ export default function ReportPanel({ inventory }) {
       csvRows = [['Date', 'User', 'Action', 'Details', 'Status'].join(',')];
       filteredLogs.forEach(log => {
         csvRows.push([
-          `"${new Date(log.date).toLocaleString()}"`,
+          `"${new Date(log.date).toLocaleString('en-GB')}"`,
           `"${log.user}"`, `"${log.title}"`,
           `"${(log.details || '').replace(/"/g, '""')}"`,
           `"${log.status}"`
@@ -303,7 +303,7 @@ export default function ReportPanel({ inventory }) {
                   ) : (
                     filteredLogs.map(log => (
                       <tr key={log.id}>
-                        <td style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{new Date(log.date).toLocaleString()}</td>
+                        <td style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{new Date(log.date).toLocaleString('en-GB')}</td>
                         <td style={{ fontSize: 13 }}>{log.user}</td>
                         <td>
                           <span className={`badge ${log.title.includes('Create') || log.title.includes('Add') ? 'badge-success' : log.title.includes('Update') ? 'badge-warning' : 'badge-primary'}`} style={{ fontSize: 11 }}>
@@ -353,7 +353,7 @@ export default function ReportPanel({ inventory }) {
                       const isNegative = tx.quantity < 0;
                       return (
                         <tr key={tx.id}>
-                          <td style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{new Date(tx.date).toLocaleString()}</td>
+                          <td style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{new Date(tx.date).toLocaleString('en-GB')}</td>
                           <td>
                             <span className={`badge ${tx.type === 'Receive' ? 'badge-success' : tx.type === 'Sales' ? 'badge-primary' : 'badge-warning'}`} style={{ fontSize: 11 }}>
                               {tx.type}
