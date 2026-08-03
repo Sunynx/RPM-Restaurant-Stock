@@ -256,8 +256,8 @@ export default function ReportPanel({ inventory }) {
                 <Download size={14} style={{ marginRight: 4 }} /> Export
               </button>
             </div>
-            <div className="table-responsive">
-              <table className="table">
+            <div className="data-table-container" style={{ display: 'block' }}>
+              <table className="data-table">
                 <thead>
                   <tr>
                     <th>Date & Time</th>
@@ -302,8 +302,8 @@ export default function ReportPanel({ inventory }) {
                 <Download size={14} style={{ marginRight: 4 }} /> Export
               </button>
             </div>
-            <div className="table-responsive">
-              <table className="table">
+            <div className="data-table-container" style={{ display: 'block' }}>
+              <table className="data-table">
                 <thead>
                   <tr>
                     <th>Date & Time</th>
@@ -369,8 +369,8 @@ export default function ReportPanel({ inventory }) {
                 </button>
               </div>
             </div>
-            <div className="table-responsive">
-              <table className="table">
+            <div className="data-table-container" style={{ display: 'block' }}>
+              <table className="data-table">
                 <thead>
                   <tr>
                     <th>Code</th>
