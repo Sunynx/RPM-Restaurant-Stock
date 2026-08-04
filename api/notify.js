@@ -180,7 +180,8 @@ export default async function handler(req, res) {
             minStock,
             unit: unit || 'pcs',
             updatedBy: updatedBy || 'Unknown User',
-            timestamp
+            timestamp,
+            statusText: stock <= 0 ? 'หมดสต็อก' : 'ใกล้หมด'
           })
         });
       } catch (err) {
