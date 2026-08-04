@@ -14,8 +14,9 @@ export default async function handler(req, res) {
     }
 
     const now = new Date();
-    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const options = { timeZone: 'Asia/Bangkok' };
+    const dateStr = now.toLocaleDateString('en-GB', { ...options, day: '2-digit', month: '2-digit', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-GB', { ...options, hour: '2-digit', minute: '2-digit' });
     const timestamp = `${dateStr} ${timeStr}`;
 
     // LINE Messaging API - Broadcast (Flex Message)
@@ -117,7 +118,51 @@ export default async function handler(req, res) {
                         contents: [
                           {
                             type: "text",
-                            text: "อัปเดตเมื่อ",
+                            text: "ขั้นต่ำ",
+                            color: "#aaaaaa",
+                            size: "sm",
+                            flex: 1
+                          },
+                          {
+                            type: "text",
+                            text: `${minStock} ${unit || 'pcs'}`,
+                            wrap: true,
+                            color: "#666666",
+                            size: "sm",
+                            flex: 2
+                          }
+                        ]
+                      },
+                      {
+                        type: "box",
+                        layout: "baseline",
+                        spacing: "sm",
+                        contents: [
+                          {
+                            type: "text",
+                            text: "อัปเดตโดย",
+                            color: "#aaaaaa",
+                            size: "sm",
+                            flex: 1
+                          },
+                          {
+                            type: "text",
+                            text: updatedBy || 'Unknown User',
+                            wrap: true,
+                            color: "#666666",
+                            size: "sm",
+                            flex: 2
+                          }
+                        ]
+                      },
+                      {
+                        type: "box",
+                        layout: "baseline",
+                        spacing: "sm",
+                        contents: [
+                          {
+                            type: "text",
+                            text: "เวลา",
                             color: "#aaaaaa",
                             size: "sm",
                             flex: 1
