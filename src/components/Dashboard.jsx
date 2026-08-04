@@ -17,8 +17,12 @@ const itemVariants = {
 
 export default function Dashboard({ inventory, categories = [], lowStockThreshold, onNavigate, transactions = [], userRole = 'Staff' }) {
   const totalItems = inventory.length;
-  const lowStockItems = inventory.filter(i => i.closing < lowStockThreshold);
-  const outOfStockItems = inventory.filter(i => (parseInt(i.closing) || 0) === 0);
+  const lowStockItems = inventory.filter(i => {
+    const closing = parseInt(i.closing) || 0;
+    const minStock = parseInt(i.minStockLevel) || lowStockThreshold;
+    return closing > 0 && closing <= minStock;
+  });
+  const outOfStockItems = inventory.filter(i => (parseInt(i.closing) || 0) <= 0);
 
   const handleNavigate = (params) => {
     if (window.innerWidth <= 768) return;

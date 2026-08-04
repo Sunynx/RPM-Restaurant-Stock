@@ -72,8 +72,10 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                           String(item.code || '').toLowerCase().includes(searchLower);
     
     let matchesStatus = true;
-    if (filterStatus === 'low') matchesStatus = parseInt(item.closing) > 0 && parseInt(item.closing) < lowStockThreshold;
-    if (filterStatus === 'out') matchesStatus = parseInt(item.closing) === 0;
+    const closing = parseInt(item.closing) || 0;
+    const minStock = parseInt(item.minStockLevel) || lowStockThreshold;
+    if (filterStatus === 'low') matchesStatus = closing > 0 && closing <= minStock;
+    if (filterStatus === 'out') matchesStatus = closing <= 0;
 
     const matchesCategory = filterCategories.length === 0 ? true : filterCategories.includes(item.categoryId);
     
@@ -103,8 +105,12 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
 
   // Counts for filter chips
   const allCount = inventory.length;
-  const lowCount = inventory.filter(i => parseInt(i.closing) > 0 && parseInt(i.closing) < lowStockThreshold).length;
-  const outCount = inventory.filter(i => parseInt(i.closing) === 0).length;
+  const lowCount = inventory.filter(i => {
+    const closing = parseInt(i.closing) || 0;
+    const minStock = parseInt(i.minStockLevel) || lowStockThreshold;
+    return closing > 0 && closing <= minStock;
+  }).length;
+  const outCount = inventory.filter(i => (parseInt(i.closing) || 0) <= 0).length;
 
 
 
@@ -268,8 +274,9 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                         {rowVirtualizer.getVirtualItems().map(virtualRow => {
                           const item = sortedInventory[virtualRow.index];
                           const closing = parseInt(item.closing) || 0;
-                          const isLowStock = closing > 0 && closing < lowStockThreshold;
-                          const isOutOfStock = closing === 0;
+                          const minStock = parseInt(item.minStockLevel) || lowStockThreshold;
+                          const isLowStock = closing > 0 && closing <= minStock;
+                          const isOutOfStock = closing <= 0;
                           const isSelected = selectedItems.has(item.id);
                           
                           return (
@@ -335,7 +342,8 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                 <AnimatePresence>
                   {sortedInventory.map(item => {
                     const closing = parseInt(item.closing) || 0;
-                    const isLowStock = closing > 0 && closing < lowStockThreshold;
+                    const minStock = parseInt(item.minStockLevel) || lowStockThreshold;
+                    const isLowStock = closing > 0 && closing <= minStock;
                     const isOutOfStock = closing <= 0;
 
                     return (

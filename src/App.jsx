@@ -130,8 +130,9 @@ function App() {
 
   const alertItems = useMemo(() => {
     return inventory.filter(i => {
-      const minStock = i.minStockLevel || 0;
-      return minStock > 0 ? i.closing < minStock : i.closing === 0;
+      const closing = parseInt(i.closing) || 0;
+      const minStock = parseInt(i.minStockLevel) || LOW_STOCK_THRESHOLD;
+      return closing <= minStock;
     });
   }, [inventory]);
 
@@ -144,7 +145,13 @@ function App() {
     onMutate: async (updatedItem) => {
       await queryClient.cancelQueries({ queryKey: ['inventory'] });
       const previousInventory = queryClient.getQueryData(['inventory']);
-      const optimisticItem = { ...updatedItem, sales: 0, ent: 0, issued: 0 };
+      const optimisticItem = { 
+        ...updatedItem, 
+        stockOnHand: updatedItem.closing,
+        sales: 0, 
+        ent: 0, 
+        issued: 0 
+      };
       queryClient.setQueryData(['inventory'], old => 
         old?.map(item => item.id === updatedItem.id ? optimisticItem : item)
       );
