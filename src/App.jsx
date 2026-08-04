@@ -128,6 +128,14 @@ function App() {
     return me ? me.role : 'Staff';
   }, [appUsers, accounts]);
 
+  const userInitials = useMemo(() => {
+    const name = accounts[0]?.name || 'User';
+    if (name === 'User') return 'U';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }, [accounts]);
+
   const alertItems = useMemo(() => {
     return inventory.filter(i => {
       const closing = parseInt(i.closing) || 0;
@@ -437,7 +445,7 @@ function App() {
         <div className="sidebar-footer">
           <div className="sidebar-user" onClick={handleLogout} title="Click to logout">
             <div className="sidebar-user-avatar">
-              {(accounts[0]?.name || 'User').substring(0, 2).toUpperCase()}
+              {userInitials}
             </div>
             <div className="sidebar-user-info">
               <div className="sidebar-user-name">{accounts[0]?.name || 'User'}</div>
