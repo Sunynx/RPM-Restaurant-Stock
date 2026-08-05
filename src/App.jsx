@@ -718,19 +718,19 @@ function App() {
 
             {/* Switch User (Mobile) */}
             {availableProfiles.length > 1 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '4px' }} className="mobile-only">
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+              <button 
+                className="user-pill mobile-only"
+                onClick={handleClearProfile}
+                title="Switch User"
+              >
+                <div className="user-avatar-small">
+                  {(selectedProfile?.name?.charAt(0) || accounts[0]?.name?.charAt(0) || 'U').toUpperCase()}
+                </div>
+                <span className="user-name-small">
                   {selectedProfile?.name || accounts[0]?.name || 'User'}
                 </span>
-                <button 
-                  className="topbar-icon-btn"
-                  onClick={handleClearProfile}
-                  title="Switch User"
-                  style={{ color: 'var(--primary)' }}
-                >
-                  <Users size={18} />
-                </button>
-              </div>
+                <Users size={14} style={{ color: 'var(--text-tertiary)', marginLeft: 2 }} />
+              </button>
             )}
 
             {/* Logout (Mobile) */}

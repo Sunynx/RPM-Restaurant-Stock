@@ -521,6 +521,44 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--border-strong);
 }
 
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-default);
+  padding: 4px 12px 4px 4px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-primary);
+  margin: 0 4px;
+}
+.user-pill:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+}
+.user-avatar-small {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.user-name-small {
+  font-size: 13px;
+  font-weight: 600;
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .topbar-badge {
   position: absolute;
   top: -2px;
