@@ -143,7 +143,7 @@ function App() {
 
   const availableProfiles = useMemo(() => {
     if (!accounts[0]?.username || !appUsers.length) return [];
-    return appUsers.filter(u => u.email.toLowerCase() === accounts[0].username.toLowerCase());
+    return appUsers.filter(u => u.email && u.email.toLowerCase() === accounts[0].username.toLowerCase());
   }, [appUsers, accounts]);
 
   const shouldShowProfileSelector = isAuthenticated && !isLoadingUsers && availableProfiles.length > 1 && !selectedProfile;
@@ -878,12 +878,13 @@ function App() {
                       alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 'bold' 
                     }}>
                       {(() => {
-                        const parts = profile.name.trim().split(/\s+/);
+                        const nameStr = profile.name || 'User';
+                        const parts = nameStr.trim().split(/\s+/);
                         if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
                         return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
                       })()}
                     </div>
-                    {profile.name}
+                    {profile.name || 'Unknown User'}
                   </button>
                 ))}
               </div>
