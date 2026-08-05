@@ -91,7 +91,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
     const type = (t.type || '').toLowerCase();
     if (type === 'sales' || type === 'ent') {
       if (!itemMovementMap[t.item]) {
-        itemMovementMap[t.item] = { name: t.item || t.code, quantity: 0 };
+        itemMovementMap[t.item] = { name: t.item || t.code, quantity: 0, code: t.code };
       }
       itemMovementMap[t.item].quantity += Math.abs(t.quantity);
     }
@@ -190,41 +190,40 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
           </div>
           <div className="chart-area">
             {topMovers.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topMovers} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                  <XAxis type="number" hide />
-                  <YAxis 
-                    dataKey="name" 
-                    type="category" 
-                    stroke="var(--text-secondary)" 
-                    fontSize={12} 
-                    fontWeight={500} 
-                    tickLine={false} 
-                    axisLine={false} 
-                    width={100} 
-                  />
-                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--bg-hover)' }} />
-                  <defs>
-                    <linearGradient id="barGradient" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.8} />
-                      <stop offset="100%" stopColor="var(--primary)" stopOpacity={1} />
-                    </linearGradient>
-                  </defs>
-                  <Bar 
-                    dataKey="quantity" 
-                    name="Quantity" 
-                    fill="url(#barGradient)" 
-                    radius={[0, 6, 6, 0]} 
-                    barSize={14}
-                    onClick={(data) => {
-                      if (data?.name) {
-                        handleNavigate({ searchTerm: data.name });
-                      }
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '8px 0', height: '100%', overflowY: 'auto' }}>
+                {topMovers.map((item, index) => {
+                  const maxQty = topMovers[0]?.quantity || 1;
+                  const pct = (item.quantity / maxQty) * 100;
+                  return (
+                    <div 
+                      key={index} 
+                      style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                      onClick={() => handleNavigate({ searchTerm: item.name })}
+                    >
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+                        {index + 1}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13 }}>
+                          <span style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)' }} title={item.name}>
+                            {item.code && item.code !== '-' ? <span style={{ color: 'var(--text-tertiary)', marginRight: 4 }}>[{item.code}]</span> : null}
+                            {item.name}
+                          </span>
+                          <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{item.quantity}</span>
+                        </div>
+                        <div style={{ width: '100%', height: 6, background: 'var(--bg-active)', borderRadius: 3, overflow: 'hidden' }}>
+                          <motion.div 
+                            initial={{ width: 0 }} 
+                            animate={{ width: `${pct}%` }} 
+                            transition={{ duration: 0.8, delay: index * 0.1, ease: 'easeOut' }}
+                            style={{ height: '100%', background: 'var(--primary)', borderRadius: 3 }} 
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <div className="chart-empty">No sales data available</div>
             )}
