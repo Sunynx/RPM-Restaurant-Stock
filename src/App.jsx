@@ -197,8 +197,8 @@ function App() {
   const userRole = useMemo(() => {
     if (!accounts[0]) return 'Staff';
     if (selectedProfile) return selectedProfile.role;
-    const me = availableProfiles[0];
-    return me ? me.role : 'Staff';
+    if (availableProfiles.length === 1 && availableProfiles[0]) return availableProfiles[0].role;
+    return 'Staff';
   }, [availableProfiles, selectedProfile, accounts]);
 
   const userInitials = useMemo(() => {
