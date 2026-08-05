@@ -522,8 +522,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .user-pill {
-  display: flex;
-  align-items: center;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
   gap: 8px;
   background: var(--surface);
   border: 1px solid var(--border-default);
@@ -544,9 +546,10 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 50%;
   background: var(--primary-light);
   color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0;
   font-size: 11px;
   font-weight: 700;
 }
