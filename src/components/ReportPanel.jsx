@@ -140,6 +140,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         const product = inventory.find(p => String(p.id) === String(productId));
         return {
           name: product ? (product.item || product.code) : `Item ${productId}`,
+          code: product ? (product.code || '-') : '-',
           qty
         };
       })
@@ -151,12 +152,13 @@ export default function ReportPanel({ inventory, categories = [] }) {
   const handleExportCSV = (type) => {
     let csvRows = [];
     if (type === 'transactions') {
-      csvRows = [['Date', 'Type', 'Product ID', 'Quantity', 'Performed By', 'Remarks'].join(',')];
+      csvRows = [['Date', 'Type', 'Code', 'Product Name', 'Quantity', 'Performed By', 'Remarks'].join(',')];
       filteredTransactions.forEach(tx => {
         const product = inventory.find(p => String(p.id) === String(tx.productId));
         csvRows.push([
           `"${new Date(tx.date).toLocaleString('en-GB')}"`,
           `"${tx.type}"`,
+          `"${product ? product.code : '-'}"`,
           `"${product ? product.item : tx.productId}"`,
           tx.quantity,
           `"${tx.performedBy}"`,
@@ -176,15 +178,16 @@ export default function ReportPanel({ inventory, categories = [] }) {
         ].join(','));
       });
     } else if (type === 'top-5-sales') {
-      csvRows = [['Product Name', 'Total Sales Quantity'].join(',')];
+      csvRows = [['Code', 'Product Name', 'Total Sales Quantity'].join(',')];
       topSalesData.forEach(item => {
         csvRows.push([
+          `"${item.code}"`,
           `"${item.name.replace(/"/g, '""')}"`,
           item.qty
         ].join(','));
       });
     } else if (type === 'daily-summary') {
-      csvRows = [['Date & Time', 'Category', 'Product Name', 'Action', 'Qty', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
+      csvRows = [['Date & Time', 'Category', 'Code', 'Product Name', 'Action', 'Qty', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
       const today = new Date();
       transactions.forEach(tx => {
         const txDate = new Date(tx.date);
@@ -197,6 +200,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
           csvRows.push([
             `"${txDate.toLocaleString('en-GB')}"`,
             `"${category}"`,
+            `"${product ? product.code : '-'}"`,
             `"${product ? product.item : tx.productId}"`,
             `"${tx.type}"`,
             tx.quantity,
@@ -208,7 +212,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         }
       });
     } else if (type === 'monthly-summary') {
-      csvRows = [['Date & Time', 'Category', 'Product Name', 'Action', 'Qty', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
+      csvRows = [['Date & Time', 'Category', 'Code', 'Product Name', 'Action', 'Qty', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
       const today = new Date();
       const thisMonth = today.getMonth();
       const thisYear = today.getFullYear();
@@ -223,6 +227,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
           csvRows.push([
             `"${txDate.toLocaleString('en-GB')}"`,
             `"${category}"`,
+            `"${product ? product.code : '-'}"`,
             `"${product ? product.item : tx.productId}"`,
             `"${tx.type}"`,
             tx.quantity,
