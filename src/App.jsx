@@ -35,6 +35,25 @@ function App() {
   const [accessToken, setAccessToken] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   
+  const [selectedProfile, setSelectedProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem('selectedProfile');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const handleSelectProfile = (profile) => {
+    setSelectedProfile(profile);
+    localStorage.setItem('selectedProfile', JSON.stringify(profile));
+  };
+
+  const handleClearProfile = () => {
+    setSelectedProfile(null);
+    localStorage.removeItem('selectedProfile');
+  };
+  
   const LOW_STOCK_THRESHOLD = 10;
 
   const handleLogin = async () => {
@@ -122,19 +141,33 @@ function App() {
 
   const loading = isLoadingInventory || isLoadingUsers || isLoadingTransactions || isLoadingCategories;
 
-  const userRole = useMemo(() => {
-    if (!accounts[0]) return 'Staff';
-    const me = appUsers.find(u => u.email.toLowerCase() === accounts[0].username.toLowerCase());
-    return me ? me.role : 'Staff';
+  const availableProfiles = useMemo(() => {
+    if (!accounts[0]?.username || !appUsers.length) return [];
+    return appUsers.filter(u => u.email.toLowerCase() === accounts[0].username.toLowerCase());
   }, [appUsers, accounts]);
 
+  const shouldShowProfileSelector = isAuthenticated && !isLoadingUsers && availableProfiles.length > 1 && !selectedProfile;
+
+  useEffect(() => {
+    if (isAuthenticated && !isLoadingUsers && availableProfiles.length === 1 && !selectedProfile) {
+      handleSelectProfile(availableProfiles[0]);
+    }
+  }, [isAuthenticated, isLoadingUsers, availableProfiles, selectedProfile]);
+
+  const userRole = useMemo(() => {
+    if (!accounts[0]) return 'Staff';
+    if (selectedProfile) return selectedProfile.role;
+    const me = availableProfiles[0];
+    return me ? me.role : 'Staff';
+  }, [availableProfiles, selectedProfile, accounts]);
+
   const userInitials = useMemo(() => {
-    const name = accounts[0]?.name || 'User';
+    const name = selectedProfile?.name || accounts[0]?.name || 'User';
     if (name === 'User') return 'U';
     const parts = name.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  }, [accounts]);
+  }, [accounts, selectedProfile]);
 
   const alertItems = useMemo(() => {
     return inventory.filter(i => {
@@ -149,7 +182,10 @@ function App() {
   }, [inventory]);
 
   const updateMutation = useMutation({
-    mutationFn: (updatedItem) => updateInventoryInSharePoint(accessToken, updatedItem.id, updatedItem, accounts[0]?.username),
+    mutationFn: (updatedItem) => {
+      const performedBy = selectedProfile?.name || accounts[0]?.username;
+      return updateInventoryInSharePoint(accessToken, updatedItem.id, updatedItem, performedBy);
+    },
     onMutate: async (updatedItem) => {
       await queryClient.cancelQueries({ queryKey: ['inventory'] });
       const previousInventory = queryClient.getQueryData(['inventory']);
@@ -186,7 +222,10 @@ function App() {
   };
 
   const updateDetailsMutation = useMutation({
-    mutationFn: (updatedFields) => updateProductDetailsInSharePoint(accessToken, editingProductDetails.id, updatedFields, accounts[0]?.username),
+    mutationFn: (updatedFields) => {
+      const performedBy = selectedProfile?.name || accounts[0]?.username;
+      return updateProductDetailsInSharePoint(accessToken, editingProductDetails.id, updatedFields, performedBy);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       queryClient.invalidateQueries({ queryKey: ['logs'] });
@@ -205,7 +244,10 @@ function App() {
   };
 
   const addProductMutation = useMutation({
-    mutationFn: (productData) => createProductInSharePoint(accessToken, productData, accounts[0]?.username),
+    mutationFn: (productData) => {
+      const performedBy = selectedProfile?.name || accounts[0]?.username;
+      return createProductInSharePoint(accessToken, productData, performedBy);
+    },
     onMutate: async (newProduct) => {
       await queryClient.cancelQueries({ queryKey: ['inventory'] });
       const previousInventory = queryClient.getQueryData(['inventory']);
@@ -246,7 +288,10 @@ function App() {
   };
 
   const editUserRoleMutation = useMutation({
-    mutationFn: ({ userId, newRole, targetEmail }) => updateUserRoleInSharePoint(accessToken, userId, newRole, accounts[0]?.username, targetEmail),
+    mutationFn: ({ userId, newRole, targetEmail }) => {
+      const performedBy = selectedProfile?.name || accounts[0]?.username;
+      return updateUserRoleInSharePoint(accessToken, userId, newRole, performedBy, targetEmail);
+    },
     onSuccess: () => {
       toast.success("User role updated!");
       queryClient.invalidateQueries({ queryKey: ['appUsers'] });
@@ -264,7 +309,10 @@ function App() {
   };
 
   const addUserMutation = useMutation({
-    mutationFn: (userData) => addUserToSharePoint(accessToken, userData, accounts[0]?.username),
+    mutationFn: (userData) => {
+      const performedBy = selectedProfile?.name || accounts[0]?.username;
+      return addUserToSharePoint(accessToken, userData, performedBy);
+    },
     onSuccess: () => {
       toast.success("User added successfully!");
       queryClient.invalidateQueries({ queryKey: ['appUsers'] });
@@ -282,7 +330,10 @@ function App() {
   };
 
   const addCategoryMutation = useMutation({
-    mutationFn: (categoryData) => createCategoryInSharePoint(accessToken, categoryData, accounts[0]?.username),
+    mutationFn: (categoryData) => {
+      const performedBy = selectedProfile?.name || accounts[0]?.username;
+      return createCategoryInSharePoint(accessToken, categoryData, performedBy);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       queryClient.invalidateQueries({ queryKey: ['logs'] });
@@ -448,9 +499,17 @@ function App() {
               {userInitials}
             </div>
             <div className="sidebar-user-info">
-              <div className="sidebar-user-name">{accounts[0]?.name || 'User'}</div>
+              <div className="sidebar-user-name">{selectedProfile?.name || accounts[0]?.name || 'User'}</div>
               <div className="sidebar-user-email">{accounts[0]?.username || ''}</div>
             </div>
+            {availableProfiles.length > 1 && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); handleClearProfile(); }} 
+                title="Switch User" 
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--primary-light)', padding: '4px', marginRight: '4px', display: 'flex', alignItems: 'center' }}>
+                <Users size={16} />
+              </button>
+            )}
             <LogOut size={16} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
           </div>
         </div>
@@ -783,6 +842,53 @@ function App() {
             onClose={() => setEditingProductDetails(null)}
             onSave={handleSaveProductDetails}
           />
+        )}
+        
+        {/* Profile Selector Modal */}
+        {shouldShowProfileSelector && (
+          <motion.div 
+            className="modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <motion.div 
+              className="modal-content"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              style={{ maxWidth: '400px', width: '90%', textAlign: 'center', padding: '32px' }}
+            >
+              <Users size={48} style={{ color: 'var(--primary)', margin: '0 auto 16px' }} />
+              <h2 style={{ marginBottom: '8px', fontSize: '20px', color: 'var(--text-primary)' }}>Who's using the app?</h2>
+              <p style={{ marginBottom: '24px', color: 'var(--text-secondary)', fontSize: '14px' }}>Please select your profile to continue</p>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {availableProfiles.map(profile => (
+                  <button 
+                    key={profile.id}
+                    className="btn btn-primary"
+                    style={{ padding: '16px', fontSize: '16px', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '12px' }}
+                    onClick={() => handleSelectProfile(profile)}
+                  >
+                    <div style={{ 
+                      width: '32px', height: '32px', borderRadius: '50%', 
+                      background: 'rgba(255,255,255,0.2)', display: 'flex', 
+                      alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 'bold' 
+                    }}>
+                      {(() => {
+                        const parts = profile.name.trim().split(/\s+/);
+                        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+                        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+                      })()}
+                    </div>
+                    {profile.name}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
