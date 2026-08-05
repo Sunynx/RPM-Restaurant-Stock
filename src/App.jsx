@@ -602,7 +602,7 @@ function App() {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="sidebar-user" onClick={handleLogout} title="Click to logout">
+          <div className="sidebar-user">
             <div className="sidebar-user-avatar">
               {userInitials}
             </div>
@@ -612,13 +612,20 @@ function App() {
             </div>
             {availableProfiles.length > 1 && (
               <button 
+                className="sidebar-action-btn"
                 onClick={(e) => { e.stopPropagation(); handleClearProfile(); }} 
                 title="Switch User" 
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--primary-light)', padding: '4px', marginRight: '4px', display: 'flex', alignItems: 'center' }}>
+              >
                 <Users size={16} />
               </button>
             )}
-            <LogOut size={16} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
+            <button
+              className="sidebar-action-btn"
+              onClick={(e) => { e.stopPropagation(); handleLogout(); }}
+              title="Logout"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
         </div>
       </aside>
