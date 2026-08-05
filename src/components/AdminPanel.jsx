@@ -280,7 +280,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                               }}>
                                 {(u.name || u.email || '?')[0].toUpperCase()}
                               </div>
-                              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 200 }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 120 }}>
                                 {isEditing ? (
                                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                     <input 
@@ -303,7 +303,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                                 ) : (
                                   <>
                                     {u.name && <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{u.name}</div>}
-                                    <div style={{ fontWeight: u.name ? 400 : 500, fontSize: u.name ? 12 : 14, color: u.name ? 'var(--text-secondary)' : 'var(--text-primary)', wordBreak: 'break-all', lineHeight: 1.4 }}>
+                                    <div style={{ fontWeight: u.name ? 400 : 500, fontSize: u.name ? 12 : 14, color: u.name ? 'var(--text-secondary)' : 'var(--text-primary)', wordBreak: 'break-word', lineHeight: 1.4 }}>
                                       {u.email}
                                     </div>
                                   </>

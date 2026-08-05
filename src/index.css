@@ -556,7 +556,7 @@ h1, h2, h3, h4, h5, h6 {
 .content-area {
   flex: 1;
   padding: var(--sp-4);
-  padding-bottom: calc(var(--bottom-nav-height) + var(--sp-6));
+  padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + var(--sp-6));
 }
 
 /* --- Bottom Nav (Mobile) --- */

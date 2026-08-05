@@ -204,12 +204,12 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
                         {index + 1}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13 }}>
-                          <span style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)' }} title={item.name}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13, gap: 8 }}>
+                          <div style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)', flex: 1 }} title={item.name}>
                             {item.code && item.code !== '-' ? <span style={{ color: 'var(--text-tertiary)', marginRight: 4 }}>[{item.code}]</span> : null}
                             {item.name}
-                          </span>
-                          <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{item.quantity}</span>
+                          </div>
+                          <div style={{ fontWeight: 700, color: 'var(--text-secondary)', flexShrink: 0 }}>{item.quantity}</div>
                         </div>
                         <div style={{ width: '100%', height: 6, background: 'var(--bg-active)', borderRadius: 3, overflow: 'hidden' }}>
                           <motion.div 
