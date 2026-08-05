@@ -253,9 +253,9 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th style={{ paddingLeft: 'var(--sp-4)' }}>User</th>
-                      <th>Role</th>
-                      <th style={{ textAlign: 'right', paddingRight: 'var(--sp-4)' }}>Actions</th>
+                      <th style={{ paddingLeft: 'var(--sp-3)' }}>User</th>
+                      <th style={{ paddingLeft: 4, paddingRight: 4 }}>Role</th>
+                      <th style={{ textAlign: 'right', paddingRight: 'var(--sp-3)' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -263,24 +263,24 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                       const isEditing = editingUserId === u.id;
                       return (
                         <tr key={u.id || u.email}>
-                          <td style={{ paddingLeft: 'var(--sp-4)' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
+                          <td style={{ paddingLeft: 'var(--sp-3)', paddingRight: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <div style={{ 
-                                width: 36, 
-                                height: 36, 
+                                width: 32, 
+                                height: 32, 
                                 borderRadius: 'var(--radius-full)', 
                                 background: u.role === 'Admin' ? 'var(--indigo-100)' : u.role === 'Manager' ? 'var(--amber-100)' : 'var(--emerald-100)',
                                 color: u.role === 'Admin' ? 'var(--indigo-600)' : u.role === 'Manager' ? 'var(--amber-600)' : 'var(--emerald-600)',
                                 display: 'flex', 
                                 alignItems: 'center', 
                                 justifyContent: 'center', 
-                                fontSize: 14, 
+                                fontSize: 13, 
                                 fontWeight: 700,
                                 flexShrink: 0
                               }}>
                                 {(u.name || u.email || '?')[0].toUpperCase()}
                               </div>
-                              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 120 }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 100 }}>
                                 {isEditing ? (
                                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                     <input 
@@ -289,7 +289,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                                       value={editUserData.name} 
                                       onChange={e => setEditUserData({...editUserData, name: e.target.value})}
                                       placeholder="Display Name"
-                                      style={{ padding: '6px 12px', fontSize: 13, height: 32 }}
+                                      style={{ padding: '4px 8px', fontSize: 12, height: 28 }}
                                     />
                                     <input 
                                       type="email" 
@@ -297,7 +297,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                                       value={editUserData.email} 
                                       onChange={e => setEditUserData({...editUserData, email: e.target.value})}
                                       placeholder="Email"
-                                      style={{ padding: '6px 12px', fontSize: 13, height: 32 }}
+                                      style={{ padding: '4px 8px', fontSize: 12, height: 28 }}
                                     />
                                   </div>
                                 ) : (
@@ -311,13 +311,13 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                               </div>
                             </div>
                           </td>
-                          <td style={{ verticalAlign: 'middle' }}>
+                          <td style={{ verticalAlign: 'middle', paddingLeft: 4, paddingRight: 4 }}>
                             {isEditing ? (
                               <select 
                                 value={editUserData.role} 
                                 onChange={(e) => setEditUserData({...editUserData, role: e.target.value})}
                                 className="form-input"
-                                style={{ padding: '6px 12px', height: 32, fontSize: 13, width: 110 }}
+                                style={{ padding: '4px 8px', height: 28, fontSize: 12, width: 85 }}
                               >
                                 <option value="Staff">Staff</option>
                                 <option value="Manager">Manager</option>
@@ -329,11 +329,11 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                                 onChange={(e) => onEditUserRole && onEditUserRole(u.id, e.target.value, u.email)}
                                 className="form-input"
                                 style={{ 
-                                  padding: '4px 8px', 
+                                  padding: '4px 6px', 
                                   height: 'auto', 
                                   fontSize: 12, 
                                   fontWeight: 600,
-                                  width: 100, 
+                                  width: 85, 
                                   cursor: 'pointer',
                                   background: u.role === 'Admin' ? 'var(--indigo-50)' : u.role === 'Manager' ? 'var(--amber-50)' : 'var(--emerald-50)',
                                   color: u.role === 'Admin' ? 'var(--indigo-700)' : u.role === 'Manager' ? 'var(--amber-700)' : 'var(--emerald-700)',
@@ -347,22 +347,22 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                               </select>
                             )}
                           </td>
-                          <td style={{ textAlign: 'right', paddingRight: 'var(--sp-4)', verticalAlign: 'middle' }}>
+                          <td style={{ textAlign: 'right', paddingRight: 'var(--sp-3)', verticalAlign: 'middle', paddingLeft: 4 }}>
                             {isEditing ? (
-                              <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                                <button className="btn btn-primary" onClick={() => handleSaveUser(u.id)} style={{ padding: 6, width: 32, height: 32 }} title="Save">
+                              <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                                <button className="btn btn-primary" onClick={() => handleSaveUser(u.id)} style={{ padding: 4, width: 28, height: 28 }} title="Save">
                                   <Check size={16} />
                                 </button>
-                                <button className="btn" onClick={() => setEditingUserId(null)} style={{ padding: 6, width: 32, height: 32 }} title="Cancel">
+                                <button className="btn" onClick={() => setEditingUserId(null)} style={{ padding: 4, width: 28, height: 28 }} title="Cancel">
                                   <X size={16} />
                                 </button>
                               </div>
                             ) : (
-                              <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                                <button className="btn" onClick={() => handleEditClick(u)} style={{ padding: 6, width: 32, height: 32, color: 'var(--text-secondary)' }} title="Edit">
+                              <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                                <button className="btn" onClick={() => handleEditClick(u)} style={{ padding: 4, width: 28, height: 28, color: 'var(--text-secondary)' }} title="Edit">
                                   <Pencil size={16} />
                                 </button>
-                                <button className="btn" onClick={() => handleDeleteClick(u.id, u.email)} style={{ padding: 6, width: 32, height: 32, color: 'var(--danger)' }} title="Delete">
+                                <button className="btn" onClick={() => handleDeleteClick(u.id, u.email)} style={{ padding: 4, width: 28, height: 28, color: 'var(--danger)' }} title="Delete">
                                   <Trash2 size={16} />
                                 </button>
                               </div>
