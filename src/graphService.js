@@ -73,7 +73,7 @@ export async function addUserToSharePoint(accessToken, userData, currentUserEmai
     const response = await client.api(`/sites/${siteId}/lists/${listId}/items`).post({
       fields: {
         Title: userData.email,
-        DisplayName: userData.email.split('@')[0],
+        DisplayName: userData.name || userData.email.split('@')[0],
         Role: userData.role,
         Status: 'Active'
       }
@@ -103,6 +103,48 @@ export async function updateUserRoleInSharePoint(accessToken, userId, newRole, c
     await writeAuditLog(accessToken, currentUserEmail, "UpdateUserRole", `Updated role to ${newRole} for user ${targetEmail || `ID ${userId}`}`);
   } catch (error) {
     console.error("Error updating user role:", error);
+    throw error;
+  }
+}
+
+export async function updateUserDetailsInSharePoint(accessToken, userId, updatedFields, currentUserEmail, targetEmail) {
+  const client = getGraphClient(accessToken);
+  try {
+    const siteId = await getSiteId(client);
+    const listId = await getListId(client, siteId, LIST_USERS);
+
+    await client.api(`/sites/${siteId}/lists/${listId}/items/${userId}`).patch({
+      fields: {
+        Title: updatedFields.email,
+        DisplayName: updatedFields.name,
+        Role: updatedFields.role
+      }
+    });
+
+    await writeAuditLog(accessToken, currentUserEmail, "UpdateUser", `Updated details for user ${targetEmail || `ID ${userId}`}`);
+  } catch (error) {
+    console.error("Error updating user details:", error);
+    throw error;
+  }
+}
+
+export async function deleteUserFromSharePoint(accessToken, userId, currentUserEmail, targetEmail) {
+  const client = getGraphClient(accessToken);
+  try {
+    const siteId = await getSiteId(client);
+    const listId = await getListId(client, siteId, LIST_USERS);
+
+    // Some SP configurations prevent deleting, so we might just set Status to Inactive.
+    // Let's patch Status instead of hard delete, which is safer.
+    await client.api(`/sites/${siteId}/lists/${listId}/items/${userId}`).patch({
+      fields: {
+        Status: 'Inactive'
+      }
+    });
+
+    await writeAuditLog(accessToken, currentUserEmail, "DeleteUser", `Removed access for user ${targetEmail || `ID ${userId}`}`);
+  } catch (error) {
+    console.error("Error deleting user:", error);
     throw error;
   }
 }

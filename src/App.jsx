@@ -12,7 +12,7 @@ import EditProductDetailsModal from './components/EditProductDetailsModal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginRequest } from './authConfig';
-import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUsers, fetchTransactions, createProductInSharePoint, fetchCategories, writeAuditLog, createGenericSharePointItem, updateProductDetailsInSharePoint, createCategoryInSharePoint, updateUserRoleInSharePoint, addUserToSharePoint } from './graphService';
+import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUsers, fetchTransactions, createProductInSharePoint, fetchCategories, writeAuditLog, createGenericSharePointItem, updateProductDetailsInSharePoint, createCategoryInSharePoint, updateUserRoleInSharePoint, addUserToSharePoint, updateUserDetailsInSharePoint, deleteUserFromSharePoint } from './graphService';
 import toast from 'react-hot-toast';
 import CSVImporterModal from './components/CSVImporterModal';
 
@@ -323,6 +323,48 @@ function App() {
   const handleEditUserRole = (userId, newRole, targetEmail) => {
     if (!accessToken) return;
     editUserRoleMutation.mutate({ userId, newRole, targetEmail });
+  };
+
+  const updateUserDetailsMutation = useMutation({
+    mutationFn: ({ userId, updatedFields, targetEmail }) => {
+      const performedBy = selectedProfile?.name || accounts[0]?.username;
+      return updateUserDetailsInSharePoint(accessToken, userId, updatedFields, performedBy, targetEmail);
+    },
+    onSuccess: () => {
+      toast.success("User details updated!");
+      queryClient.invalidateQueries({ queryKey: ['appUsers'] });
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
+    },
+    onError: (err) => {
+      console.error(err);
+      toast.error("Failed to update user details.");
+    }
+  });
+
+  const handleUpdateUser = (userId, updatedFields, targetEmail) => {
+    if (!accessToken) return;
+    updateUserDetailsMutation.mutate({ userId, updatedFields, targetEmail });
+  };
+
+  const deleteUserMutation = useMutation({
+    mutationFn: ({ userId, targetEmail }) => {
+      const performedBy = selectedProfile?.name || accounts[0]?.username;
+      return deleteUserFromSharePoint(accessToken, userId, performedBy, targetEmail);
+    },
+    onSuccess: () => {
+      toast.success("User removed successfully!");
+      queryClient.invalidateQueries({ queryKey: ['appUsers'] });
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
+    },
+    onError: (err) => {
+      console.error(err);
+      toast.error("Failed to remove user.");
+    }
+  });
+
+  const handleDeleteUser = (userId, targetEmail) => {
+    if (!accessToken) return;
+    deleteUserMutation.mutate({ userId, targetEmail });
   };
 
   const addUserMutation = useMutation({
@@ -763,6 +805,8 @@ function App() {
                   users={appUsers}
                   onAddUser={handleAddUser}
                   onEditUserRole={handleEditUserRole}
+                  onUpdateUser={handleUpdateUser}
+                  onDeleteUser={handleDeleteUser}
                   accessToken={accessToken}
                   setIsCSVModalOpen={setIsCSVModalOpen}
                   categories={categories}

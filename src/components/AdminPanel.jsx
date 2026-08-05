@@ -6,13 +6,22 @@ import { utils, writeFile } from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-export default function AdminPanel({ users, onAddUser, onEditUserRole, accessToken, setIsCSVModalOpen, categories = [], onAddCategory, inventory = [], userRole }) {
+export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateUser, onDeleteUser, accessToken, setIsCSVModalOpen, categories = [], onAddCategory, inventory = [], userRole }) {
   const [activeTab, setActiveTab] = useState(userRole === 'Manager' ? 'categories' : 'users');
   
   // Users state
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [role, setRole] = useState('Staff');
   const [loadingAddUser, setLoadingAddUser] = useState(false);
+
+  // Category state
+  const [categoryCode, setCategoryCode] = useState('');
+  const [categoryName, setCategoryName] = useState('');
+  
+  // User edit state
+  const [editingUserId, setEditingUserId] = useState(null);
+  const [editUserData, setEditUserData] = useState({ name: '', email: '', role: '' });
 
   // Categories state
   const [catName, setCatName] = useState('');
@@ -33,13 +42,34 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
     }
   }, [activeTab, accessToken]);
 
-  const handleAddUser = async (e) => {
+  const handleAddUser = (e) => {
     e.preventDefault();
     if (!email) return;
     setLoadingAddUser(true);
-    await onAddUser({ email, role });
+    onAddUser({ email, name, role });
+    // Reset form
     setEmail('');
-    setLoadingAddUser(false);
+    setName('');
+    setRole('Staff');
+    setTimeout(() => setLoadingAddUser(false), 500);
+  };
+
+  const handleEditClick = (u) => {
+    setEditingUserId(u.id);
+    setEditUserData({ name: u.name || '', email: u.email || '', role: u.role || 'Staff' });
+  };
+
+  const handleSaveUser = (userId) => {
+    if (onUpdateUser) {
+      onUpdateUser(userId, editUserData, editUserData.email);
+    }
+    setEditingUserId(null);
+  };
+
+  const handleDeleteClick = (userId, email) => {
+    if (window.confirm(`Are you sure you want to remove access for ${email}?`)) {
+      if (onDeleteUser) onDeleteUser(userId, email);
+    }
   };
 
   const handleAddCat = async (e) => {
@@ -182,7 +212,17 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
               </p>
               
               <form onSubmit={handleAddUser} className="admin-form-row">
-                <div className="form-group" style={{ flex: 1, minWidth: 200 }}>
+                <div className="form-group" style={{ flex: 1, minWidth: 150 }}>
+                  <label className="form-label">Display Name</label>
+                  <input 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="e.g. John Doe" 
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                  />
+                </div>
+                <div className="form-group" style={{ flex: 1.5, minWidth: 200 }}>
                   <label className="form-label">Email Address</label>
                   <input 
                     type="email" 
@@ -215,45 +255,103 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                     <tr>
                       <th style={{ paddingLeft: 'var(--sp-4)' }}>User</th>
                       <th>Role</th>
+                      <th style={{ textAlign: 'right', paddingRight: 'var(--sp-4)' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map(u => (
-                      <tr key={u.id || u.email}>
-                        <td style={{ paddingLeft: 'var(--sp-4)' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
-                            <div style={{ 
-                              width: 32, 
-                              height: 32, 
-                              borderRadius: 'var(--radius-full)', 
-                              background: u.role === 'Admin' ? 'var(--indigo-100)' : u.role === 'Manager' ? 'var(--amber-100)' : 'var(--emerald-100)',
-                              color: u.role === 'Admin' ? 'var(--indigo-600)' : u.role === 'Manager' ? 'var(--amber-600)' : 'var(--emerald-600)',
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'center', 
-                              fontSize: 13, 
-                              fontWeight: 700,
-                              flexShrink: 0
-                            }}>
-                              {(u.email || '?')[0].toUpperCase()}
+                    {users.map(u => {
+                      const isEditing = editingUserId === u.id;
+                      return (
+                        <tr key={u.id || u.email}>
+                          <td style={{ paddingLeft: 'var(--sp-4)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
+                              <div style={{ 
+                                width: 32, 
+                                height: 32, 
+                                borderRadius: 'var(--radius-full)', 
+                                background: u.role === 'Admin' ? 'var(--indigo-100)' : u.role === 'Manager' ? 'var(--amber-100)' : 'var(--emerald-100)',
+                                color: u.role === 'Admin' ? 'var(--indigo-600)' : u.role === 'Manager' ? 'var(--amber-600)' : 'var(--emerald-600)',
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                fontSize: 13, 
+                                fontWeight: 700,
+                                flexShrink: 0
+                              }}>
+                                {(u.name || u.email || '?')[0].toUpperCase()}
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                {isEditing ? (
+                                  <>
+                                    <input 
+                                      type="text" 
+                                      className="form-input" 
+                                      value={editUserData.name} 
+                                      onChange={e => setEditUserData({...editUserData, name: e.target.value})}
+                                      placeholder="Display Name"
+                                      style={{ padding: '2px 8px', fontSize: 13, marginBottom: 4 }}
+                                    />
+                                    <input 
+                                      type="email" 
+                                      className="form-input" 
+                                      value={editUserData.email} 
+                                      onChange={e => setEditUserData({...editUserData, email: e.target.value})}
+                                      placeholder="Email"
+                                      style={{ padding: '2px 8px', fontSize: 12, color: 'var(--text-secondary)' }}
+                                    />
+                                  </>
+                                ) : (
+                                  <>
+                                    {u.name && <div style={{ fontWeight: 600, fontSize: 14 }}>{u.name}</div>}
+                                    <div style={{ fontWeight: u.name ? 400 : 500, fontSize: u.name ? 12 : 14, color: u.name ? 'var(--text-secondary)' : 'var(--text-primary)', wordBreak: 'break-all', lineHeight: 1.2 }}>
+                                      {u.email}
+                                    </div>
+                                  </>
+                                )}
+                              </div>
                             </div>
-                            <div style={{ fontWeight: 500, wordBreak: 'break-all', lineHeight: 1.2 }}>{u.email}</div>
-                          </div>
-                        </td>
-                        <td style={{ paddingRight: 'var(--sp-4)' }}>
-                          <select 
-                            value={u.role} 
-                            onChange={(e) => onEditUserRole && onEditUserRole(u.id, e.target.value, u.email)}
-                            className="form-input"
-                            style={{ padding: '4px 8px', height: 'auto', fontSize: 13, width: 100, cursor: 'pointer' }}
-                          >
-                            <option value="Staff">Staff</option>
-                            <option value="Manager">Manager</option>
-                            <option value="Admin">Admin</option>
-                          </select>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td>
+                            {isEditing ? (
+                              <select 
+                                value={editUserData.role} 
+                                onChange={(e) => setEditUserData({...editUserData, role: e.target.value})}
+                                className="form-input"
+                                style={{ padding: '4px 8px', height: 'auto', fontSize: 13, width: 100 }}
+                              >
+                                <option value="Staff">Staff</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Admin">Admin</option>
+                              </select>
+                            ) : (
+                              <select 
+                                value={u.role} 
+                                onChange={(e) => onEditUserRole && onEditUserRole(u.id, e.target.value, u.email)}
+                                className="form-input"
+                                style={{ padding: '4px 8px', height: 'auto', fontSize: 13, width: 100, cursor: 'pointer' }}
+                              >
+                                <option value="Staff">Staff</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Admin">Admin</option>
+                              </select>
+                            )}
+                          </td>
+                          <td style={{ textAlign: 'right', paddingRight: 'var(--sp-4)' }}>
+                            {isEditing ? (
+                              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                                <button className="btn btn-primary" onClick={() => handleSaveUser(u.id)} style={{ padding: '4px 12px', fontSize: 12 }}>Save</button>
+                                <button className="btn" onClick={() => setEditingUserId(null)} style={{ padding: '4px 12px', fontSize: 12 }}>Cancel</button>
+                              </div>
+                            ) : (
+                              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                                <button className="btn" onClick={() => handleEditClick(u)} style={{ padding: '4px 8px', fontSize: 12 }}>Edit</button>
+                                <button className="btn" onClick={() => handleDeleteClick(u.id, u.email)} style={{ padding: '4px 8px', fontSize: 12, color: 'var(--danger)' }}>Delete</button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
