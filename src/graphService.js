@@ -54,7 +54,7 @@ export async function fetchAppUsers(accessToken, currentUserEmail) {
     return response.value.map(item => ({
       id: item.id,
       email: item.fields.Title, // Title is Email
-      name: item.fields.DisplayName,
+      name: item.fields.DisplayName || item.fields.Display_x0020_Name || item.fields.Name,
       role: item.fields.Role,
       status: item.fields.Status
     })).filter(u => u.status !== 'Inactive');
