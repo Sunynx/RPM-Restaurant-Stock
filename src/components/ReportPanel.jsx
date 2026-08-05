@@ -684,19 +684,37 @@ export default function ReportPanel({ inventory, categories = [] }) {
           </ResponsiveContainer>
         </div>
 
-        {/* Bar Chart: Top 5 Sales */}
+        {/* List: Top 5 Sales */}
         {topSalesData.length > 0 && (
           <div className="card" style={{ padding: 'var(--sp-4)' }}>
-            <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 'var(--sp-3)', color: 'var(--text-secondary)' }}>Top 5 Most Sold Products ({filterLabel})</h3>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={topSalesData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" horizontal={true} vertical={false} />
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-                <YAxis dataKey="name" type="category" width={110} tick={{ fontSize: 10 }} interval={0} />
-                <Tooltip cursor={{ fill: 'var(--bg-hover)' }} />
-                <Bar dataKey="qty" fill="#4f6ef7" radius={[0, 4, 4, 0]} barSize={24} />
-              </BarChart>
-            </ResponsiveContainer>
+            <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 'var(--sp-4)', color: 'var(--text-secondary)' }}>Top 5 Most Sold Products ({filterLabel})</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {topSalesData.map((item, index) => {
+                const maxQty = topSalesData[0]?.qty || 1;
+                const pct = (item.qty / maxQty) * 100;
+                return (
+                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+                      {index + 1}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13 }}>
+                        <span style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)' }} title={item.name}>{item.name}</span>
+                        <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{item.qty}</span>
+                      </div>
+                      <div style={{ width: '100%', height: 6, background: 'var(--bg-active)', borderRadius: 3, overflow: 'hidden' }}>
+                        <motion.div 
+                          initial={{ width: 0 }} 
+                          animate={{ width: `${pct}%` }} 
+                          transition={{ duration: 0.8, delay: index * 0.1, ease: 'easeOut' }}
+                          style={{ height: '100%', background: 'var(--primary)', borderRadius: 3 }} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </motion.div>
