@@ -613,6 +613,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-xl);
   padding: var(--sp-5);
   box-shadow: var(--shadow-xs);
+  min-width: 0;
   transition: box-shadow var(--duration-normal) var(--ease-out),
               transform var(--duration-normal) var(--ease-out);
 }
@@ -658,6 +659,7 @@ h1, h2, h3, h4, h5, h6 {
   padding: var(--sp-5);
   cursor: pointer;
   transition: all var(--duration-normal) var(--ease-out);
+  min-width: 0;
   position: relative;
   overflow: hidden;
 }
@@ -754,6 +756,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-xl);
   padding: var(--sp-5);
   box-shadow: var(--shadow-xs);
+  min-width: 0;
 }
 
 .chart-header {
