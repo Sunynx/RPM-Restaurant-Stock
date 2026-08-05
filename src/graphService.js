@@ -73,7 +73,6 @@ export async function addUserToSharePoint(accessToken, userData, currentUserEmai
     const response = await client.api(`/sites/${siteId}/lists/${listId}/items`).post({
       fields: {
         Title: userData.email,
-        Display_x0020_Name: userData.name || userData.email.split('@')[0],
         DisplayName: userData.name || userData.email.split('@')[0],
         Role: userData.role,
         Status: 'Active'
@@ -117,7 +116,6 @@ export async function updateUserDetailsInSharePoint(accessToken, userId, updated
     await client.api(`/sites/${siteId}/lists/${listId}/items/${userId}`).patch({
       fields: {
         Title: updatedFields.email,
-        Display_x0020_Name: updatedFields.name,
         DisplayName: updatedFields.name,
         Role: updatedFields.role
       }
