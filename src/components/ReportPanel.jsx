@@ -127,6 +127,26 @@ export default function ReportPanel({ inventory, categories = [] }) {
     ];
   }, [stats]);
 
+  const topSalesData = useMemo(() => {
+    const salesMap = {};
+    filteredTransactions.forEach(tx => {
+      if ((tx.type || '').toLowerCase() === 'sales') {
+        salesMap[tx.productId] = (salesMap[tx.productId] || 0) + Math.abs(tx.quantity);
+      }
+    });
+    
+    return Object.entries(salesMap)
+      .map(([productId, qty]) => {
+        const product = inventory.find(p => String(p.id) === String(productId));
+        return {
+          name: product ? (product.item || product.code) : `Item ${productId}`,
+          qty
+        };
+      })
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 5);
+  }, [filteredTransactions, inventory]);
+
   // --- CSV Export ---
   const handleExportCSV = (type) => {
     let csvRows = [];
@@ -153,6 +173,14 @@ export default function ReportPanel({ inventory, categories = [] }) {
         else if (stockVal <= minVal) status = 'Low Stock';
         csvRows.push([
           `"${p.code}"`, `"${p.item}"`, `"${p.unit}"`, p.price, stockVal, minVal, `"${status}"`
+        ].join(','));
+      });
+    } else if (type === 'top-5-sales') {
+      csvRows = [['Product Name', 'Total Sales Quantity'].join(',')];
+      topSalesData.forEach(item => {
+        csvRows.push([
+          `"${item.name.replace(/"/g, '""')}"`,
+          item.qty
         ].join(','));
       });
     } else if (type === 'daily-summary') {
@@ -557,6 +585,13 @@ export default function ReportPanel({ inventory, categories = [] }) {
           </button>
           <button
             className="btn btn-primary"
+            onClick={() => handleExportCSV('top-5-sales')}
+            style={{ padding: '8px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <Download size={14} /> Top 5 Sales CSV
+          </button>
+          <button
+            className="btn btn-primary"
             onClick={() => handleExportCSV('monthly-summary')}
             style={{ padding: '8px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
           >
@@ -629,7 +664,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         {/* Bar Chart: Movements */}
         <div className="card" style={{ padding: 'var(--sp-4)' }} ref={barChartRef}>
           <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 'var(--sp-3)', color: 'var(--text-secondary)' }}>Movements ({filterLabel})</h3>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={260}>
             <BarChart data={movementData} barSize={36}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
@@ -643,6 +678,22 @@ export default function ReportPanel({ inventory, categories = [] }) {
             </BarChart>
           </ResponsiveContainer>
         </div>
+
+        {/* Bar Chart: Top 5 Sales */}
+        {topSalesData.length > 0 && (
+          <div className="card" style={{ padding: 'var(--sp-4)' }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 'var(--sp-3)', color: 'var(--text-secondary)' }}>Top 5 Most Sold Products ({filterLabel})</h3>
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={topSalesData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" horizontal={true} vertical={false} />
+                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                <YAxis dataKey="name" type="category" width={110} tick={{ fontSize: 10 }} interval={0} />
+                <Tooltip cursor={{ fill: 'var(--bg-secondary)' }} />
+                <Bar dataKey="qty" fill="#4f6ef7" radius={[0, 4, 4, 0]} barSize={24} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </motion.div>
 
       {/* Section Tabs */}
