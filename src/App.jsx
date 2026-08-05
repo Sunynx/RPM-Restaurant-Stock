@@ -52,23 +52,14 @@ function App() {
   const [accessToken, setAccessToken] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   
-  const [selectedProfile, setSelectedProfile] = useState(() => {
-    try {
-      const saved = localStorage.getItem('selectedProfile');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [selectedProfile, setSelectedProfile] = useState(null);
 
   const handleSelectProfile = (profile) => {
     setSelectedProfile(profile);
-    localStorage.setItem('selectedProfile', JSON.stringify(profile));
   };
 
   const handleClearProfile = () => {
     setSelectedProfile(null);
-    localStorage.removeItem('selectedProfile');
   };
   
   const LOW_STOCK_THRESHOLD = 10;
@@ -162,6 +153,38 @@ function App() {
     if (!accounts[0]?.username || !appUsers.length) return [];
     return appUsers.filter(u => u.email && u.email.toLowerCase() === accounts[0].username.toLowerCase());
   }, [appUsers, accounts]);
+
+  // Auto-timeout for shared devices
+  useEffect(() => {
+    let timeoutId;
+    
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      // 10 minutes = 600,000 ms
+      timeoutId = setTimeout(() => {
+        if (selectedProfile && availableProfiles.length > 1) {
+          setSelectedProfile(null);
+        }
+      }, 600000);
+    };
+
+    // Attach event listeners for user activity
+    window.addEventListener('mousemove', resetTimer);
+    window.addEventListener('keydown', resetTimer);
+    window.addEventListener('touchstart', resetTimer);
+    window.addEventListener('click', resetTimer);
+
+    // Initial call
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
+      window.removeEventListener('touchstart', resetTimer);
+      window.removeEventListener('click', resetTimer);
+    };
+  }, [selectedProfile, availableProfiles.length]);
 
   const shouldShowProfileSelector = isAuthenticated && !isLoadingUsers && availableProfiles.length > 1 && !selectedProfile;
 
@@ -695,14 +718,19 @@ function App() {
 
             {/* Switch User (Mobile) */}
             {availableProfiles.length > 1 && (
-              <button 
-                className="topbar-icon-btn mobile-only"
-                onClick={handleClearProfile}
-                title="Switch User"
-                style={{ color: 'var(--primary)' }}
-              >
-                <Users size={18} />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '4px' }} className="mobile-only">
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {selectedProfile?.name || accounts[0]?.name || 'User'}
+                </span>
+                <button 
+                  className="topbar-icon-btn"
+                  onClick={handleClearProfile}
+                  title="Switch User"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  <Users size={18} />
+                </button>
+              </div>
             )}
 
             {/* Logout (Mobile) */}
