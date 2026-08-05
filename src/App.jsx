@@ -992,36 +992,36 @@ function App() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              style={{ maxWidth: '400px', width: '90%', textAlign: 'center', padding: '32px' }}
+              style={{ maxWidth: '500px', width: '90%', textAlign: 'center', padding: '40px 32px' }}
             >
               <Users size={48} style={{ color: 'var(--primary)', margin: '0 auto 16px' }} />
               <h2 style={{ marginBottom: '8px', fontSize: '20px', color: 'var(--text-primary)' }}>Who's using the app?</h2>
               <p style={{ marginBottom: '24px', color: 'var(--text-secondary)', fontSize: '14px' }}>Please select your profile to continue</p>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {availableProfiles.map(profile => (
-                  <button 
-                    key={profile.id}
-                    className="btn btn-primary"
-                    style={{ padding: '16px', fontSize: '16px', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '12px' }}
-                    onClick={() => handleSelectProfile(profile)}
-                  >
-                    <div style={{ 
-                      width: '32px', height: '32px', borderRadius: '50%', 
-                      background: 'rgba(255,255,255,0.2)', display: 'flex', 
-                      alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 'bold' 
-                    }}>
-                      {(() => {
-                        const fallbackName = profile.email ? profile.email.split('@')[0] : 'User';
-                        const nameStr = profile.name || fallbackName;
-                        const parts = nameStr.trim().split(/\s+/);
-                        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-                        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-                      })()}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center', marginTop: '16px' }}>
+                {availableProfiles.map(profile => {
+                  let initials = 'U';
+                  const fallbackName = profile.email ? profile.email.split('@')[0] : 'User';
+                  const nameStr = profile.name || fallbackName;
+                  const parts = nameStr.trim().split(/\s+/);
+                  if (parts.length === 1) initials = parts[0].substring(0, 2).toUpperCase();
+                  else initials = (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+
+                  return (
+                    <div 
+                      key={profile.id}
+                      className="profile-card"
+                      onClick={() => handleSelectProfile(profile)}
+                    >
+                      <div className="profile-card-avatar">
+                        {initials}
+                      </div>
+                      <div className="profile-card-name">
+                        {profile.name || fallbackName}
+                      </div>
                     </div>
-                    {profile.name || (profile.email ? profile.email.split('@')[0] : 'Unknown User')}
-                  </button>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           </motion.div>

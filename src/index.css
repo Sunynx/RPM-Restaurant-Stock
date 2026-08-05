@@ -369,6 +369,50 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: auto;
 }
 
+/* --- Profile Card (Profile Selector) --- */
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 16px 8px;
+  border-radius: 16px;
+  transition: all 0.2s ease-in-out;
+  min-width: 90px;
+}
+.profile-card:hover {
+  background: var(--surface-hover);
+}
+.profile-card:hover .profile-card-avatar {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  border-color: var(--primary);
+  color: #fff;
+  background: var(--primary);
+}
+.profile-card-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  border: 3px solid transparent;
+  transition: all 0.2s ease-in-out;
+}
+.profile-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+  word-break: break-word;
+}
+
 .sidebar-user {
   display: flex;
   align-items: center;
