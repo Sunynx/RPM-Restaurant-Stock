@@ -365,7 +365,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
               <p className="text-sm" style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)', paddingLeft: 56 }}>
                 Import initial products or batch update inventory using a CSV file.
               </p>
-              <div style={{ paddingLeft: 56 }}>
+              <div style={{ paddingLeft: 56, display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
                 <button 
                   className="btn btn-primary"
                   onClick={() => setIsCSVModalOpen(true)}
@@ -373,6 +373,23 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                 >
                   <UploadCloud size={18} />
                   Open CSV Uploader
+                </button>
+                <button 
+                  className="btn"
+                  onClick={() => {
+                    const csvContent = "data:text/csv;charset=utf-8,\uFEFFTitle,ProductName,CategoryLookupId,Quantity,MinStockLevel,Unit,Price\nITEM-001,Sample Product,1,100,20,pcs,250.00";
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", "product_import_template.csv");
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  style={{ gap: 'var(--sp-2)', background: 'var(--bg-secondary)' }}
+                >
+                  <Download size={18} />
+                  Download Template
                 </button>
               </div>
             </div>
