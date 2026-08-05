@@ -309,9 +309,12 @@ function App() {
       const performedBy = selectedProfile?.name || accounts[0]?.username;
       return updateUserRoleInSharePoint(accessToken, userId, newRole, performedBy, targetEmail);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast.success("User role updated!");
-      queryClient.invalidateQueries({ queryKey: ['appUsers'] });
+      queryClient.setQueryData(['appUsers'], (old) => {
+        if (!old) return old;
+        return old.map(u => u.id === variables.userId ? { ...u, role: variables.newRole } : u);
+      });
       queryClient.invalidateQueries({ queryKey: ['logs'] });
     },
     onError: (err) => {
@@ -330,9 +333,17 @@ function App() {
       const performedBy = selectedProfile?.name || accounts[0]?.username;
       return updateUserDetailsInSharePoint(accessToken, userId, updatedFields, performedBy, targetEmail);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast.success("User details updated!");
-      queryClient.invalidateQueries({ queryKey: ['appUsers'] });
+      queryClient.setQueryData(['appUsers'], (old) => {
+        if (!old) return old;
+        return old.map(u => u.id === variables.userId ? { 
+          ...u, 
+          name: variables.updatedFields.name, 
+          role: variables.updatedFields.role, 
+          email: variables.updatedFields.email 
+        } : u);
+      });
       queryClient.invalidateQueries({ queryKey: ['logs'] });
     },
     onError: (err) => {
@@ -351,9 +362,12 @@ function App() {
       const performedBy = selectedProfile?.name || accounts[0]?.username;
       return deleteUserFromSharePoint(accessToken, userId, performedBy, targetEmail);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast.success("User removed successfully!");
-      queryClient.invalidateQueries({ queryKey: ['appUsers'] });
+      queryClient.setQueryData(['appUsers'], (old) => {
+        if (!old) return old;
+        return old.filter(u => u.id !== variables.userId);
+      });
       queryClient.invalidateQueries({ queryKey: ['logs'] });
     },
     onError: (err) => {
