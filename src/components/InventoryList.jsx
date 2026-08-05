@@ -9,7 +9,13 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
   const [filterCategories, setFilterCategories] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [selectedItems, setSelectedItems] = useState(new Set());
+  const [lastEditedId, setLastEditedId] = useState(null);
   const parentRef = useRef(null);
+
+  // Clear lastEditedId when filters change
+  useEffect(() => {
+    setLastEditedId(null);
+  }, [filterStatus, filterCategories, searchTerm]);
 
   // Apply initial filters if provided
   useEffect(() => {
@@ -74,8 +80,10 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
     let matchesStatus = true;
     const closing = parseInt(item.closing) || 0;
     const minStock = parseInt(item.minStockLevel) || lowStockThreshold;
-    if (filterStatus === 'low') matchesStatus = closing > 0 && closing <= minStock;
-    if (filterStatus === 'out') matchesStatus = closing <= 0;
+    const isRecentlyEdited = item.id === lastEditedId;
+    
+    if (filterStatus === 'low') matchesStatus = (closing > 0 && closing <= minStock) || isRecentlyEdited;
+    if (filterStatus === 'out') matchesStatus = closing <= 0 || isRecentlyEdited;
 
     const matchesCategory = filterCategories.length === 0 ? true : filterCategories.includes(item.categoryId);
     
@@ -317,11 +325,11 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                               </td>
                               <td style={{ textAlign: 'center' }}>
                                 <div style={{ display: 'flex', gap: 'var(--sp-2)', justifyContent: 'center' }}>
-                                  <button className="btn-icon" onClick={() => onEdit(item)} title="Adjust Stock">
+                                  <button className="btn-icon" onClick={() => { setLastEditedId(item.id); onEdit(item); }} title="Adjust Stock">
                                     <Package size={14} />
                                   </button>
                                   {['Admin', 'Manager'].includes(userRole) && (
-                                    <button className="btn-icon" onClick={() => onEditDetails(item)} title="Edit Details">
+                                    <button className="btn-icon" onClick={() => { setLastEditedId(item.id); onEditDetails(item); }} title="Edit Details">
                                       <Edit3 size={14} />
                                     </button>
                                   )}
@@ -376,11 +384,11 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                             <div className="mobile-item-stock-label">Stock</div>
                           </div>
                           <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
-                            <button className="btn-icon" onClick={() => onEdit(item)}>
+                            <button className="btn-icon" onClick={() => { setLastEditedId(item.id); onEdit(item); }}>
                               <Package size={15} />
                             </button>
                             {['Admin', 'Manager'].includes(userRole) && (
-                              <button className="btn-icon" onClick={() => onEditDetails(item)}>
+                              <button className="btn-icon" onClick={() => { setLastEditedId(item.id); onEditDetails(item); }}>
                                 <Edit3 size={15} />
                               </button>
                             )}

@@ -80,19 +80,6 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
           {/* Mode Selection */}
           {mode === null ? (
             <div className="stock-mode-selector">
-              <button 
-                type="button"
-                className="stock-mode-btn add"
-                onClick={() => setMode('add')}
-              >
-                <div className="stock-mode-icon add">
-                  <Plus size={22} />
-                </div>
-                <div>
-                  <div className="stock-mode-title">Receive</div>
-                  <div className="stock-mode-desc">Receive new products</div>
-                </div>
-              </button>
               {currentStock > 0 && (
                 <button 
                   type="button"
@@ -108,6 +95,19 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                   </div>
                 </button>
               )}
+              <button 
+                type="button"
+                className="stock-mode-btn add"
+                onClick={() => setMode('add')}
+              >
+                <div className="stock-mode-icon add">
+                  <Plus size={22} />
+                </div>
+                <div>
+                  <div className="stock-mode-title">Receive</div>
+                  <div className="stock-mode-desc">Receive new products</div>
+                </div>
+              </button>
             </div>
           ) : (
             <AnimatePresence mode="wait">
