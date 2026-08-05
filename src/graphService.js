@@ -52,7 +52,7 @@ export async function fetchAppUsers(accessToken, currentUserEmail) {
     const response = await client.api(`/sites/${siteId}/lists/${listId}/items`).expand('fields').get();
     
     if (response.value && response.value.length > 0) {
-      console.log("SHAREPOINT USER COLUMNS:", Object.keys(response.value[0].fields));
+
     }
 
     return response.value.map(item => ({
