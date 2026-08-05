@@ -396,17 +396,29 @@ function App() {
         if (fields.ProductName !== undefined) fields.ProductName = String(fields.ProductName);
         if (fields.Unit !== undefined) fields.Unit = String(fields.Unit);
 
-        // Map CategoryLookupId dynamically for Products
-        if (listName === 'Inventory_Products' && fields.CategoryLookupId) {
-          const rawId = parseInt(fields.CategoryLookupId);
-          if ([1, 2, 3].includes(rawId)) {
-            const catCode = `CAT-00${rawId}`;
-            const actualCategory = categories.find(c => c.code === catCode);
+        // Map Category dynamically for Products
+        if (listName === 'Inventory_Products') {
+          if (fields.Category) {
+            // Find category by name (case-insensitive)
+            const catName = String(fields.Category).trim().toLowerCase();
+            const actualCategory = categories.find(c => c.name.toLowerCase() === catName);
             if (actualCategory && actualCategory.id) {
               fields.CategoryLookupId = parseInt(actualCategory.id);
             } else {
-              console.warn(`Category not found for code: ${catCode}. Dropping CategoryLookupId.`);
-              delete fields.CategoryLookupId;
+              console.warn(`Category not found for name: ${fields.Category}`);
+            }
+            delete fields.Category; // Remove text field to prevent SP schema errors
+          } else if (fields.CategoryLookupId) {
+            const rawId = parseInt(fields.CategoryLookupId);
+            if ([1, 2, 3].includes(rawId)) {
+              const catCode = `CAT-00${rawId}`;
+              const actualCategory = categories.find(c => c.code === catCode);
+              if (actualCategory && actualCategory.id) {
+                fields.CategoryLookupId = parseInt(actualCategory.id);
+              } else {
+                console.warn(`Category not found for code: ${catCode}. Dropping CategoryLookupId.`);
+                delete fields.CategoryLookupId;
+              }
             }
           }
         }

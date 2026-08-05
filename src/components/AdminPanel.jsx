@@ -377,7 +377,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, accessTok
                 <button 
                   className="btn"
                   onClick={() => {
-                    const csvContent = "data:text/csv;charset=utf-8,\uFEFFTitle,ProductName,CategoryLookupId,Quantity,MinStockLevel,Unit,Price\nITEM-001,Sample Product,1,100,20,pcs,250.00";
+                    const csvContent = "data:text/csv;charset=utf-8,\uFEFFTitle,ProductName,Category,Unit,UnitPrice,StockOnHand,MinStockLevel,Status\n6022,MARBORO GLOD,Souvenir,pcs,0,0,10,Active";
                     const encodedUri = encodeURI(csvContent);
                     const link = document.createElement("a");
                     link.setAttribute("href", encodedUri);
