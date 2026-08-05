@@ -22,6 +22,16 @@ function App() {
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState('dashboard');
+  
+  // Scroll to top when changing tabs
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    const contentArea = document.querySelector('.content-area');
+    if (contentArea) contentArea.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    const mainArea = document.querySelector('.main-area');
+    if (mainArea) mainArea.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [activeTab]);
+
   const [initialFilters, setInitialFilters] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [editingProductDetails, setEditingProductDetails] = useState(null);
