@@ -654,7 +654,7 @@ function App() {
           <div className="topbar-right">
             {/* Theme Toggle */}
             <button 
-              className="topbar-icon-btn" 
+              className="topbar-icon-btn mobile-hide" 
               onClick={() => setIsDarkMode(!isDarkMode)}
               title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
@@ -745,7 +745,7 @@ function App() {
               className="topbar-icon-btn mobile-only"
               onClick={handleLogout}
               title="Logout"
-              style={{ color: 'var(--danger)' }}
+              style={{ color: 'var(--danger)', marginRight: '8px' }}
             >
               <LogOut size={18} />
             </button>
