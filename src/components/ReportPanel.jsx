@@ -693,7 +693,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" horizontal={true} vertical={false} />
                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
                 <YAxis dataKey="name" type="category" width={110} tick={{ fontSize: 10 }} interval={0} />
-                <Tooltip cursor={{ fill: 'var(--bg-secondary)' }} />
+                <Tooltip cursor={{ fill: 'var(--bg-hover)' }} />
                 <Bar dataKey="qty" fill="#4f6ef7" radius={[0, 4, 4, 0]} barSize={24} />
               </BarChart>
             </ResponsiveContainer>
