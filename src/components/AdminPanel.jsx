@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud, FolderTree, FileSpreadsheet, FileText, Download } from 'lucide-react';
+import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud, FolderTree, FileSpreadsheet, FileText, Download, Pencil, Trash2, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchAuditLogs } from '../graphService';
 import { utils, writeFile } from 'xlsx';
@@ -266,30 +266,30 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                           <td style={{ paddingLeft: 'var(--sp-4)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
                               <div style={{ 
-                                width: 32, 
-                                height: 32, 
+                                width: 36, 
+                                height: 36, 
                                 borderRadius: 'var(--radius-full)', 
                                 background: u.role === 'Admin' ? 'var(--indigo-100)' : u.role === 'Manager' ? 'var(--amber-100)' : 'var(--emerald-100)',
                                 color: u.role === 'Admin' ? 'var(--indigo-600)' : u.role === 'Manager' ? 'var(--amber-600)' : 'var(--emerald-600)',
                                 display: 'flex', 
                                 alignItems: 'center', 
                                 justifyContent: 'center', 
-                                fontSize: 13, 
+                                fontSize: 14, 
                                 fontWeight: 700,
                                 flexShrink: 0
                               }}>
                                 {(u.name || u.email || '?')[0].toUpperCase()}
                               </div>
-                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 200 }}>
                                 {isEditing ? (
-                                  <>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                     <input 
                                       type="text" 
                                       className="form-input" 
                                       value={editUserData.name} 
                                       onChange={e => setEditUserData({...editUserData, name: e.target.value})}
                                       placeholder="Display Name"
-                                      style={{ padding: '2px 8px', fontSize: 13, marginBottom: 4 }}
+                                      style={{ padding: '6px 12px', fontSize: 13, height: 32 }}
                                     />
                                     <input 
                                       type="email" 
@@ -297,13 +297,13 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                                       value={editUserData.email} 
                                       onChange={e => setEditUserData({...editUserData, email: e.target.value})}
                                       placeholder="Email"
-                                      style={{ padding: '2px 8px', fontSize: 12, color: 'var(--text-secondary)' }}
+                                      style={{ padding: '6px 12px', fontSize: 13, height: 32 }}
                                     />
-                                  </>
+                                  </div>
                                 ) : (
                                   <>
-                                    {u.name && <div style={{ fontWeight: 600, fontSize: 14 }}>{u.name}</div>}
-                                    <div style={{ fontWeight: u.name ? 400 : 500, fontSize: u.name ? 12 : 14, color: u.name ? 'var(--text-secondary)' : 'var(--text-primary)', wordBreak: 'break-all', lineHeight: 1.2 }}>
+                                    {u.name && <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{u.name}</div>}
+                                    <div style={{ fontWeight: u.name ? 400 : 500, fontSize: u.name ? 12 : 14, color: u.name ? 'var(--text-secondary)' : 'var(--text-primary)', wordBreak: 'break-all', lineHeight: 1.4 }}>
                                       {u.email}
                                     </div>
                                   </>
@@ -311,13 +311,13 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                               </div>
                             </div>
                           </td>
-                          <td>
+                          <td style={{ verticalAlign: 'middle' }}>
                             {isEditing ? (
                               <select 
                                 value={editUserData.role} 
                                 onChange={(e) => setEditUserData({...editUserData, role: e.target.value})}
                                 className="form-input"
-                                style={{ padding: '4px 8px', height: 'auto', fontSize: 13, width: 100 }}
+                                style={{ padding: '6px 12px', height: 32, fontSize: 13, width: 110 }}
                               >
                                 <option value="Staff">Staff</option>
                                 <option value="Manager">Manager</option>
@@ -328,7 +328,18 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                                 value={u.role} 
                                 onChange={(e) => onEditUserRole && onEditUserRole(u.id, e.target.value, u.email)}
                                 className="form-input"
-                                style={{ padding: '4px 8px', height: 'auto', fontSize: 13, width: 100, cursor: 'pointer' }}
+                                style={{ 
+                                  padding: '4px 8px', 
+                                  height: 'auto', 
+                                  fontSize: 12, 
+                                  fontWeight: 600,
+                                  width: 100, 
+                                  cursor: 'pointer',
+                                  background: u.role === 'Admin' ? 'var(--indigo-50)' : u.role === 'Manager' ? 'var(--amber-50)' : 'var(--emerald-50)',
+                                  color: u.role === 'Admin' ? 'var(--indigo-700)' : u.role === 'Manager' ? 'var(--amber-700)' : 'var(--emerald-700)',
+                                  border: 'none',
+                                  borderRadius: 'var(--radius-full)'
+                                }}
                               >
                                 <option value="Staff">Staff</option>
                                 <option value="Manager">Manager</option>
@@ -336,16 +347,24 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                               </select>
                             )}
                           </td>
-                          <td style={{ textAlign: 'right', paddingRight: 'var(--sp-4)' }}>
+                          <td style={{ textAlign: 'right', paddingRight: 'var(--sp-4)', verticalAlign: 'middle' }}>
                             {isEditing ? (
-                              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                                <button className="btn btn-primary" onClick={() => handleSaveUser(u.id)} style={{ padding: '4px 12px', fontSize: 12 }}>Save</button>
-                                <button className="btn" onClick={() => setEditingUserId(null)} style={{ padding: '4px 12px', fontSize: 12 }}>Cancel</button>
+                              <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                                <button className="btn btn-primary" onClick={() => handleSaveUser(u.id)} style={{ padding: 6, width: 32, height: 32 }} title="Save">
+                                  <Check size={16} />
+                                </button>
+                                <button className="btn" onClick={() => setEditingUserId(null)} style={{ padding: 6, width: 32, height: 32 }} title="Cancel">
+                                  <X size={16} />
+                                </button>
                               </div>
                             ) : (
-                              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                                <button className="btn" onClick={() => handleEditClick(u)} style={{ padding: '4px 8px', fontSize: 12 }}>Edit</button>
-                                <button className="btn" onClick={() => handleDeleteClick(u.id, u.email)} style={{ padding: '4px 8px', fontSize: 12, color: 'var(--danger)' }}>Delete</button>
+                              <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                                <button className="btn" onClick={() => handleEditClick(u)} style={{ padding: 6, width: 32, height: 32, color: 'var(--text-secondary)' }} title="Edit">
+                                  <Pencil size={16} />
+                                </button>
+                                <button className="btn" onClick={() => handleDeleteClick(u.id, u.email)} style={{ padding: 6, width: 32, height: 32, color: 'var(--danger)' }} title="Delete">
+                                  <Trash2 size={16} />
+                                </button>
                               </div>
                             )}
                           </td>
