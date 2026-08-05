@@ -466,9 +466,9 @@ function App() {
     <div className="app-shell">
       {/* Desktop Sidebar */}
       <aside className="sidebar">
-        <div className="sidebar-brand" style={{ padding: 'var(--sp-6) var(--sp-4) var(--sp-4)', height: 110 }}>
-          <div className="sidebar-brand-logo" style={{ width: '100%', height: '100%', background: 'transparent', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center' }} />
+        <div className="sidebar-brand" style={{ padding: 'var(--sp-8) var(--sp-4) var(--sp-4)', display: 'flex', justifyContent: 'center' }}>
+          <div className="sidebar-brand-logo" style={{ width: '140px', background: 'transparent', overflow: 'hidden' }}>
+            <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain', objectPosition: 'center' }} />
           </div>
         </div>
         <div className="sidebar-divider" style={{ margin: '0 var(--sp-4)' }}></div>
