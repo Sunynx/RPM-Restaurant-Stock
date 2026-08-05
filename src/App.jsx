@@ -693,6 +693,18 @@ function App() {
               </AnimatePresence>
             </div>
 
+            {/* Switch User (Mobile) */}
+            {availableProfiles.length > 1 && (
+              <button 
+                className="topbar-icon-btn mobile-only"
+                onClick={handleClearProfile}
+                title="Switch User"
+                style={{ color: 'var(--primary)' }}
+              >
+                <Users size={18} />
+              </button>
+            )}
+
             {/* Logout (Mobile) */}
             <button 
               className="topbar-icon-btn mobile-only"

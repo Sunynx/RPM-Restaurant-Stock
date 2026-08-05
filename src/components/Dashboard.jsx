@@ -144,14 +144,14 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
           <div className="kpi-value">{totalItems}</div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="kpi-card" onClick={() => handleNavigate({ filterStatus: 'all' })}>
+        <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'all' })}>
           <div className="kpi-icon indigo">
             <PackageOpen size={20} />
           </div>
           <div className="kpi-label">Total Quantity</div>
           <div className="kpi-value">{totalStock.toLocaleString()}</div>
         </motion.div>
-        <motion.div variants={itemVariants} className="kpi-card" onClick={() => handleNavigate({ filterStatus: 'low' })}>
+        <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'low' })}>
           <div className="kpi-icon amber">
             <AlertTriangle size={20} />
           </div>
@@ -164,7 +164,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
           )}
         </motion.div>
 
-        <motion.div variants={itemVariants} className="kpi-card" onClick={() => handleNavigate({ filterStatus: 'out' })}>
+        <motion.div variants={itemVariants} className="kpi-card" onClick={() => onNavigate({ filterStatus: 'out' })}>
           <div className="kpi-icon rose">
             <AlertCircle size={20} />
           </div>
