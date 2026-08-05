@@ -94,10 +94,8 @@ export async function updateUserRoleInSharePoint(accessToken, userId, newRole, c
     const siteId = await getSiteId(client);
     const listId = await getListId(client, siteId, LIST_USERS);
 
-    await client.api(`/sites/${siteId}/lists/${listId}/items/${userId}`).patch({
-      fields: {
-        Role: newRole
-      }
+    await client.api(`/sites/${siteId}/lists/${listId}/items/${userId}/fields`).patch({
+      Role: newRole
     });
 
     await writeAuditLog(accessToken, currentUserEmail, "UpdateUserRole", `Updated role to ${newRole} for user ${targetEmail || `ID ${userId}`}`);
@@ -113,12 +111,10 @@ export async function updateUserDetailsInSharePoint(accessToken, userId, updated
     const siteId = await getSiteId(client);
     const listId = await getListId(client, siteId, LIST_USERS);
 
-    await client.api(`/sites/${siteId}/lists/${listId}/items/${userId}`).patch({
-      fields: {
-        Title: updatedFields.email,
-        DisplayName: updatedFields.name,
-        Role: updatedFields.role
-      }
+    await client.api(`/sites/${siteId}/lists/${listId}/items/${userId}/fields`).patch({
+      Title: updatedFields.email,
+      DisplayName: updatedFields.name,
+      Role: updatedFields.role
     });
 
     await writeAuditLog(accessToken, currentUserEmail, "UpdateUser", `Updated details for user ${targetEmail || `ID ${userId}`}`);
@@ -136,10 +132,8 @@ export async function deleteUserFromSharePoint(accessToken, userId, currentUserE
 
     // Some SP configurations prevent deleting, so we might just set Status to Inactive.
     // Let's patch Status instead of hard delete, which is safer.
-    await client.api(`/sites/${siteId}/lists/${listId}/items/${userId}`).patch({
-      fields: {
-        Status: 'Inactive'
-      }
+    await client.api(`/sites/${siteId}/lists/${listId}/items/${userId}/fields`).patch({
+      Status: 'Inactive'
     });
 
     await writeAuditLog(accessToken, currentUserEmail, "DeleteUser", `Removed access for user ${targetEmail || `ID ${userId}`}`);
