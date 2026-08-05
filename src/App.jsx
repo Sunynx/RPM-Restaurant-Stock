@@ -25,11 +25,18 @@ function App() {
   
   // Scroll to top when changing tabs
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    const contentArea = document.querySelector('.content-area');
-    if (contentArea) contentArea.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    const mainArea = document.querySelector('.main-area');
-    if (mainArea) mainArea.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    // Timeout ensures DOM is painted on mobile before scrolling
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0; // For Safari
+      document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+      
+      const contentArea = document.querySelector('.content-area');
+      if (contentArea) contentArea.scrollTop = 0;
+      
+      const mainArea = document.querySelector('.main-area');
+      if (mainArea) mainArea.scrollTop = 0;
+    }, 10);
   }, [activeTab]);
 
   const [initialFilters, setInitialFilters] = useState(null);
