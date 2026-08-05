@@ -58,7 +58,7 @@ export async function fetchAppUsers(accessToken, currentUserEmail) {
     return response.value.map(item => ({
       id: item.id,
       email: item.fields.Title, // Title is Email
-      name: item.fields.DisplayName || item.fields.Display_x0020_Name || item.fields.Name,
+      name: item.fields.FullName || item.fields.DisplayName || item.fields.Name,
       role: item.fields.Role,
       status: item.fields.Status
     })).filter(u => u.status !== 'Inactive');
@@ -77,7 +77,7 @@ export async function addUserToSharePoint(accessToken, userData, currentUserEmai
     const response = await client.api(`/sites/${siteId}/lists/${listId}/items`).post({
       fields: {
         Title: userData.email,
-        DisplayName: userData.name || userData.email.split('@')[0],
+        FullName: userData.name || userData.email.split('@')[0],
         Role: userData.role,
         Status: 'Active'
       }
@@ -117,7 +117,7 @@ export async function updateUserDetailsInSharePoint(accessToken, userId, updated
 
     await client.api(`/sites/${siteId}/lists/${listId}/items/${userId}/fields`).patch({
       Title: updatedFields.email,
-      DisplayName: updatedFields.name,
+      FullName: updatedFields.name,
       Role: updatedFields.role
     });
 
