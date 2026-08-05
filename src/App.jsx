@@ -847,7 +847,7 @@ function App() {
         {/* Profile Selector Modal */}
         {shouldShowProfileSelector && (
           <motion.div 
-            className="modal-backdrop"
+            className="modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -878,13 +878,14 @@ function App() {
                       alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 'bold' 
                     }}>
                       {(() => {
-                        const nameStr = profile.name || 'User';
+                        const fallbackName = profile.email ? profile.email.split('@')[0] : 'User';
+                        const nameStr = profile.name || fallbackName;
                         const parts = nameStr.trim().split(/\s+/);
                         if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
                         return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
                       })()}
                     </div>
-                    {profile.name || 'Unknown User'}
+                    {profile.name || (profile.email ? profile.email.split('@')[0] : 'Unknown User')}
                   </button>
                 ))}
               </div>
