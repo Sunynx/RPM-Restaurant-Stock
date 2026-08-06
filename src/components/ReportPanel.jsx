@@ -585,14 +585,14 @@ export default function ReportPanel({ inventory, categories = [] }) {
         style={{ padding: 'var(--sp-5)' }}
       >
         {/* Title Row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--sp-4)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--sp-4)', flexWrap: 'wrap', gap: 'var(--sp-4)' }}>
           <h2 style={{ fontSize: '1.35rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', margin: 0 }}>
             <div style={{ width: 40, height: 40, borderRadius: 'var(--radius-lg)', background: 'linear-gradient(135deg, var(--primary), var(--indigo-500))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <FileText size={20} style={{ color: '#fff' }} />
             </div>
             System Report
           </h2>
-          <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-3)', alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-subtle)', padding: '4px', borderRadius: 'var(--radius-lg)' }}>
               {[
                 { id: 'daily', label: 'Today' },
@@ -603,7 +603,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                   key={f.id}
                   onClick={() => setFilter(f.id)}
                   style={{
-                    padding: '6px 12px',
+                    padding: '8px 16px',
                     borderRadius: 'var(--radius-md)',
                     fontSize: 13,
                     fontWeight: 600,
@@ -625,9 +625,9 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 className="btn"
                 onClick={() => setShowCsvMenu(!showCsvMenu)}
                 style={{
-                  padding: '6px 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '10px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
                   background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-default)',
-                  borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow-sm)'
+                  borderRadius: 'var(--radius-lg)', fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow-sm)'
                 }}
               >
                 <Download size={14} /> CSV 
@@ -640,9 +640,9 @@ export default function ReportPanel({ inventory, categories = [] }) {
                   border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', 
                   boxShadow: 'var(--shadow-lg)', zIndex: 10, minWidth: 160, display: 'flex', flexDirection: 'column', padding: '4px'
                 }}>
-                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '6px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('daily-summary'); setShowCsvMenu(false); }}>Daily Summary</button>
-                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '6px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('monthly-summary'); setShowCsvMenu(false); }}>Monthly Summary</button>
-                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '6px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('top-5-sales'); setShowCsvMenu(false); }}>Top 5 Sales</button>
+                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('daily-summary'); setShowCsvMenu(false); }}>Daily Summary</button>
+                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('monthly-summary'); setShowCsvMenu(false); }}>Monthly Summary</button>
+                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('top-5-sales'); setShowCsvMenu(false); }}>Top 5 Sales</button>
                 </div>
               )}
             </div>
@@ -651,13 +651,13 @@ export default function ReportPanel({ inventory, categories = [] }) {
               onClick={handleExportPDF}
               disabled={pdfExporting}
               style={{
-                padding: '6px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8,
+                padding: '10px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8,
                 background: 'linear-gradient(135deg, var(--primary), var(--indigo-500))', color: '#fff', border: 'none',
-                borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: pdfExporting ? 'wait' : 'pointer',
+                borderRadius: 'var(--radius-lg)', fontWeight: 600, cursor: pdfExporting ? 'wait' : 'pointer',
                 opacity: pdfExporting ? 0.6 : 1, boxShadow: 'var(--shadow-sm)'
               }}
             >
-              <FileDown size={14} /> {pdfExporting ? 'Exporting...' : 'PDF Report'}
+              <FileDown size={16} /> {pdfExporting ? 'Exporting...' : 'PDF Report'}
             </button>
           </div>
         </div>
