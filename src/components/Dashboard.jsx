@@ -29,6 +29,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
     onNavigate(params);
   };
   const totalStock = inventory.reduce((sum, item) => sum + (parseInt(item.closing) || 0), 0);
+  const totalStockValue = inventory.reduce((sum, item) => sum + ((parseInt(item.closing) || 0) * (parseFloat(item.cost) || 0)), 0);
 
   let totalCOGS = 0;
 
@@ -176,6 +177,26 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
             </span>
           )}
         </motion.div>
+
+        {['Admin', 'Manager'].includes(userRole) && (
+          <motion.div variants={itemVariants} className="kpi-card">
+            <div className="kpi-icon" style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
+              <DollarSign size={20} />
+            </div>
+            <div className="kpi-label">Inventory Value</div>
+            <div className="kpi-value">฿{totalStockValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          </motion.div>
+        )}
+
+        {['Admin', 'Manager'].includes(userRole) && (
+          <motion.div variants={itemVariants} className="kpi-card">
+            <div className="kpi-icon" style={{ background: 'var(--bg-active)', color: 'var(--text-secondary)' }}>
+              <Activity size={20} />
+            </div>
+            <div className="kpi-label">Total COGS</div>
+            <div className="kpi-value">฿{totalCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          </motion.div>
+        )}
       </div>
 
       {/* Charts */}
