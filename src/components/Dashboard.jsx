@@ -61,9 +61,9 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
     }
     const type = (t.type || '').toLowerCase();
     if (type === 'sales' || type === 'ent') {
-      chartDataMap[displayDate].sales += t.quantity;
+      chartDataMap[displayDate].sales += Math.abs(t.quantity);
     } else if (type === 'receive' || type === 'adjustment') {
-      chartDataMap[displayDate].receive += t.quantity;
+      chartDataMap[displayDate].receive += Math.abs(t.quantity);
     }
   });
 
