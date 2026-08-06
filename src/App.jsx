@@ -16,6 +16,8 @@ import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUser
 import toast from 'react-hot-toast';
 import CSVImporterModal from './components/CSVImporterModal';
 
+const ADMIN_PIN = '123456';
+
 function App() {
   const { instance, accounts } = useMsal();
   const isAuthenticated = useIsAuthenticated();
@@ -53,9 +55,30 @@ function App() {
   const [showNotifications, setShowNotifications] = useState(false);
   
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [pendingProfile, setPendingProfile] = useState(null);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
 
   const handleSelectProfile = (profile) => {
-    setSelectedProfile(profile);
+    if (profile.role === 'Manager' || profile.role === 'Admin') {
+      setPendingProfile(profile);
+      setPinInput('');
+      setPinError('');
+    } else {
+      setSelectedProfile(profile);
+    }
+  };
+
+  const handlePinSubmit = () => {
+    if (pinInput === ADMIN_PIN) {
+      setSelectedProfile(pendingProfile);
+      setPendingProfile(null);
+      setPinInput('');
+      setPinError('');
+    } else {
+      setPinError('Incorrect PIN');
+      setPinInput('');
+    }
   };
 
   const handleClearProfile = () => {
@@ -997,31 +1020,82 @@ function App() {
               <h2 style={{ marginBottom: '8px', fontSize: '20px', color: 'var(--text-primary)' }}>Who's using the app?</h2>
               <p style={{ marginBottom: '24px', color: 'var(--text-secondary)', fontSize: '14px' }}>Please select your profile to continue</p>
               
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center', marginTop: '16px' }}>
-                {availableProfiles.map(profile => {
-                  let initials = 'U';
-                  const fallbackName = profile.email ? profile.email.split('@')[0] : 'User';
-                  const nameStr = profile.name || fallbackName;
-                  const parts = nameStr.trim().split(/\s+/);
-                  if (parts.length === 1) initials = parts[0].substring(0, 2).toUpperCase();
-                  else initials = (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-
-                  return (
-                    <div 
-                      key={profile.id}
-                      className="profile-card"
-                      onClick={() => handleSelectProfile(profile)}
+              {pendingProfile ? (
+                <div style={{ padding: '0 24px' }}>
+                  <h3 style={{ marginBottom: 16, color: 'var(--text-primary)' }}>Enter PIN for {pendingProfile.name || pendingProfile.email}</h3>
+                  <input
+                    type="password"
+                    maxLength={6}
+                    value={pinInput}
+                    onChange={(e) => {
+                      setPinInput(e.target.value);
+                      setPinError('');
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handlePinSubmit();
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      fontSize: '24px',
+                      textAlign: 'center',
+                      letterSpacing: '8px',
+                      borderRadius: '8px',
+                      border: `1px solid ${pinError ? 'var(--danger)' : 'var(--border-default)'}`,
+                      marginBottom: 16,
+                      background: 'var(--bg-elevated)',
+                      color: 'var(--text-primary)'
+                    }}
+                    autoFocus
+                  />
+                  {pinError && <div style={{ color: 'var(--danger)', marginBottom: 16, fontSize: '14px' }}>{pinError}</div>}
+                  <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                    <button 
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        setPendingProfile(null);
+                        setPinInput('');
+                        setPinError('');
+                      }}
                     >
-                      <div className="profile-card-avatar">
-                        {initials}
+                      Cancel
+                    </button>
+                    <button 
+                      className="btn btn-primary"
+                      onClick={handlePinSubmit}
+                      disabled={!pinInput}
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center', marginTop: '16px' }}>
+                  {availableProfiles.map(profile => {
+                    let initials = 'U';
+                    const fallbackName = profile.email ? profile.email.split('@')[0] : 'User';
+                    const nameStr = profile.name || fallbackName;
+                    const parts = nameStr.trim().split(/\s+/);
+                    if (parts.length === 1) initials = parts[0].substring(0, 2).toUpperCase();
+                    else initials = (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+
+                    return (
+                      <div 
+                        key={profile.id}
+                        className="profile-card"
+                        onClick={() => handleSelectProfile(profile)}
+                      >
+                        <div className="profile-card-avatar">
+                          {initials}
+                        </div>
+                        <div className="profile-card-name">
+                          {profile.name || fallbackName}
+                        </div>
                       </div>
-                      <div className="profile-card-name">
-                        {profile.name || fallbackName}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}
