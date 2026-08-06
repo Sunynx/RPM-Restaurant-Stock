@@ -305,7 +305,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
           `"${(tx.remarks || '').replace(/"/g, '""')}"`
         ].join(','));
       });
-      csvRows.push(['Total', '', '', '', `${count} records`, sumQty, '', '', '', '', ''].join(','));
+      csvRows.push(['', '', '', 'Total', `${count} records`, sumQty, '', '', '', '', ''].join(','));
     } else {
       csvRows = [['Date', 'User', 'Action', 'Details', 'Status'].join(',')];
       let count = 0;
