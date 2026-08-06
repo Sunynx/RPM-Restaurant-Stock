@@ -369,7 +369,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
       let errorCount = 0;
       filteredLogs.forEach(log => {
         count++;
-        if (log.status === 'success') successCount++;
+        if ((log.status || '').toLowerCase() === 'success') successCount++;
         else errorCount++;
         csvRows.push([
           `"${new Date(log.date).toLocaleString('en-GB')}"`,
