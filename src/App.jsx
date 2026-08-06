@@ -16,7 +16,7 @@ import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUser
 import toast from 'react-hot-toast';
 import CSVImporterModal from './components/CSVImporterModal';
 
-const ADMIN_PIN = '2026';
+const ADMIN_PIN = '0000';
 
 function App() {
   const { instance, accounts } = useMsal();
