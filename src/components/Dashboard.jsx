@@ -264,6 +264,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
                     activeDot={{ r: 6, fill: 'var(--primary)', stroke: 'var(--bg-card)', strokeWidth: 3 }} 
                   />
                 </ComposedChart>
+              </ResponsiveContainer>
             ) : (
               <div className="chart-empty">No activity data available</div>
             )}
