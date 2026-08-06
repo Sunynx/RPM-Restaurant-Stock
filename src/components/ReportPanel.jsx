@@ -212,14 +212,20 @@ export default function ReportPanel({ inventory, categories = [] }) {
     let csvRows = [];
     if (type === 'transactions') {
       csvRows = [['Date', 'Code', 'Product Name', 'Category', 'Type', 'Quantity', 'Performed By', 'Remarks'].join(',')];
-      let totalQty = 0;
-      let count = 0;
+      let receiveCount = 0;
+      let salesCount = 0;
+      let entCount = 0;
+      let sumQty = 0;
       filteredTransactions.forEach(tx => {
         const product = inventoryMap.get(String(tx.productId));
         const categoryObj = categoryMap.get(product?.categoryId);
         const category = categoryObj ? categoryObj.name : '—';
-        totalQty += Math.abs(tx.quantity);
-        count++;
+        sumQty += tx.quantity;
+        
+        if (tx.type === 'Receive') receiveCount++;
+        else if (tx.type === 'Sales') salesCount++;
+        else if (tx.type === 'Spoilage' || tx.type === 'ENT') entCount++;
+
         csvRows.push([
           `"${new Date(tx.date).toLocaleString('en-GB')}"`,
           `"${product ? product.code : '-'}"`,
@@ -231,11 +237,21 @@ export default function ReportPanel({ inventory, categories = [] }) {
           `"${(tx.remarks || '').replace(/"/g, '""')}"`
         ].join(','));
       });
-      csvRows.push(['Total', '', '', '', `${count} records`, totalQty, '', ''].join(','));
+      csvRows.push(['', '', '', '', '', '', '', ''].join(','));
+      csvRows.push(['', '', '', 'Sum Total', `Receive: ${receiveCount}`, sumQty, '', ''].join(','));
+      csvRows.push(['', '', '', '', `Sales: ${salesCount}`, '', '', ''].join(','));
+      if (entCount > 0) {
+        csvRows.push(['', '', '', '', `ENT: ${entCount}`, '', '', ''].join(','));
+      }
     } else if (type === 'inventory') {
       csvRows = [['Code', 'Product Name', 'Category', 'Unit', 'Cost', 'Price', 'Stock', 'Value', 'Min Level', 'Status'].join(',')];
       let sumStock = 0;
       let sumValue = 0;
+      let sumCost = 0;
+      let sumPrice = 0;
+      let goodCount = 0;
+      let lowStockCount = 0;
+      let outOfStockCount = 0;
       inventory.forEach(p => {
         const categoryObj = categoryMap.get(p.categoryId);
         const category = categoryObj ? categoryObj.name : '—';
@@ -244,16 +260,25 @@ export default function ReportPanel({ inventory, categories = [] }) {
         const costVal = parseFloat(p.cost) || 0;
         const priceVal = parseFloat(p.price) || 0;
         const totalValue = stockVal * costVal;
+        
+        sumCost += costVal;
+        sumPrice += priceVal;
         sumStock += stockVal;
         sumValue += totalValue;
+        
         let status = 'Good';
-        if (stockVal <= 0) status = 'Out of Stock';
-        else if (stockVal <= minVal) status = 'Low Stock';
+        if (stockVal <= 0) { status = 'Out of Stock'; outOfStockCount++; }
+        else if (stockVal <= minVal) { status = 'Low Stock'; lowStockCount++; }
+        else { goodCount++; }
+
         csvRows.push([
           `"${p.code}"`, `"${p.item}"`, `"${category}"`, `"${p.unit}"`, costVal, priceVal, stockVal, totalValue, minVal, `"${status}"`
         ].join(','));
       });
-      csvRows.push(['Total', '', '', '', '', '', sumStock, sumValue, '', ''].join(','));
+      csvRows.push(['', '', '', '', '', '', '', '', '', ''].join(','));
+      csvRows.push(['', '', 'Sum Total', '', sumCost, sumPrice, sumStock, sumValue, '', `Good: ${goodCount}`].join(','));
+      csvRows.push(['', '', '', '', '', '', '', '', '', `Low Stock: ${lowStockCount}`].join(','));
+      csvRows.push(['', '', '', '', '', '', '', '', '', `Out of Stock: ${outOfStockCount}`].join(','));
     } else if (type === 'sales-ranking') {
       csvRows = [['Code', 'Product Name', 'Category', 'Total Sales Quantity'].join(',')];
       
@@ -288,7 +313,8 @@ export default function ReportPanel({ inventory, categories = [] }) {
           item.qty
         ].join(','));
       });
-      csvRows.push(['Total', '', '', sumQty].join(','));
+      csvRows.push(['', '', '', ''].join(','));
+      csvRows.push(['', '', 'Sum Total', sumQty].join(','));
     } else if (type === 'summary') {
       csvRows = [['Date & Time', 'Code', 'Product Name', 'Category', 'Action', 'Qty', 'Unit Cost', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
       let receiveCount = 0;
@@ -339,8 +365,12 @@ export default function ReportPanel({ inventory, categories = [] }) {
     } else {
       csvRows = [['Date', 'User', 'Action', 'Details', 'Status'].join(',')];
       let count = 0;
+      let successCount = 0;
+      let errorCount = 0;
       filteredLogs.forEach(log => {
         count++;
+        if (log.status === 'success') successCount++;
+        else errorCount++;
         csvRows.push([
           `"${new Date(log.date).toLocaleString('en-GB')}"`,
           `"${log.user}"`, `"${log.title}"`,
@@ -348,7 +378,11 @@ export default function ReportPanel({ inventory, categories = [] }) {
           `"${log.status}"`
         ].join(','));
       });
-      csvRows.push(['Total', '', '', `${count} records`, ''].join(','));
+      csvRows.push(['', '', '', '', ''].join(','));
+      csvRows.push(['', '', 'Sum Total', `${count} records`, `Success: ${successCount}`].join(','));
+      if (errorCount > 0) {
+        csvRows.push(['', '', '', '', `Error: ${errorCount}`].join(','));
+      }
     }
     const csvString = csvRows.join('\n');
     const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' });
