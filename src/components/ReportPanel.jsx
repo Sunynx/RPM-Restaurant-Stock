@@ -291,17 +291,31 @@ export default function ReportPanel({ inventory, categories = [] }) {
       csvRows.push(['Total', '', '', sumQty].join(','));
     } else if (type === 'summary') {
       csvRows = [['Date & Time', 'Code', 'Product Name', 'Category', 'Action', 'Qty', 'Unit Cost', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
-      let count = 0;
+      let receiveCount = 0;
+      let salesCount = 0;
+      let entCount = 0;
       let sumQty = 0;
+      let sumUnitCost = 0;
+      let sumUnitPrice = 0;
+      let sumCurrentStock = 0;
+
       filteredTransactions.forEach(tx => {
         const product = inventoryMap.get(String(tx.productId));
         const categoryObj = categoryMap.get(product?.categoryId);
         const category = categoryObj ? categoryObj.name : '—';
-        const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
+        const currentStock = product ? (parseInt(product.stockOnHand) || 0) : 0;
         const unitCost = product ? (parseFloat(product.cost) || 0) : 0;
         const unitPrice = product ? (parseFloat(product.price) || 0) : 0;
-        sumQty += Math.abs(tx.quantity);
-        count++;
+        
+        sumQty += tx.quantity;
+        sumUnitCost += unitCost;
+        sumUnitPrice += unitPrice;
+        sumCurrentStock += currentStock;
+
+        if (tx.type === 'Receive') receiveCount++;
+        else if (tx.type === 'Sales') salesCount++;
+        else if (tx.type === 'Spoilage' || tx.type === 'ENT') entCount++;
+
         csvRows.push([
           `"${new Date(tx.date).toLocaleString('en-GB')}"`,
           `"${product ? product.code : '-'}"`,
@@ -316,7 +330,12 @@ export default function ReportPanel({ inventory, categories = [] }) {
           `"${(tx.remarks || '').replace(/"/g, '""')}"`
         ].join(','));
       });
-      csvRows.push(['', '', '', 'Total', `${count} records`, sumQty, '', '', '', '', ''].join(','));
+      csvRows.push(['', '', '', '', '', '', '', '', '', '', ''].join(','));
+      csvRows.push(['', '', '', 'Sum Total', `Receive: ${receiveCount}`, sumQty, sumUnitCost, sumUnitPrice, sumCurrentStock, '', ''].join(','));
+      csvRows.push(['', '', '', '', `Sales: ${salesCount}`, '', '', '', '', '', ''].join(','));
+      if (entCount > 0) {
+        csvRows.push(['', '', '', '', `ENT: ${entCount}`, '', '', '', '', '', ''].join(','));
+      }
     } else {
       csvRows = [['Date', 'User', 'Action', 'Details', 'Status'].join(',')];
       let count = 0;
