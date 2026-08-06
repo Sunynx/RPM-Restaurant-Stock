@@ -96,6 +96,29 @@ export default function ReportPanel({ inventory, categories = [] }) {
     return { totalProducts, totalStock, lowStock, outOfStock, salesQty, entQty, receiveQty, totalMovements };
   }, [inventory, filteredTransactions]);
 
+  const revenues = useMemo(() => {
+    let daily = 0;
+    let monthly = 0;
+    const now = new Date();
+    
+    transactions.forEach(tx => {
+      if ((tx.type || '').toLowerCase() === 'sales') {
+        const txDate = new Date(tx.date);
+        const product = inventory.find(p => String(p.id) === String(tx.productId));
+        const price = parseFloat(product?.price) || 0;
+        const value = Math.abs(tx.quantity) * price;
+        
+        if (txDate.toDateString() === now.toDateString()) {
+          daily += value;
+        }
+        if (txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear()) {
+          monthly += value;
+        }
+      }
+    });
+    return { daily, monthly };
+  }, [transactions, inventory]);
+
   const inventorySearched = useMemo(() => {
     if (!searchTerm) return inventory;
     const term = searchTerm.toLowerCase();
@@ -306,19 +329,21 @@ export default function ReportPanel({ inventory, categories = [] }) {
       y += 8;
 
       const kpiData = [
-        ['Total Products', stats.totalProducts],
-        ['Total Stock', stats.totalStock],
-        ['Sales (Today)', stats.salesQty],
-        ['Spoilage/ENT (Today)', stats.entQty],
-        ['Received (Today)', stats.receiveQty],
-        ['Movements (Today)', stats.totalMovements],
+        ['Total Movements', stats.totalMovements],
+        ['Sales Used (qty)', stats.salesQty],
+        ['Spoilage/ENT (qty)', stats.entQty],
+        ['Received (qty)', stats.receiveQty],
+        ['Daily Sales (THB)', revenues.daily.toLocaleString()],
+        ['Monthly Sales (THB)', revenues.monthly.toLocaleString()],
+        ['Low Stock Items', stats.lowStock],
+        ['Out of Stock', stats.outOfStock]
       ];
 
-      const kpiBoxW = (contentWidth - 8) / 3;
+      const kpiBoxW = (contentWidth - 12) / 4;
       const kpiBoxH = 20;
       kpiData.forEach((kpi, i) => {
-        const col = i % 3;
-        const row = Math.floor(i / 3);
+        const col = i % 4;
+        const row = Math.floor(i / 4);
         const x = margin + col * (kpiBoxW + 4);
         const boxY = y + row * (kpiBoxH + 4);
 
@@ -334,7 +359,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         pdf.text(String(kpi[1]), x + 4, boxY + 16);
       });
 
-      y += Math.ceil(kpiData.length / 3) * (kpiBoxH + 4) + 8;
+      y += Math.ceil(kpiData.length / 4) * (kpiBoxH + 4) + 8;
 
       // Stock Status section
       pdf.setFontSize(14);
@@ -541,6 +566,8 @@ export default function ReportPanel({ inventory, categories = [] }) {
   const kpiCards = [
     { label: `Movements (${filterLabel})`, value: stats.totalMovements, color: 'var(--primary)' },
     { label: 'Sales Used', value: stats.salesQty, color: 'var(--indigo-500)' },
+    { label: 'Daily Sales', value: `฿${revenues.daily.toLocaleString()}`, color: 'var(--success)' },
+    { label: 'Monthly Sales', value: `฿${revenues.monthly.toLocaleString()}`, color: 'var(--success)' },
     { label: 'Spoilage / ENT', value: stats.entQty, color: 'var(--warning)' },
     { label: 'Received', value: stats.receiveQty, color: 'var(--success)' },
     { label: 'Low Stock', value: stats.lowStock, color: stats.lowStock > 0 ? 'var(--warning)' : 'var(--text-primary)' },
@@ -635,7 +662,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         {kpiCards.map((kpi, i) => (
           <div key={i} className="card" style={{ padding: 'var(--sp-4)', textAlign: 'center' }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{kpi.label}</div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: kpi.color, marginTop: 4 }}>{kpi.value}</div>
+            <div style={{ fontSize: typeof kpi.value === 'string' && kpi.value.startsWith('฿') ? '1.5rem' : '1.75rem', fontWeight: 800, color: kpi.color, marginTop: 4 }}>{kpi.value}</div>
           </div>
         ))}
       </motion.div>
