@@ -46,7 +46,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
     if ((t.type || '').toLowerCase() === 'sales') {
       const product = inventory.find(i => String(i.id) === String(t.productId));
       if (product) {
-        totalCOGS += Math.abs(t.quantity) * (parseFloat(product.price) || 0);
+        totalCOGS += Math.abs(t.quantity) * (parseFloat(product.cost) || 0);
       }
     }
   });

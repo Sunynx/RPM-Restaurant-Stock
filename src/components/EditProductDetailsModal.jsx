@@ -8,6 +8,7 @@ export default function EditProductDetailsModal({ item, categories = [], onClose
     item: item.item || '',
     categoryId: item.categoryId || '',
     unit: item.unit || '',
+    cost: item.cost || '',
     price: item.price || '',
     minStockLevel: item.minStockLevel || '10'
   });
@@ -20,6 +21,7 @@ export default function EditProductDetailsModal({ item, categories = [], onClose
       ...item,
       ...formData,
       categoryId: parseInt(formData.categoryId) || null,
+      cost: parseFloat(formData.cost) || 0,
       price: parseFloat(formData.price) || 0,
       minStockLevel: parseInt(formData.minStockLevel) || 0
     });
@@ -114,7 +116,18 @@ export default function EditProductDetailsModal({ item, categories = [], onClose
 
           <div style={{ display: 'flex', gap: 'var(--sp-4)' }}>
             <div className="form-group" style={{ flex: 1 }}>
-              <label className="form-label">Unit Price (฿)</label>
+              <label className="form-label">Cost (฿)</label>
+              <input 
+                type="number" 
+                className="form-input" 
+                min="0" step="0.01"
+                value={formData.cost}
+                onChange={e => setFormData({...formData, cost: e.target.value})}
+              />
+            </div>
+
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Price (฿)</label>
               <input 
                 type="number" 
                 className="form-input" 

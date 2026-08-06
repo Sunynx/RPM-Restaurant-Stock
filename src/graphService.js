@@ -269,6 +269,7 @@ export async function fetchInventoryFromSharePoint(accessToken) {
       categoryId: parseInt(item.fields.CategoryLookupId) || null,
       unit: item.fields.Unit || '',
       price: parseFloat(item.fields.UnitPrice) || 0,
+      cost: parseFloat(item.fields.UnitCost) || 0,
       stockOnHand: parseInt(item.fields.StockOnHand) || 0,
       closing: parseInt(item.fields.StockOnHand) || 0, // Keep closing for backwards compatibility with UI
       minStockLevel: parseInt(item.fields.MinStockLevel) || 0,
@@ -294,8 +295,10 @@ export async function createProductInSharePoint(accessToken, productData, userEm
       Title: productData.code,
       ProductName: productData.item,
       CategoryLookupId: productData.categoryId ? parseInt(productData.categoryId) : null,
+      Category: productData.category || 'Uncategorized',
       Unit: productData.unit,
       UnitPrice: parseFloat(productData.price) || 0,
+      UnitCost: parseFloat(productData.cost) || 0,
       StockOnHand: parseInt(productData.stockOnHand) || 0,
       MinStockLevel: parseInt(productData.minStockLevel) || 0,
       Status: 'Active'
@@ -412,16 +415,20 @@ export async function updateProductDetailsInSharePoint(accessToken, itemId, upda
   try {
     const siteId = await getSiteId(client);
     const productsListId = await getListId(client, siteId, LIST_PRODUCTS);
-
-    await client.api(`/sites/${siteId}/lists/${productsListId}/items/${itemId}/fields`)
-      .patch({
+    
+    let fieldsToUpdate = {
         Title: updatedFields.code,
         ProductName: updatedFields.item,
         CategoryLookupId: updatedFields.categoryId ? parseInt(updatedFields.categoryId) : null,
-        Unit: updatedFields.unit,
-        UnitPrice: parseFloat(updatedFields.price) || 0,
-        MinStockLevel: parseInt(updatedFields.minStockLevel) || 0
-      });
+        Unit: updatedFields.unit
+    };
+    
+    if (updatedFields.price !== undefined) fieldsToUpdate.UnitPrice = parseFloat(updatedFields.price) || 0;
+    if (updatedFields.cost !== undefined) fieldsToUpdate.UnitCost = parseFloat(updatedFields.cost) || 0;
+    if (updatedFields.minStock !== undefined) fieldsToUpdate.MinStockLevel = parseInt(updatedFields.minStock, 10) || 0;
+
+    await client.api(`/sites/${siteId}/lists/${productsListId}/items/${itemId}/fields`)
+      .patch(fieldsToUpdate);
 
     // Log update
     await writeAuditLog(accessToken, userEmail, "UpdateProductDetails", `Updated details for product ${updatedFields.code}`);

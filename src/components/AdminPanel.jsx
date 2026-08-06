@@ -89,6 +89,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
       'Item Name': item.item,
       'Category': item.category,
       'Unit': item.unit,
+      'Cost': item.cost,
       'Price': item.price,
       'Closing Stock': item.closing,
       'Min Stock Level': item.minStockLevel,
@@ -110,7 +111,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
     doc.setTextColor(100);
     doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
     
-    const tableColumn = ["Code", "Item Name", "Category", "Unit", "Price", "Stock", "Min Stock"];
+    const tableColumn = ["Code", "Item Name", "Category", "Unit", "Cost", "Price", "Stock", "Min Stock"];
     const tableRows = [];
     
     inventory.forEach(item => {
@@ -119,6 +120,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
         item.item || '-',
         item.category || '-',
         item.unit || '-',
+        item.cost || '-',
         item.price || '-',
         item.closing || '0',
         item.minStockLevel || '0'
@@ -494,7 +496,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                 <button 
                   className="btn"
                   onClick={() => {
-                    const csvContent = "data:text/csv;charset=utf-8,\uFEFFTitle,ProductName,Category,Unit,UnitPrice,StockOnHand,MinStockLevel,Status\n6022,MARBORO GLOD,Souvenir,pcs,0,0,10,Active";
+                    const csvContent = "data:text/csv;charset=utf-8,\uFEFFTitle,ProductName,Category,Unit,UnitCost,UnitPrice,StockOnHand,MinStockLevel,Status\n6022,MARBORO GLOD,Souvenir,pcs,0,0,0,10,Active";
                     const encodedUri = encodeURI(csvContent);
                     const link = document.createElement("a");
                     link.setAttribute("href", encodedUri);
