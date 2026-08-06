@@ -259,42 +259,32 @@ export default function ReportPanel({ inventory, categories = [] }) {
         ].join(','));
       });
       csvRows.push(['Total', '', '', sumQty].join(','));
-    } else if (type === 'daily-summary' || type === 'monthly-summary') {
+    } else if (type === 'summary') {
       csvRows = [['Date & Time', 'Code', 'Product Name', 'Category', 'Action', 'Qty', 'Unit Cost', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
-      const today = new Date();
       let count = 0;
       let sumQty = 0;
-      transactions.forEach(tx => {
-        const txDate = new Date(tx.date);
-        let include = false;
-        if (type === 'daily-summary') {
-          include = txDate.toDateString() === today.toDateString();
-        } else {
-          include = txDate.getMonth() === today.getMonth() && txDate.getFullYear() === today.getFullYear();
-        }
-        if (include) {
-          const product = inventory.find(p => String(p.id) === String(tx.productId));
-          const categoryObj = categories.find(c => c.id === product?.categoryId);
-          const category = categoryObj ? categoryObj.name : '—';
-          const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
-          const unitCost = product ? (parseFloat(product.cost) || 0) : 0;
-          const unitPrice = product ? (parseFloat(product.price) || 0) : 0;
-          sumQty += Math.abs(tx.quantity);
-          count++;
-          csvRows.push([
-            `"${txDate.toLocaleString('en-GB')}"`,
-            `"${product ? product.code : '-'}"`,
-            `"${product ? product.item : tx.productId}"`,
-            `"${category}"`,
-            `"${tx.type}"`,
-            tx.quantity,
-            unitCost,
-            unitPrice,
-            currentStock,
-            `"${tx.performedBy}"`,
-            `"${(tx.remarks || '').replace(/"/g, '""')}"`
-          ].join(','));
-        }
+      filteredTransactions.forEach(tx => {
+        const product = inventory.find(p => String(p.id) === String(tx.productId));
+        const categoryObj = categories.find(c => c.id === product?.categoryId);
+        const category = categoryObj ? categoryObj.name : '—';
+        const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
+        const unitCost = product ? (parseFloat(product.cost) || 0) : 0;
+        const unitPrice = product ? (parseFloat(product.price) || 0) : 0;
+        sumQty += Math.abs(tx.quantity);
+        count++;
+        csvRows.push([
+          `"${new Date(tx.date).toLocaleString('en-GB')}"`,
+          `"${product ? product.code : '-'}"`,
+          `"${product ? product.item : tx.productId}"`,
+          `"${category}"`,
+          `"${tx.type}"`,
+          tx.quantity,
+          unitCost,
+          unitPrice,
+          currentStock,
+          `"${tx.performedBy}"`,
+          `"${(tx.remarks || '').replace(/"/g, '""')}"`
+        ].join(','));
       });
       csvRows.push(['Total', '', '', '', `${count} records`, sumQty, '', '', '', '', ''].join(','));
     } else {
@@ -703,8 +693,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                   border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', 
                   boxShadow: 'var(--shadow-lg)', zIndex: 10, minWidth: 160, display: 'flex', flexDirection: 'column', padding: '4px'
                 }}>
-                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('daily-summary'); setShowCsvMenu(false); }}>Daily Summary</button>
-                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('monthly-summary'); setShowCsvMenu(false); }}>Monthly Summary</button>
+                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('summary'); setShowCsvMenu(false); }}>Export Summary</button>
                   <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('top-5-sales'); setShowCsvMenu(false); }}>Top 5 Sales</button>
                 </div>
               )}
