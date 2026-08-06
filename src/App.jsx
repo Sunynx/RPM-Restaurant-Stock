@@ -69,8 +69,9 @@ function App() {
     }
   };
 
-  const handlePinSubmit = () => {
-    if (pinInput === ADMIN_PIN) {
+  const handlePinSubmit = (pinValue) => {
+    const valueToCheck = typeof pinValue === 'string' ? pinValue : pinInput;
+    if (valueToCheck === ADMIN_PIN) {
       setSelectedProfile(pendingProfile);
       setPendingProfile(null);
       setPinInput('');
@@ -1028,8 +1029,12 @@ function App() {
                     maxLength={4}
                     value={pinInput}
                     onChange={(e) => {
-                      setPinInput(e.target.value);
+                      const newVal = e.target.value;
+                      setPinInput(newVal);
                       setPinError('');
+                      if (newVal.length === 4) {
+                        handlePinSubmit(newVal);
+                      }
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handlePinSubmit();
@@ -1059,13 +1064,6 @@ function App() {
                       }}
                     >
                       Cancel
-                    </button>
-                    <button 
-                      className="btn btn-primary"
-                      onClick={handlePinSubmit}
-                      disabled={!pinInput}
-                    >
-                      Confirm
                     </button>
                   </div>
                 </div>
