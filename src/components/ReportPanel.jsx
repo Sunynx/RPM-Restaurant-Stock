@@ -624,7 +624,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
             </div>
             System Report
           </h2>
-          <div style={{ display: 'flex', gap: 'var(--sp-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-subtle)', padding: '4px', borderRadius: 'var(--radius-lg)' }}>
               {[
                 { id: 'daily', label: 'Today' },
@@ -706,7 +706,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 opacity: pdfExporting ? 0.6 : 1, boxShadow: 'var(--shadow-sm)'
               }}
             >
-              <FileDown size={16} /> {pdfExporting ? 'Exporting...' : 'PDF Report'}
+              <FileDown size={16} /> {pdfExporting ? 'Exporting...' : 'PDF Summary'}
             </button>
           </div>
         </div>
