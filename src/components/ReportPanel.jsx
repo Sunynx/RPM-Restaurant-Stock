@@ -1019,6 +1019,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                     <th>Code</th>
                     <th>Product Name</th>
                     <th>Unit</th>
+                    <th style={{ textAlign: 'right' }}>Cost</th>
                     <th style={{ textAlign: 'right' }}>Price</th>
                     <th style={{ textAlign: 'right' }}>Stock</th>
                     <th style={{ textAlign: 'right' }}>Min Level</th>
@@ -1041,6 +1042,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                           <td style={{ fontFamily: 'monospace', fontSize: 13 }}>{p.code}</td>
                           <td style={{ fontWeight: 600, fontSize: 13 }}>{p.item}</td>
                           <td style={{ fontSize: 13 }}>{p.unit}</td>
+                          <td style={{ textAlign: 'right', fontSize: 13 }}>฿{(p.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                           <td style={{ textAlign: 'right', fontSize: 13 }}>฿{(p.price || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                           <td style={{ textAlign: 'right', fontWeight: 700, fontSize: 13, color: stockVal <= 0 ? 'var(--danger)' : stockVal <= minVal ? 'var(--warning)' : 'var(--text-primary)' }}>{stockVal}</td>
                           <td style={{ textAlign: 'right', fontSize: 13, color: 'var(--text-tertiary)' }}>{minVal}</td>

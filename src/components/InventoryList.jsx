@@ -264,12 +264,12 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                           onChange={toggleSelectAll}
                         />
                       </th>
-                      <SortHeader label="Product Name" sortKey="item" />
                       <SortHeader label="Code" sortKey="code" />
+                      <SortHeader label="Product Name" sortKey="item" />
+                      <SortHeader label="Category" sortKey="categoryId" />
                       <SortHeader label="Quantity" sortKey="closing" />
                       {['Admin', 'Manager'].includes(userRole) && <SortHeader label="Price" sortKey="price" />}
                       {['Admin', 'Manager'].includes(userRole) && <SortHeader label="Value" sortKey="value" />}
-                      <SortHeader label="Category" sortKey="categoryId" />
                       <th>Status</th>
                       <th style={{ textAlign: 'center', width: 64 }}>Action</th>
                     </tr>
@@ -300,15 +300,15 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                                   onChange={() => toggleSelect(item.id)}
                                 />
                               </td>
-                              <td style={{ fontWeight: 500 }}>{item.item}</td>
                               <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>{item.code}</td>
+                              <td style={{ fontWeight: 500 }}>{item.item}</td>
+                              <td style={{ color: 'var(--text-secondary)' }}>{getCategoryLabel(item.categoryId)}</td>
                               <td style={{ fontWeight: 700 }}>{item.closing}</td>
                               {['Admin', 'Manager'].includes(userRole) && <td style={{ color: 'var(--text-secondary)' }}>
                                 <div style={{ fontSize: '12px' }}>Cost: ฿{item.cost?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                                 <div>Price: ฿{item.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                               </td>}
                               {['Admin', 'Manager'].includes(userRole) && <td style={{ fontWeight: 600, textAlign: 'right' }}>฿{(item.closing * (item.cost || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>}
-                              <td style={{ color: 'var(--text-secondary)' }}>{getCategoryLabel(item.categoryId)}</td>
                               <td>
                                 {isOutOfStock ? (
                                   <span className="badge badge-danger">
