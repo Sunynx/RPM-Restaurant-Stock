@@ -771,45 +771,57 @@ export default function ReportPanel({ inventory, categories = [] }) {
         {/* Pie Chart: Stock Status */}
         <div className="card" style={{ padding: 'var(--sp-4)' }} ref={pieChartRef}>
           <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 'var(--sp-3)', color: 'var(--text-secondary)' }}>Stock Health</h3>
-          <ResponsiveContainer width="100%" height={260}>
-            <PieChart>
-              <Pie
-                data={stockStatusData}
-                cx="50%"
-                cy="55%"
-                innerRadius={50}
-                outerRadius={80}
-                paddingAngle={3}
-                dataKey="value"
-                labelLine={false}
-                label={renderCustomizedLabel}
-              >
-                {stockStatusData.map((entry, idx) => (
-                  <Cell key={idx} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend verticalAlign="bottom" height={30} />
-            </PieChart>
-          </ResponsiveContainer>
+          {stockStatusData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart>
+                <Pie
+                  data={stockStatusData}
+                  cx="50%"
+                  cy="55%"
+                  innerRadius={50}
+                  outerRadius={80}
+                  paddingAngle={3}
+                  dataKey="value"
+                  labelLine={false}
+                  label={renderCustomizedLabel}
+                >
+                  {stockStatusData.map((entry, idx) => (
+                    <Cell key={idx} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend verticalAlign="bottom" height={30} />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
+              No stock data available
+            </div>
+          )}
         </div>
 
         {/* Bar Chart: Movements */}
         <div className="card" style={{ padding: 'var(--sp-4)' }} ref={barChartRef}>
           <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 'var(--sp-3)', color: 'var(--text-secondary)' }}>Movements ({filterLabel})</h3>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={movementData} barSize={36}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="qty" radius={[6, 6, 0, 0]}>
-                {movementData.map((entry, idx) => (
-                  <Cell key={idx} fill={entry.fill} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          {movementData.some(d => d.qty > 0) ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={movementData} barSize={36}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Bar dataKey="qty" radius={[6, 6, 0, 0]}>
+                  {movementData.map((entry, idx) => (
+                    <Cell key={idx} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
+              No movement data available
+            </div>
+          )}
         </div>
 
         {/* List: Top 5 Sales */}
