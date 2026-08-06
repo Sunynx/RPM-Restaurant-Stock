@@ -200,60 +200,92 @@ export default function ReportPanel({ inventory, categories = [] }) {
   const handleExportCSV = (type) => {
     let csvRows = [];
     if (type === 'transactions') {
-      csvRows = [['Date', 'Type', 'Code', 'Product Name', 'Quantity', 'Performed By', 'Remarks'].join(',')];
+      csvRows = [['Date', 'Code', 'Product Name', 'Category', 'Type', 'Quantity', 'Performed By', 'Remarks'].join(',')];
+      let totalQty = 0;
+      let count = 0;
       filteredTransactions.forEach(tx => {
         const product = inventory.find(p => String(p.id) === String(tx.productId));
+        const categoryObj = categories.find(c => c.id === product?.categoryId);
+        const category = categoryObj ? categoryObj.name : '—';
+        totalQty += Math.abs(tx.quantity);
+        count++;
         csvRows.push([
           `"${new Date(tx.date).toLocaleString('en-GB')}"`,
-          `"${tx.type}"`,
           `"${product ? product.code : '-'}"`,
           `"${product ? product.item : tx.productId}"`,
+          `"${category}"`,
+          `"${tx.type}"`,
           tx.quantity,
           `"${tx.performedBy}"`,
           `"${(tx.remarks || '').replace(/"/g, '""')}"`
         ].join(','));
       });
+      csvRows.push(['Total', '', '', '', `${count} records`, totalQty, '', ''].join(','));
     } else if (type === 'inventory') {
-      csvRows = [['Code', 'Product Name', 'Unit', 'Cost', 'Price', 'Stock', 'Value', 'Min Level', 'Status'].join(',')];
+      csvRows = [['Code', 'Product Name', 'Category', 'Unit', 'Cost', 'Price', 'Stock', 'Value', 'Min Level', 'Status'].join(',')];
+      let sumStock = 0;
+      let sumValue = 0;
       inventory.forEach(p => {
+        const categoryObj = categories.find(c => c.id === p.categoryId);
+        const category = categoryObj ? categoryObj.name : '—';
         const stockVal = parseInt(p.stockOnHand) || 0;
         const minVal = parseInt(p.minStockLevel) || 0;
         const costVal = parseFloat(p.cost) || 0;
         const priceVal = parseFloat(p.price) || 0;
         const totalValue = stockVal * costVal;
+        sumStock += stockVal;
+        sumValue += totalValue;
         let status = 'Good';
         if (stockVal <= 0) status = 'Out of Stock';
         else if (stockVal <= minVal) status = 'Low Stock';
         csvRows.push([
-          `"${p.code}"`, `"${p.item}"`, `"${p.unit}"`, costVal, priceVal, stockVal, totalValue, minVal, `"${status}"`
+          `"${p.code}"`, `"${p.item}"`, `"${category}"`, `"${p.unit}"`, costVal, priceVal, stockVal, totalValue, minVal, `"${status}"`
         ].join(','));
       });
+      csvRows.push(['Total', '', '', '', '', '', sumStock, sumValue, '', ''].join(','));
     } else if (type === 'top-5-sales') {
-      csvRows = [['Code', 'Product Name', 'Total Sales Quantity'].join(',')];
+      csvRows = [['Code', 'Product Name', 'Category', 'Total Sales Quantity'].join(',')];
+      let sumQty = 0;
       topSalesData.forEach(item => {
+        const product = inventory.find(p => String(p.code) === String(item.code));
+        const categoryObj = categories.find(c => c.id === product?.categoryId);
+        const category = categoryObj ? categoryObj.name : '—';
+        sumQty += item.qty;
         csvRows.push([
           `"${item.code}"`,
           `"${item.name.replace(/"/g, '""')}"`,
+          `"${category}"`,
           item.qty
         ].join(','));
       });
-    } else if (type === 'daily-summary') {
-      csvRows = [['Date & Time', 'Category', 'Code', 'Product Name', 'Action', 'Qty', 'Unit Cost', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
+      csvRows.push(['Total', '', '', sumQty].join(','));
+    } else if (type === 'daily-summary' || type === 'monthly-summary') {
+      csvRows = [['Date & Time', 'Code', 'Product Name', 'Category', 'Action', 'Qty', 'Unit Cost', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
       const today = new Date();
+      let count = 0;
+      let sumQty = 0;
       transactions.forEach(tx => {
         const txDate = new Date(tx.date);
-        if (txDate.toDateString() === today.toDateString()) {
+        let include = false;
+        if (type === 'daily-summary') {
+          include = txDate.toDateString() === today.toDateString();
+        } else {
+          include = txDate.getMonth() === today.getMonth() && txDate.getFullYear() === today.getFullYear();
+        }
+        if (include) {
           const product = inventory.find(p => String(p.id) === String(tx.productId));
           const categoryObj = categories.find(c => c.id === product?.categoryId);
           const category = categoryObj ? categoryObj.name : '—';
           const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
           const unitCost = product ? (parseFloat(product.cost) || 0) : 0;
           const unitPrice = product ? (parseFloat(product.price) || 0) : 0;
+          sumQty += Math.abs(tx.quantity);
+          count++;
           csvRows.push([
             `"${txDate.toLocaleString('en-GB')}"`,
-            `"${category}"`,
             `"${product ? product.code : '-'}"`,
             `"${product ? product.item : tx.productId}"`,
+            `"${category}"`,
             `"${tx.type}"`,
             tx.quantity,
             unitCost,
@@ -264,38 +296,12 @@ export default function ReportPanel({ inventory, categories = [] }) {
           ].join(','));
         }
       });
-    } else if (type === 'monthly-summary') {
-      csvRows = [['Date & Time', 'Category', 'Code', 'Product Name', 'Action', 'Qty', 'Unit Cost', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
-      const today = new Date();
-      const thisMonth = today.getMonth();
-      const thisYear = today.getFullYear();
-      transactions.forEach(tx => {
-        const txDate = new Date(tx.date);
-        if (txDate.getMonth() === thisMonth && txDate.getFullYear() === thisYear) {
-          const product = inventory.find(p => String(p.id) === String(tx.productId));
-          const categoryObj = categories.find(c => c.id === product?.categoryId);
-          const category = categoryObj ? categoryObj.name : '—';
-          const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
-          const unitCost = product ? (parseFloat(product.cost) || 0) : 0;
-          const unitPrice = product ? (parseFloat(product.price) || 0) : 0;
-          csvRows.push([
-            `"${txDate.toLocaleString('en-GB')}"`,
-            `"${category}"`,
-            `"${product ? product.code : '-'}"`,
-            `"${product ? product.item : tx.productId}"`,
-            `"${tx.type}"`,
-            tx.quantity,
-            unitCost,
-            unitPrice,
-            currentStock,
-            `"${tx.performedBy}"`,
-            `"${(tx.remarks || '').replace(/"/g, '""')}"`
-          ].join(','));
-        }
-      });
+      csvRows.push(['Total', '', '', '', `${count} records`, sumQty, '', '', '', '', ''].join(','));
     } else {
       csvRows = [['Date', 'User', 'Action', 'Details', 'Status'].join(',')];
+      let count = 0;
       filteredLogs.forEach(log => {
+        count++;
         csvRows.push([
           `"${new Date(log.date).toLocaleString('en-GB')}"`,
           `"${log.user}"`, `"${log.title}"`,
@@ -303,6 +309,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
           `"${log.status}"`
         ].join(','));
       });
+      csvRows.push(['Total', '', '', `${count} records`, ''].join(','));
     }
     const csvString = csvRows.join('\n');
     const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' });
