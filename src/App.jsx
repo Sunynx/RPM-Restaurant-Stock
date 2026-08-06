@@ -450,8 +450,7 @@ function App() {
     if (!accessToken) return;
     
     if (listName === 'Inventory_Products' && categories.length === 0) {
-      toast.error("Categories are not loaded yet! Please refresh the page or make sure Categories are imported first.");
-      return;
+      toast.warn("No categories loaded. Products will be imported without categories.");
     }
 
     setIsImporting(true);
