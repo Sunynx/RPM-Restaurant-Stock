@@ -187,6 +187,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
           </motion.div>
         )}
 
+        {/* 
         {['Admin', 'Manager'].includes(userRole) && (
           <motion.div variants={itemVariants} className="kpi-card">
             <div className="kpi-icon" style={{ background: 'var(--bg-active)', color: 'var(--text-secondary)' }}>
@@ -196,6 +197,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
             <div className="kpi-value">฿{totalCOGS.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </motion.div>
         )}
+        */}
       </div>
 
       {/* Charts */}
