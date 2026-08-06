@@ -1026,6 +1026,8 @@ function App() {
                   <h3 style={{ marginBottom: 16, color: 'var(--text-primary)' }}>Enter PIN for {pendingProfile.name || pendingProfile.email}</h3>
                   <input
                     type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     maxLength={4}
                     value={pinInput}
                     onChange={(e) => {
