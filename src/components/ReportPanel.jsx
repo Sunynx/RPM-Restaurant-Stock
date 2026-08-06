@@ -33,6 +33,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
   const [activeSection, setActiveSection] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [pdfExporting, setPdfExporting] = useState(false);
+  const [showCsvMenu, setShowCsvMenu] = useState(false);
   const pieChartRef = useRef(null);
   const barChartRef = useRef(null);
 
@@ -618,45 +619,47 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 </button>
               ))}
             </div>
-          </div>
-        </div>
 
-        {/* Export Buttons Row */}
-        <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
-          <button
-            className="btn btn-primary"
-            onClick={() => handleExportCSV('daily-summary')}
-            style={{ padding: '8px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            <Download size={14} /> Daily CSV
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => handleExportCSV('top-5-sales')}
-            style={{ padding: '8px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            <Download size={14} /> Top 5 Sales CSV
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => handleExportCSV('monthly-summary')}
-            style={{ padding: '8px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            <Download size={14} /> Monthly CSV
-          </button>
-          <button
-            className="btn"
-            onClick={handleExportPDF}
-            disabled={pdfExporting}
-            style={{
-              padding: '8px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
-              background: 'linear-gradient(135deg, #e74c3c, #c0392b)', color: '#fff', border: 'none',
-              borderRadius: 'var(--radius-lg)', fontWeight: 600, cursor: pdfExporting ? 'wait' : 'pointer',
-              opacity: pdfExporting ? 0.6 : 1
-            }}
-          >
-            <FileDown size={14} /> {pdfExporting ? 'Exporting...' : 'PDF Report'}
-          </button>
+            <div style={{ position: 'relative' }}>
+              <button
+                className="btn"
+                onClick={() => setShowCsvMenu(!showCsvMenu)}
+                style={{
+                  padding: '6px 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
+                  background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-default)',
+                  borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow-sm)'
+                }}
+              >
+                <Download size={14} /> CSV 
+                <span style={{ fontSize: 10, marginLeft: 2 }}>▼</span>
+              </button>
+              
+              {showCsvMenu && (
+                <div style={{
+                  position: 'absolute', top: '100%', right: 0, marginTop: 4, background: 'var(--bg-card)', 
+                  border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', 
+                  boxShadow: 'var(--shadow-lg)', zIndex: 10, minWidth: 160, display: 'flex', flexDirection: 'column', padding: '4px'
+                }}>
+                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '6px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('daily-summary'); setShowCsvMenu(false); }}>Daily Summary</button>
+                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '6px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('monthly-summary'); setShowCsvMenu(false); }}>Monthly Summary</button>
+                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '6px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('top-5-sales'); setShowCsvMenu(false); }}>Top 5 Sales</button>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={handleExportPDF}
+              disabled={pdfExporting}
+              style={{
+                padding: '6px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8,
+                background: 'linear-gradient(135deg, var(--primary), var(--indigo-500))', color: '#fff', border: 'none',
+                borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: pdfExporting ? 'wait' : 'pointer',
+                opacity: pdfExporting ? 0.6 : 1, boxShadow: 'var(--shadow-sm)'
+              }}
+            >
+              <FileDown size={14} /> {pdfExporting ? 'Exporting...' : 'PDF Report'}
+            </button>
+          </div>
         </div>
       </motion.div>
 
