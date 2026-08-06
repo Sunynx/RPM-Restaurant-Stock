@@ -30,6 +30,8 @@ export default function ReportPanel({ inventory, categories = [] }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('daily');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [activeSection, setActiveSection] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [pdfExporting, setPdfExporting] = useState(false);
@@ -67,9 +69,14 @@ export default function ReportPanel({ inventory, categories = [] }) {
       const logDate = new Date(log.date);
       if (filter === 'daily') return logDate.toDateString() === now.toDateString();
       if (filter === 'monthly') return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
+      if (filter === 'custom' && startDate && endDate) {
+        const start = new Date(startDate).setHours(0,0,0,0);
+        const end = new Date(endDate).setHours(23,59,59,999);
+        return logDate.getTime() >= start && logDate.getTime() <= end;
+      }
       return true;
     });
-  }, [logs, filter]);
+  }, [logs, filter, startDate, endDate]);
 
   const filteredTransactions = useMemo(() => {
     const now = new Date();
@@ -77,9 +84,14 @@ export default function ReportPanel({ inventory, categories = [] }) {
       const txDate = new Date(tx.date);
       if (filter === 'daily') return txDate.toDateString() === now.toDateString();
       if (filter === 'monthly') return txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear();
+      if (filter === 'custom' && startDate && endDate) {
+        const start = new Date(startDate).setHours(0,0,0,0);
+        const end = new Date(endDate).setHours(23,59,59,999);
+        return txDate.getTime() >= start && txDate.getTime() <= end;
+      }
       return true;
     });
-  }, [transactions, filter]);
+  }, [transactions, filter, startDate, endDate]);
 
   const stats = useMemo(() => {
     const totalProducts = inventory.length;
@@ -100,8 +112,10 @@ export default function ReportPanel({ inventory, categories = [] }) {
   const revenues = useMemo(() => {
     let daily = 0;
     let monthly = 0;
+    let period = 0;
     const now = new Date();
     
+    // Calculate global daily/monthly
     transactions.forEach(tx => {
       if ((tx.type || '').toLowerCase() === 'sales') {
         const txDate = new Date(tx.date);
@@ -117,8 +131,18 @@ export default function ReportPanel({ inventory, categories = [] }) {
         }
       }
     });
-    return { daily, monthly };
-  }, [transactions, inventory]);
+    
+    // Calculate period specific revenue
+    filteredTransactions.forEach(tx => {
+      if ((tx.type || '').toLowerCase() === 'sales') {
+        const product = inventory.find(p => String(p.id) === String(tx.productId));
+        const price = parseFloat(product?.price) || 0;
+        period += Math.abs(tx.quantity) * price;
+      }
+    });
+
+    return { daily, monthly, period };
+  }, [transactions, filteredTransactions, inventory]);
 
   const inventorySearched = useMemo(() => {
     if (!searchTerm) return inventory;
@@ -336,6 +360,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         ['Received (qty)', stats.receiveQty],
         ['Daily Sales (THB)', revenues.daily.toLocaleString()],
         ['Monthly Sales (THB)', revenues.monthly.toLocaleString()],
+        ['Period Sales (THB)', revenues.period.toLocaleString()],
         ['Low Stock Items', stats.lowStock],
         ['Out of Stock', stats.outOfStock]
       ];
@@ -556,7 +581,10 @@ export default function ReportPanel({ inventory, categories = [] }) {
     }
   }, [inventory, stats, transactions, categories, filteredTransactions]);
 
-  const filterLabel = filter === 'daily' ? 'Today' : filter === 'monthly' ? 'This Month' : 'All Time';
+  const filterLabel = filter === 'daily' ? 'Today' : 
+                      filter === 'monthly' ? 'This Month' : 
+                      filter === 'custom' ? (startDate && endDate ? `${startDate} to ${endDate}` : 'Custom Date') : 
+                      'All Time';
 
   const sectionTabs = [
     { key: 'overview', label: 'Overview', icon: Activity },
@@ -567,8 +595,15 @@ export default function ReportPanel({ inventory, categories = [] }) {
   const kpiCards = [
     { label: `Movements (${filterLabel})`, value: stats.totalMovements, color: 'var(--primary)' },
     { label: 'Sales Used', value: stats.salesQty, color: 'var(--indigo-500)' },
-    { label: 'Daily Sales', value: `฿${revenues.daily.toLocaleString()}`, color: 'var(--success)' },
-    { label: 'Monthly Sales', value: `฿${revenues.monthly.toLocaleString()}`, color: 'var(--success)' },
+    ...((filter === 'daily' || filter === 'monthly') 
+      ? [
+          { label: 'Daily Sales', value: `฿${revenues.daily.toLocaleString()}`, color: 'var(--success)' },
+          { label: 'Monthly Sales', value: `฿${revenues.monthly.toLocaleString()}`, color: 'var(--success)' }
+        ]
+      : [
+          { label: `Period Sales (${filterLabel})`, value: `฿${revenues.period.toLocaleString()}`, color: 'var(--success)' }
+        ]
+    ),
     { label: 'Spoilage / ENT', value: stats.entQty, color: 'var(--warning)' },
     { label: 'Received', value: stats.receiveQty, color: 'var(--success)' },
     { label: 'Low Stock', value: stats.lowStock, color: stats.lowStock > 0 ? 'var(--warning)' : 'var(--text-primary)' },
@@ -597,7 +632,8 @@ export default function ReportPanel({ inventory, categories = [] }) {
               {[
                 { id: 'daily', label: 'Today' },
                 { id: 'monthly', label: 'This Month' },
-                { id: 'all', label: 'All Time' }
+                { id: 'all', label: 'All Time' },
+                { id: 'custom', label: 'Custom' }
               ].map(f => (
                 <button
                   key={f.id}
@@ -619,6 +655,26 @@ export default function ReportPanel({ inventory, categories = [] }) {
                 </button>
               ))}
             </div>
+
+            {filter === 'custom' && (
+              <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  style={{ padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', fontSize: 13 }}
+                />
+                <span style={{ fontSize: 13, color: 'var(--text-tertiary)', fontWeight: 600 }}>to</span>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  style={{ padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', fontSize: 13 }}
+                />
+              </div>
+            )}
 
             <div style={{ position: 'relative' }}>
               <button
