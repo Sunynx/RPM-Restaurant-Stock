@@ -97,7 +97,23 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
       let aVal = a[sortConfig.key];
       let bVal = b[sortConfig.key];
       
-      if (sortConfig.key === 'closing') {
+      if (sortConfig.key === 'status') {
+        const getStatusPriority = (item) => {
+          const closing = parseInt(item.closing) || 0;
+          const minStock = parseInt(item.minStockLevel) || lowStockThreshold;
+          if (closing <= 0) return 0; // Out of stock
+          if (closing <= minStock) return 1; // Low stock
+          return 2; // Good
+        };
+        aVal = getStatusPriority(a);
+        bVal = getStatusPriority(b);
+      } else if (sortConfig.key === 'value') {
+        aVal = (parseInt(a.closing) || 0) * (parseFloat(a.cost) || 0);
+        bVal = (parseInt(b.closing) || 0) * (parseFloat(b.cost) || 0);
+      } else if (sortConfig.key === 'price' || sortConfig.key === 'cost') {
+        aVal = parseFloat(aVal) || 0;
+        bVal = parseFloat(bVal) || 0;
+      } else if (sortConfig.key === 'closing') {
         aVal = parseInt(aVal) || 0;
         bVal = parseInt(bVal) || 0;
       } else {
@@ -270,7 +286,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                       <SortHeader label="Quantity" sortKey="closing" />
                       {['Admin', 'Manager'].includes(userRole) && <SortHeader label="Price" sortKey="price" />}
                       {['Admin', 'Manager'].includes(userRole) && <SortHeader label="Value" sortKey="value" />}
-                      <th>Status</th>
+                      <SortHeader label="Status" sortKey="status" />
                       <th style={{ textAlign: 'center', width: 64 }}>Action</th>
                     </tr>
                   </thead>
