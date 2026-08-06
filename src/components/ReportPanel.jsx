@@ -243,12 +243,31 @@ export default function ReportPanel({ inventory, categories = [] }) {
         ].join(','));
       });
       csvRows.push(['Total', '', '', '', '', '', sumStock, sumValue, '', ''].join(','));
-    } else if (type === 'top-5-sales') {
+    } else if (type === 'sales-ranking') {
       csvRows = [['Code', 'Product Name', 'Category', 'Total Sales Quantity'].join(',')];
+      
+      const salesMap = {};
+      filteredTransactions.forEach(tx => {
+        if ((tx.type || '').toLowerCase() === 'sales') {
+          salesMap[tx.productId] = (salesMap[tx.productId] || 0) + Math.abs(tx.quantity);
+        }
+      });
+      
+      const allSales = Object.entries(salesMap)
+        .map(([productId, qty]) => {
+          const product = inventory.find(p => String(p.id) === String(productId));
+          return {
+            code: product ? (product.code || '-') : '-',
+            name: product ? (product.item || product.code) : `Item ${productId}`,
+            categoryId: product?.categoryId,
+            qty
+          };
+        })
+        .sort((a, b) => b.qty - a.qty);
+
       let sumQty = 0;
-      topSalesData.forEach(item => {
-        const product = inventory.find(p => String(p.code) === String(item.code));
-        const categoryObj = categories.find(c => c.id === product?.categoryId);
+      allSales.forEach(item => {
+        const categoryObj = categories.find(c => c.id === item.categoryId);
         const category = categoryObj ? categoryObj.name : '—';
         sumQty += item.qty;
         csvRows.push([
@@ -674,14 +693,14 @@ export default function ReportPanel({ inventory, categories = [] }) {
             )}
 
             <button
-              onClick={() => handleExportCSV('top-5-sales')}
+              onClick={() => handleExportCSV('sales-ranking')}
               style={{
                 padding: '10px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
                 background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-default)',
                 borderRadius: 'var(--radius-lg)', fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow-sm)'
               }}
             >
-              <Download size={14} /> Top 5 Sales
+              <Download size={14} /> Sales Ranking
             </button>
 
             <button
