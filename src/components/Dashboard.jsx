@@ -231,15 +231,15 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
         </motion.div>
 
         {/* Stock Movement */}
-        {trendChartData.length > 0 ? (
-          <motion.div variants={itemVariants} className="chart-card">
-            <div className="chart-header">
-              <div>
-                <h3 className="chart-title">Stock Movement</h3>
-                <p className="chart-subtitle">Activity trend over time</p>
-              </div>
+        <motion.div variants={itemVariants} className="chart-card">
+          <div className="chart-header">
+            <div>
+              <h3 className="chart-title">Stock Movement</h3>
+              <p className="chart-subtitle">Activity trend over time</p>
             </div>
-            <div className="chart-area">
+          </div>
+          <div className="chart-area">
+            {trendChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={trendChartData}>
                   <defs>
@@ -264,12 +264,11 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
                     activeDot={{ r: 6, fill: 'var(--primary)', stroke: 'var(--bg-card)', strokeWidth: 3 }} 
                   />
                 </ComposedChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-        ) : (
-          <div />
-        )}
+            ) : (
+              <div className="chart-empty">No activity data available</div>
+            )}
+          </div>
+        </motion.div>
       </div>
 
       {/* Recent Activity */}

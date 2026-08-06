@@ -166,15 +166,18 @@ export default function ReportPanel({ inventory, categories = [] }) {
         ].join(','));
       });
     } else if (type === 'inventory') {
-      csvRows = [['Code', 'Product Name', 'Unit', 'Price', 'Stock', 'Min Level', 'Status'].join(',')];
+      csvRows = [['Code', 'Product Name', 'Unit', 'Cost', 'Price', 'Stock', 'Value', 'Min Level', 'Status'].join(',')];
       inventory.forEach(p => {
         const stockVal = parseInt(p.stockOnHand) || 0;
         const minVal = parseInt(p.minStockLevel) || 0;
+        const costVal = parseFloat(p.cost) || 0;
+        const priceVal = parseFloat(p.price) || 0;
+        const totalValue = stockVal * costVal;
         let status = 'Good';
         if (stockVal <= 0) status = 'Out of Stock';
         else if (stockVal <= minVal) status = 'Low Stock';
         csvRows.push([
-          `"${p.code}"`, `"${p.item}"`, `"${p.unit}"`, p.price, stockVal, minVal, `"${status}"`
+          `"${p.code}"`, `"${p.item}"`, `"${p.unit}"`, costVal, priceVal, stockVal, totalValue, minVal, `"${status}"`
         ].join(','));
       });
     } else if (type === 'top-5-sales') {
@@ -187,7 +190,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         ].join(','));
       });
     } else if (type === 'daily-summary') {
-      csvRows = [['Date & Time', 'Category', 'Code', 'Product Name', 'Action', 'Qty', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
+      csvRows = [['Date & Time', 'Category', 'Code', 'Product Name', 'Action', 'Qty', 'Unit Cost', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
       const today = new Date();
       transactions.forEach(tx => {
         const txDate = new Date(tx.date);
@@ -196,7 +199,8 @@ export default function ReportPanel({ inventory, categories = [] }) {
           const categoryObj = categories.find(c => c.id === product?.categoryId);
           const category = categoryObj ? categoryObj.name : '—';
           const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
-          const unitPrice = product ? (product.price || 0) : 0;
+          const unitCost = product ? (parseFloat(product.cost) || 0) : 0;
+          const unitPrice = product ? (parseFloat(product.price) || 0) : 0;
           csvRows.push([
             `"${txDate.toLocaleString('en-GB')}"`,
             `"${category}"`,
@@ -204,6 +208,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
             `"${product ? product.item : tx.productId}"`,
             `"${tx.type}"`,
             tx.quantity,
+            unitCost,
             unitPrice,
             currentStock,
             `"${tx.performedBy}"`,
@@ -212,7 +217,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         }
       });
     } else if (type === 'monthly-summary') {
-      csvRows = [['Date & Time', 'Category', 'Code', 'Product Name', 'Action', 'Qty', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
+      csvRows = [['Date & Time', 'Category', 'Code', 'Product Name', 'Action', 'Qty', 'Unit Cost', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
       const today = new Date();
       const thisMonth = today.getMonth();
       const thisYear = today.getFullYear();
@@ -223,7 +228,8 @@ export default function ReportPanel({ inventory, categories = [] }) {
           const categoryObj = categories.find(c => c.id === product?.categoryId);
           const category = categoryObj ? categoryObj.name : '—';
           const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
-          const unitPrice = product ? (product.price || 0) : 0;
+          const unitCost = product ? (parseFloat(product.cost) || 0) : 0;
+          const unitPrice = product ? (parseFloat(product.price) || 0) : 0;
           csvRows.push([
             `"${txDate.toLocaleString('en-GB')}"`,
             `"${category}"`,
@@ -231,6 +237,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
             `"${product ? product.item : tx.productId}"`,
             `"${tx.type}"`,
             tx.quantity,
+            unitCost,
             unitPrice,
             currentStock,
             `"${tx.performedBy}"`,
@@ -444,19 +451,19 @@ export default function ReportPanel({ inventory, categories = [] }) {
         let status = 'Good';
         if (s <= 0) status = 'Out of Stock';
         else if (s <= m) status = 'Low Stock';
-        return [p.code || '', p.item || '', p.unit || '', `THB ${(p.price || 0).toLocaleString()}`, String(s), String(m), status];
+        return [p.code || '', p.item || '', p.unit || '', `THB ${(p.cost || 0).toLocaleString()}`, `THB ${(p.price || 0).toLocaleString()}`, String(s), `THB ${(s * (p.cost || 0)).toLocaleString()}`, status];
       });
 
       autoTable(pdf, {
         startY: 24,
-        head: [['Code', 'Product', 'Unit', 'Price', 'Stock', 'Min', 'Status']],
+        head: [['Code', 'Product', 'Unit', 'Cost', 'Price', 'Stock', 'Value', 'Status']],
         body: invRows,
         margin: { left: margin, right: margin },
         styles: { fontSize: 8, cellPadding: 2.5 },
         headStyles: { fillColor: [28, 52, 93], textColor: 255, fontStyle: 'bold' },
         alternateRowStyles: { fillColor: [248, 250, 252] },
         didParseCell: (data) => {
-          if (data.section === 'body' && data.column.index === 6) {
+          if (data.section === 'body' && data.column.index === 7) {
             if (data.cell.raw === 'Out of Stock') data.cell.styles.textColor = [239, 68, 68];
             else if (data.cell.raw === 'Low Stock') data.cell.styles.textColor = [245, 158, 11];
             else data.cell.styles.textColor = [16, 185, 129];
