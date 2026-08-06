@@ -325,7 +325,11 @@ export default function ReportPanel({ inventory, categories = [] }) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `RPM_Report_${type}_${filter}_${new Date().toISOString().split('T')[0]}.csv`;
+    let dateStr = new Date().toISOString().split('T')[0];
+    if (filter === 'custom' && startDate && endDate) {
+      dateStr = `${startDate}_to_${endDate}`;
+    }
+    link.download = `RPM_Report_${type}_${filter}_${dateStr}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
