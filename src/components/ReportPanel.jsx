@@ -592,24 +592,32 @@ export default function ReportPanel({ inventory, categories = [] }) {
             System Report
           </h2>
           <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
-            <select
-              className="form-input"
-              style={{ padding: '8px 12px', minWidth: 120, fontWeight: 600, borderRadius: 'var(--radius-lg)', fontSize: 13 }}
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            >
-              <option value="daily">📅 Today</option>
-              <option value="monthly">📆 This Month</option>
-              <option value="all">📊 All Time</option>
-            </select>
-            <button
-              className="btn btn-ghost"
-              onClick={loadData}
-              style={{ padding: '8px' }}
-              title="Refresh data"
-            >
-              <RefreshCw size={18} className={loading ? 'spinning' : ''} />
-            </button>
+            <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-subtle)', padding: '4px', borderRadius: 'var(--radius-lg)' }}>
+              {[
+                { id: 'daily', label: 'Today' },
+                { id: 'monthly', label: 'This Month' },
+                { id: 'all', label: 'All Time' }
+              ].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setFilter(f.id)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: filter === f.id ? 'var(--bg-card)' : 'transparent',
+                    color: filter === f.id ? 'var(--primary)' : 'var(--text-secondary)',
+                    boxShadow: filter === f.id ? 'var(--shadow-sm)' : 'none',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
