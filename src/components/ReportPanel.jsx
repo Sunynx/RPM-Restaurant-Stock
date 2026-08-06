@@ -93,7 +93,10 @@ export default function ReportPanel({ inventory, categories = [] }) {
     });
   }, [transactions, filter, startDate, endDate]);
 
-  const stats = useMemo(() => {
+  const inventoryMap = useMemo(() => new Map(inventory.map(p => [String(p.id), p])), [inventory]);
+  const categoryMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
+
+  const inventoryStats = useMemo(() => {
     const totalProducts = inventory.length;
     const totalStock = inventory.reduce((sum, p) => sum + (parseInt(p.stockOnHand) || 0), 0);
     const lowStock = inventory.filter(p => {
@@ -102,24 +105,28 @@ export default function ReportPanel({ inventory, categories = [] }) {
       return stock > 0 && stock <= min;
     }).length;
     const outOfStock = inventory.filter(p => (parseInt(p.stockOnHand) || 0) <= 0).length;
+    return { totalProducts, totalStock, lowStock, outOfStock };
+  }, [inventory]);
+
+  const transactionStats = useMemo(() => {
     const salesQty = filteredTransactions.filter(t => t.type === 'Sales').reduce((s, t) => s + Math.abs(t.quantity), 0);
     const entQty = filteredTransactions.filter(t => t.type === 'ENT').reduce((s, t) => s + Math.abs(t.quantity), 0);
     const receiveQty = filteredTransactions.filter(t => t.type === 'Receive').reduce((s, t) => s + Math.abs(t.quantity), 0);
     const totalMovements = filteredTransactions.length;
-    return { totalProducts, totalStock, lowStock, outOfStock, salesQty, entQty, receiveQty, totalMovements };
-  }, [inventory, filteredTransactions]);
+    return { salesQty, entQty, receiveQty, totalMovements };
+  }, [filteredTransactions]);
 
-  const revenues = useMemo(() => {
+  const stats = { ...inventoryStats, ...transactionStats };
+
+  const globalRevenues = useMemo(() => {
     let daily = 0;
     let monthly = 0;
-    let period = 0;
     const now = new Date();
     
-    // Calculate global daily/monthly
     transactions.forEach(tx => {
       if ((tx.type || '').toLowerCase() === 'sales') {
         const txDate = new Date(tx.date);
-        const product = inventory.find(p => String(p.id) === String(tx.productId));
+        const product = inventoryMap.get(String(tx.productId));
         const price = parseFloat(product?.price) || 0;
         const value = Math.abs(tx.quantity) * price;
         
@@ -131,18 +138,22 @@ export default function ReportPanel({ inventory, categories = [] }) {
         }
       }
     });
-    
-    // Calculate period specific revenue
+    return { daily, monthly };
+  }, [transactions, inventoryMap]);
+
+  const periodRevenue = useMemo(() => {
+    let period = 0;
     filteredTransactions.forEach(tx => {
       if ((tx.type || '').toLowerCase() === 'sales') {
-        const product = inventory.find(p => String(p.id) === String(tx.productId));
+        const product = inventoryMap.get(String(tx.productId));
         const price = parseFloat(product?.price) || 0;
         period += Math.abs(tx.quantity) * price;
       }
     });
+    return period;
+  }, [filteredTransactions, inventoryMap]);
 
-    return { daily, monthly, period };
-  }, [transactions, filteredTransactions, inventory]);
+  const revenues = { daily: globalRevenues.daily, monthly: globalRevenues.monthly, period: periodRevenue };
 
   const inventorySearched = useMemo(() => {
     if (!searchTerm) return inventory;
@@ -185,7 +196,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
     
     return Object.entries(salesMap)
       .map(([productId, qty]) => {
-        const product = inventory.find(p => String(p.id) === String(productId));
+        const product = inventoryMap.get(String(productId));
         return {
           name: product ? (product.item || product.code) : `Item ${productId}`,
           code: product ? (product.code || '-') : '-',
@@ -194,7 +205,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
       })
       .sort((a, b) => b.qty - a.qty)
       .slice(0, 5);
-  }, [filteredTransactions, inventory]);
+  }, [filteredTransactions, inventoryMap]);
 
   // --- CSV Export ---
   const handleExportCSV = (type) => {
@@ -226,7 +237,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
       let sumStock = 0;
       let sumValue = 0;
       inventory.forEach(p => {
-        const categoryObj = categories.find(c => c.id === p.categoryId);
+        const categoryObj = categoryMap.get(p.categoryId);
         const category = categoryObj ? categoryObj.name : '—';
         const stockVal = parseInt(p.stockOnHand) || 0;
         const minVal = parseInt(p.minStockLevel) || 0;
@@ -255,7 +266,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
       
       const allSales = Object.entries(salesMap)
         .map(([productId, qty]) => {
-          const product = inventory.find(p => String(p.id) === String(productId));
+          const product = inventoryMap.get(String(productId));
           return {
             code: product ? (product.code || '-') : '-',
             name: product ? (product.item || product.code) : `Item ${productId}`,
@@ -267,7 +278,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
 
       let sumQty = 0;
       allSales.forEach(item => {
-        const categoryObj = categories.find(c => c.id === item.categoryId);
+        const categoryObj = categoryMap.get(item.categoryId);
         const category = categoryObj ? categoryObj.name : '—';
         sumQty += item.qty;
         csvRows.push([
@@ -283,8 +294,8 @@ export default function ReportPanel({ inventory, categories = [] }) {
       let count = 0;
       let sumQty = 0;
       filteredTransactions.forEach(tx => {
-        const product = inventory.find(p => String(p.id) === String(tx.productId));
-        const categoryObj = categories.find(c => c.id === product?.categoryId);
+        const product = inventoryMap.get(String(tx.productId));
+        const categoryObj = categoryMap.get(product?.categoryId);
         const category = categoryObj ? categoryObj.name : '—';
         const currentStock = product ? (parseInt(product.stockOnHand) || 0) : '—';
         const unitCost = product ? (parseFloat(product.cost) || 0) : 0;
