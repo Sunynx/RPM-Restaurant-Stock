@@ -16,7 +16,7 @@ import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUser
 import toast from 'react-hot-toast';
 import CSVImporterModal from './components/CSVImporterModal';
 
-const ADMIN_PIN = '123456';
+const ADMIN_PIN = '2026';
 
 function App() {
   const { instance, accounts } = useMsal();
@@ -1025,7 +1025,7 @@ function App() {
                   <h3 style={{ marginBottom: 16, color: 'var(--text-primary)' }}>Enter PIN for {pendingProfile.name || pendingProfile.email}</h3>
                   <input
                     type="password"
-                    maxLength={6}
+                    maxLength={4}
                     value={pinInput}
                     onChange={(e) => {
                       setPinInput(e.target.value);
