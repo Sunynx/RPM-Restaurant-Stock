@@ -215,8 +215,8 @@ export default function ReportPanel({ inventory, categories = [] }) {
       let totalQty = 0;
       let count = 0;
       filteredTransactions.forEach(tx => {
-        const product = inventory.find(p => String(p.id) === String(tx.productId));
-        const categoryObj = categories.find(c => c.id === product?.categoryId);
+        const product = inventoryMap.get(String(tx.productId));
+        const categoryObj = categoryMap.get(product?.categoryId);
         const category = categoryObj ? categoryObj.name : '—';
         totalQty += Math.abs(tx.quantity);
         count++;
@@ -566,7 +566,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
         pdf.text(`Today's Transactions (${todayTx.length} records)`, margin, 12);
 
         const txRows = todayTx.map(tx => {
-          const product = inventory.find(p => String(p.id) === String(tx.productId));
+          const product = inventoryMap.get(String(tx.productId));
           return [
             new Date(tx.date).toLocaleString('en-GB'),
             tx.type,
@@ -610,7 +610,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
     } finally {
       setPdfExporting(false);
     }
-  }, [inventory, stats, transactions, categories, filteredTransactions]);
+  }, [inventory, stats, transactions, categories, filteredTransactions, inventoryMap, categoryMap]);
 
   const filterLabel = filter === 'daily' ? 'Today' : 
                       filter === 'monthly' ? 'This Month' : 
@@ -952,7 +952,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                     <tr><td colSpan="6" style={{ textAlign: 'center', padding: 'var(--sp-8)', color: 'var(--text-tertiary)' }}>No transactions found for {filterLabel.toLowerCase()}.</td></tr>
                   ) : (
                     filteredTransactions.map(tx => {
-                      const product = inventory.find(p => String(p.id) === String(tx.productId));
+                      const product = inventoryMap.get(String(tx.productId));
                       const isNegative = tx.quantity < 0;
                       return (
                         <tr key={tx.id}>

@@ -31,26 +31,24 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
   const totalStock = inventory.reduce((sum, item) => sum + (parseInt(item.closing) || 0), 0);
   const totalStockValue = inventory.reduce((sum, item) => sum + ((parseInt(item.closing) || 0) * (parseFloat(item.cost) || 0)), 0);
 
-  let totalCOGS = 0;
+  const inventoryMap = useMemo(() => new Map(inventory.map(p => [String(p.id), p])), [inventory]);
 
-  const enrichedTransactions = transactions.map(t => {
-    const product = inventory.find(i => String(i.id) === String(t.productId));
-    return {
-      ...t,
-      code: product?.code || '-',
-      item: product?.item || 'Unknown Item',
-      displayDate: t.date ? t.date.split('T')[0] : '—'
-    };
-  });
-
-  enrichedTransactions.forEach(t => {
-    if ((t.type || '').toLowerCase() === 'sales') {
-      const product = inventory.find(i => String(i.id) === String(t.productId));
-      if (product) {
-        totalCOGS += Math.abs(t.quantity) * (parseFloat(product.cost) || 0);
+  const { enrichedTransactions, totalCOGS } = useMemo(() => {
+    let cogs = 0;
+    const enriched = transactions.map(t => {
+      const product = inventoryMap.get(String(t.productId));
+      if ((t.type || '').toLowerCase() === 'sales' && product) {
+        cogs += Math.abs(t.quantity) * (parseFloat(product.cost) || 0);
       }
-    }
-  });
+      return {
+        ...t,
+        code: product?.code || '-',
+        item: product?.item || 'Unknown Item',
+        displayDate: t.date ? t.date.split('T')[0] : '—'
+      };
+    });
+    return { enrichedTransactions: enriched, totalCOGS: cogs };
+  }, [transactions, inventoryMap]);
 
   // Group transactions by date for the chart
   const chartDataMap = {};
