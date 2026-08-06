@@ -673,31 +673,28 @@ export default function ReportPanel({ inventory, categories = [] }) {
               </div>
             )}
 
-            <div style={{ position: 'relative' }}>
-              <button
-                className="btn"
-                onClick={() => setShowCsvMenu(!showCsvMenu)}
-                style={{
-                  padding: '10px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
-                  background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-default)',
-                  borderRadius: 'var(--radius-lg)', fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow-sm)'
-                }}
-              >
-                <Download size={14} /> CSV 
-                <span style={{ fontSize: 10, marginLeft: 2 }}>▼</span>
-              </button>
-              
-              {showCsvMenu && (
-                <div style={{
-                  position: 'absolute', top: '100%', right: 0, marginTop: 4, background: 'var(--bg-card)', 
-                  border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)', 
-                  boxShadow: 'var(--shadow-lg)', zIndex: 10, minWidth: 160, display: 'flex', flexDirection: 'column', padding: '4px'
-                }}>
-                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('summary'); setShowCsvMenu(false); }}>Export Summary</button>
-                  <button className="btn btn-ghost" style={{ justifyContent: 'flex-start', padding: '8px 12px', fontSize: 13 }} onClick={() => { handleExportCSV('top-5-sales'); setShowCsvMenu(false); }}>Top 5 Sales</button>
-                </div>
-              )}
-            </div>
+            <button
+              onClick={() => handleExportCSV('top-5-sales')}
+              style={{
+                padding: '10px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
+                background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-lg)', fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow-sm)'
+              }}
+            >
+              <Download size={14} /> Top 5 Sales
+            </button>
+
+            <button
+              className="btn"
+              onClick={() => handleExportCSV('summary')}
+              style={{
+                padding: '10px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
+                background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-lg)', fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow-sm)'
+              }}
+            >
+              <Download size={14} /> Export
+            </button>
 
             <button
               onClick={handleExportPDF}
