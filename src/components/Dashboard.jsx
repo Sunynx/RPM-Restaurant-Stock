@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { PackageOpen, AlertTriangle, TrendingUp, Box, AlertCircle, CheckCircle2, DollarSign, FileText, Clock, ChevronDown, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ComposedChart, Line, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
