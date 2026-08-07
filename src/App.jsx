@@ -60,7 +60,8 @@ function App() {
   const [pinError, setPinError] = useState('');
 
   const handleSelectProfile = (profile) => {
-    if (profile.role === 'Manager' || profile.role === 'Admin') {
+    const role = (profile.role || '').trim().toLowerCase();
+    if (role === 'manager' || role === 'admin') {
       setPendingProfile(profile);
       setPinInput('');
       setPinError('');
