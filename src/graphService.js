@@ -429,6 +429,32 @@ export async function updateProductDetailsInSharePoint(accessToken, itemId, upda
     if (updatedFields.price !== undefined) fieldsToUpdate.UnitPrice = parseFloat(updatedFields.price) || 0;
     if (updatedFields.cost !== undefined) fieldsToUpdate.UnitCost = parseFloat(updatedFields.cost) || 0;
     if (updatedFields.minStock !== undefined) fieldsToUpdate.MinStockLevel = parseInt(updatedFields.minStock, 10) || 0;
+    
+    if (updatedFields.stockOnHand !== undefined) {
+      const newStock = parseInt(updatedFields.stockOnHand, 10) || 0;
+      const oldStock = parseInt(updatedFields.oldStockOnHand, 10) || 0;
+      fieldsToUpdate.StockOnHand = newStock;
+      
+      if (newStock !== oldStock) {
+        const diff = newStock - oldStock;
+        const txListId = await getListId(client, siteId, LIST_TRANSACTIONS);
+        const txFields = {
+          Title: `TX-${Date.now()}`,
+          TransactionDate: new Date().toISOString(),
+          TransactionType: 'Receive', // Default to Receive for positive adjustment
+          ProductLookupId: parseInt(itemId),
+          Quantity: diff,
+          PerformedBy: userEmail,
+          Remarks: 'Manual Stock Adjustment'
+        };
+        if (diff < 0) {
+           txFields.TransactionType = 'ENT'; // Use ENT for negative adjustments
+        }
+        await client.api(`/sites/${siteId}/lists/${txListId}/items`).post({ fields: txFields });
+        
+        await writeAuditLog(accessToken, userEmail, "ManualStockAdjustment", `Adjusted stock for product ${updatedFields.code} from ${oldStock} to ${newStock}`);
+      }
+    }
 
     await client.api(`/sites/${siteId}/lists/${productsListId}/items/${itemId}/fields`)
       .patch(fieldsToUpdate);

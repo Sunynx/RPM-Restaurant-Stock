@@ -10,7 +10,8 @@ export default function EditProductDetailsModal({ item, categories = [], onClose
     unit: item.unit || '',
     cost: item.cost || '',
     price: item.price || '',
-    minStockLevel: item.minStockLevel || '10'
+    minStockLevel: item.minStockLevel || '10',
+    stockOnHand: item.stockOnHand || '0'
   });
   const [saving, setSaving] = useState(false);
 
@@ -23,7 +24,9 @@ export default function EditProductDetailsModal({ item, categories = [], onClose
       categoryId: parseInt(formData.categoryId) || null,
       cost: parseFloat(formData.cost) || 0,
       price: parseFloat(formData.price) || 0,
-      minStockLevel: parseInt(formData.minStockLevel) || 0
+      minStockLevel: parseInt(formData.minStockLevel) || 0,
+      stockOnHand: parseInt(formData.stockOnHand) || 0,
+      oldStockOnHand: parseInt(item.stockOnHand) || 0
     });
     setSaving(false);
   };
@@ -145,6 +148,16 @@ export default function EditProductDetailsModal({ item, categories = [], onClose
                 min="0"
                 value={formData.minStockLevel}
                 onChange={e => setFormData({...formData, minStockLevel: e.target.value})}
+              />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">Current Stock</label>
+              <input 
+                type="number" 
+                className="form-input" 
+                min="0"
+                value={formData.stockOnHand}
+                onChange={e => setFormData({...formData, stockOnHand: e.target.value})}
               />
             </div>
           </div>
