@@ -385,32 +385,35 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                             {isOutOfStock && <span className="status-dot danger" />}
                             {isLowStock && <span className="status-dot warning" />}
                           </div>
-                          <div className="mobile-item-meta">
-                            {item.code} · {getCategoryLabel(item.categoryId)}
-                            {['Admin', 'Manager', 'Account'].includes(userRole) && ` · Cost: ฿${item.cost?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · Price: ฿${item.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                          <div className="mobile-item-meta" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span>{item.code} · {getCategoryLabel(item.categoryId)}</span>
+                            {['Admin', 'Manager', 'Account'].includes(userRole) && (
+                              <span>Cost: ฿{item.cost?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · Price: ฿{item.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            )}
                           </div>
                         </div>
                         
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
-                          <div className="mobile-item-stock">
-                            <div className="mobile-item-stock-value" style={{ 
-                              color: isOutOfStock ? 'var(--danger)' : isLowStock ? 'var(--warning)' : 'var(--text-primary)' 
-                            }}>
-                              {item.closing}
-                            </div>
-                            <div className="mobile-item-stock-label">Stock</div>
-                          </div>
-                          {['Admin', 'Manager', 'Account'].includes(userRole) && (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 'var(--sp-2)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
                             <div className="mobile-item-stock">
                               <div className="mobile-item-stock-value" style={{ 
-                                color: 'var(--text-primary)', 
-                                fontWeight: 600 
+                                color: isOutOfStock ? 'var(--danger)' : isLowStock ? 'var(--warning)' : 'var(--text-primary)' 
                               }}>
-                                ฿{(item.closing * (item.cost || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {item.closing}
                               </div>
-                              <div className="mobile-item-stock-label">Value</div>
+                              <div className="mobile-item-stock-label">Stock</div>
                             </div>
-                          )}
+                            {['Admin', 'Manager', 'Account'].includes(userRole) && (
+                              <div className="mobile-item-stock">
+                                <div className="mobile-item-stock-value" style={{ 
+                                  color: 'var(--text-primary)' 
+                                }}>
+                                  ฿{(item.closing * (item.cost || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </div>
+                                <div className="mobile-item-stock-label">Value</div>
+                              </div>
+                            )}
+                          </div>
                           {userRole !== 'Account' && (
                             <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
                               <button className="btn-icon" onClick={() => { setLastEditedId(item.id); onEdit(item); }}>
