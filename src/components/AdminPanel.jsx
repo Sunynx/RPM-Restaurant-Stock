@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud, FolderTree, FileSpreadsheet, FileText, Download, Pencil, Trash2, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchAuditLogs } from '../graphService';
