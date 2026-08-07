@@ -659,6 +659,9 @@ function App() {
               <LogOut size={16} />
             </button>
           </div>
+          <div style={{ textAlign: 'center', fontSize: 10, color: 'var(--text-tertiary)', marginTop: 'var(--sp-2)' }}>
+            v1.0.1
+          </div>
         </div>
       </aside>
 
