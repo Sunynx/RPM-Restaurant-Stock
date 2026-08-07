@@ -241,6 +241,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                     <option value="Staff">Staff</option>
                     <option value="Manager">Manager</option>
                     <option value="Admin">Admin</option>
+                    <option value="Account">Account</option>
                   </select>
                 </div>
                 <button type="submit" className="btn btn-primary" disabled={loadingAddUser} style={{ height: 44, flexShrink: 0 }}>
@@ -271,8 +272,8 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                                 width: 32, 
                                 height: 32, 
                                 borderRadius: 'var(--radius-full)', 
-                                background: u.role === 'Admin' ? 'var(--indigo-100)' : u.role === 'Manager' ? 'var(--amber-100)' : 'var(--emerald-100)',
-                                color: u.role === 'Admin' ? 'var(--indigo-600)' : u.role === 'Manager' ? 'var(--amber-600)' : 'var(--emerald-600)',
+                                background: u.role === 'Admin' ? 'var(--indigo-100)' : u.role === 'Manager' ? 'var(--amber-100)' : u.role === 'Account' ? 'var(--cyan-100)' : 'var(--emerald-100)',
+                                color: u.role === 'Admin' ? 'var(--indigo-600)' : u.role === 'Manager' ? 'var(--amber-600)' : u.role === 'Account' ? 'var(--cyan-600)' : 'var(--emerald-600)',
                                 display: 'flex', 
                                 alignItems: 'center', 
                                 justifyContent: 'center', 
@@ -324,6 +325,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                                 <option value="Staff">Staff</option>
                                 <option value="Manager">Manager</option>
                                 <option value="Admin">Admin</option>
+                                <option value="Account">Account</option>
                               </select>
                             ) : (
                               <select 
@@ -337,8 +339,8 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                                   fontWeight: 600,
                                   width: 85, 
                                   cursor: 'pointer',
-                                  background: u.role === 'Admin' ? 'var(--indigo-50)' : u.role === 'Manager' ? 'var(--amber-50)' : 'var(--emerald-50)',
-                                  color: u.role === 'Admin' ? 'var(--indigo-700)' : u.role === 'Manager' ? 'var(--amber-700)' : 'var(--emerald-700)',
+                                  background: u.role === 'Admin' ? 'var(--indigo-50)' : u.role === 'Manager' ? 'var(--amber-50)' : u.role === 'Account' ? 'var(--cyan-50)' : 'var(--emerald-50)',
+                                  color: u.role === 'Admin' ? 'var(--indigo-700)' : u.role === 'Manager' ? 'var(--amber-700)' : u.role === 'Account' ? 'var(--cyan-700)' : 'var(--emerald-700)',
                                   border: 'none',
                                   borderRadius: 'var(--radius-full)'
                                 }}
@@ -346,6 +348,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                                 <option value="Staff">Staff</option>
                                 <option value="Manager">Manager</option>
                                 <option value="Admin">Admin</option>
+                                <option value="Account">Account</option>
                               </select>
                             )}
                           </td>

@@ -246,7 +246,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
             <>
               {/* Batch Action Bar */}
               <AnimatePresence>
-                {selectedItems.size > 0 && (
+                {selectedItems.size > 0 && userRole !== 'Account' && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
@@ -273,21 +273,21 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th style={{ width: 44, textAlign: 'center' }}>
+                      {userRole !== 'Account' && <th style={{ width: 44, textAlign: 'center' }}>
                         <input 
                           type="checkbox" 
                           checked={sortedInventory.length > 0 && selectedItems.size === sortedInventory.length}
                           onChange={toggleSelectAll}
                         />
-                      </th>
+                      </th>}
                       <SortHeader label="Code" sortKey="code" />
                       <SortHeader label="Product Name" sortKey="item" />
                       <SortHeader label="Category" sortKey="categoryId" />
                       <SortHeader label="Quantity" sortKey="closing" />
-                      {['Admin', 'Manager'].includes(userRole) && <SortHeader label="Price" sortKey="price" />}
-                      {['Admin', 'Manager'].includes(userRole) && <SortHeader label="Value" sortKey="value" />}
+                      {['Admin', 'Manager', 'Account'].includes(userRole) && <SortHeader label="Price" sortKey="price" />}
+                      {['Admin', 'Manager', 'Account'].includes(userRole) && <SortHeader label="Value" sortKey="value" />}
                       <SortHeader label="Status" sortKey="status" />
-                      <th style={{ textAlign: 'center', width: 64 }}>Action</th>
+                      {userRole !== 'Account' && <th style={{ textAlign: 'center', width: 64 }}>Action</th>}
                     </tr>
                   </thead>
                   <tbody style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
@@ -309,22 +309,22 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                               data-index={virtualRow.index} 
                               className={isSelected ? 'selected' : ''}
                             >
-                              <td style={{ textAlign: 'center' }}>
+                              {userRole !== 'Account' && <td style={{ textAlign: 'center' }}>
                                 <input 
                                   type="checkbox" 
                                   checked={isSelected}
                                   onChange={() => toggleSelect(item.id)}
                                 />
-                              </td>
+                              </td>}
                               <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-secondary)' }}>{item.code}</td>
                               <td style={{ fontWeight: 500 }}>{item.item}</td>
                               <td style={{ color: 'var(--text-secondary)' }}>{getCategoryLabel(item.categoryId)}</td>
                               <td style={{ fontWeight: 700 }}>{item.closing}</td>
-                              {['Admin', 'Manager'].includes(userRole) && <td style={{ color: 'var(--text-secondary)' }}>
+                              {['Admin', 'Manager', 'Account'].includes(userRole) && <td style={{ color: 'var(--text-secondary)' }}>
                                 <div style={{ fontSize: '12px' }}>Cost: ฿{item.cost?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                                 <div>Price: ฿{item.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                               </td>}
-                              {['Admin', 'Manager'].includes(userRole) && <td style={{ fontWeight: 600, textAlign: 'right' }}>฿{(item.closing * (item.cost || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>}
+                              {['Admin', 'Manager', 'Account'].includes(userRole) && <td style={{ fontWeight: 600, textAlign: 'right' }}>฿{(item.closing * (item.cost || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>}
                               <td>
                                 {isOutOfStock ? (
                                   <span className="badge badge-danger">
@@ -340,7 +340,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                                   </span>
                                 )}
                               </td>
-                              <td style={{ textAlign: 'center' }}>
+                              {userRole !== 'Account' && <td style={{ textAlign: 'center' }}>
                                 <div style={{ display: 'flex', gap: 'var(--sp-2)', justifyContent: 'center' }}>
                                   <button className="btn-icon" onClick={() => { setLastEditedId(item.id); onEdit(item); }} title="Adjust Stock">
                                     <Package size={14} />
@@ -351,7 +351,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                                     </button>
                                   )}
                                 </div>
-                              </td>
+                              </td>}
                             </tr>
                           )
                         })}
@@ -387,7 +387,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                           </div>
                           <div className="mobile-item-meta">
                             {item.code} · {getCategoryLabel(item.categoryId)}
-                            {['Admin', 'Manager'].includes(userRole) && ` · Cost: ฿${item.cost?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · Price: ฿${item.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                            {['Admin', 'Manager', 'Account'].includes(userRole) && ` · Cost: ฿${item.cost?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · Price: ฿${item.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                           </div>
                         </div>
                         
@@ -400,7 +400,7 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                             </div>
                             <div className="mobile-item-stock-label">Stock</div>
                           </div>
-                          {['Admin', 'Manager'].includes(userRole) && (
+                          {['Admin', 'Manager', 'Account'].includes(userRole) && (
                             <div className="mobile-item-stock">
                               <div className="mobile-item-stock-value" style={{ 
                                 color: 'var(--text-primary)', 
@@ -411,16 +411,18 @@ export default function InventoryList({ inventory, categories, lowStockThreshold
                               <div className="mobile-item-stock-label">Value</div>
                             </div>
                           )}
-                          <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
-                            <button className="btn-icon" onClick={() => { setLastEditedId(item.id); onEdit(item); }}>
-                              <Package size={15} />
-                            </button>
-                            {['Admin', 'Manager'].includes(userRole) && (
-                              <button className="btn-icon" onClick={() => { setLastEditedId(item.id); onEditDetails(item); }}>
-                                <Edit3 size={15} />
+                          {userRole !== 'Account' && (
+                            <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+                              <button className="btn-icon" onClick={() => { setLastEditedId(item.id); onEdit(item); }}>
+                                <Package size={15} />
                               </button>
-                            )}
-                          </div>
+                              {['Admin', 'Manager'].includes(userRole) && (
+                                <button className="btn-icon" onClick={() => { setLastEditedId(item.id); onEditDetails(item); }}>
+                                  <Edit3 size={15} />
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </motion.div>
                     );

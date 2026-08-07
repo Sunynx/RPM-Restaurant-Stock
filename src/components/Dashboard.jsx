@@ -177,7 +177,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
           )}
         </motion.div>
 
-        {['Admin', 'Manager'].includes(userRole) && (
+        {['Admin', 'Manager', 'Account'].includes(userRole) && (
           <motion.div variants={itemVariants} className="kpi-card">
             <div className="kpi-icon" style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
               <DollarSign size={20} />
@@ -188,7 +188,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
         )}
 
         {/* 
-        {['Admin', 'Manager'].includes(userRole) && (
+        {['Admin', 'Manager', 'Account'].includes(userRole) && (
           <motion.div variants={itemVariants} className="kpi-card">
             <div className="kpi-icon" style={{ background: 'var(--bg-active)', color: 'var(--text-secondary)' }}>
               <Activity size={20} />

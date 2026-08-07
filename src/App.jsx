@@ -65,6 +65,9 @@ function App() {
       setPinInput('');
       setPinError('');
     } else {
+      if (accounts.length > 0) {
+        writeAuditLog(accessToken, accounts[0].username, 'Login', `User logged in as ${profile.role}`);
+      }
       setSelectedProfile(profile);
     }
   };
@@ -72,6 +75,9 @@ function App() {
   const handlePinSubmit = (pinValue) => {
     const valueToCheck = typeof pinValue === 'string' ? pinValue : pinInput;
     if (valueToCheck === ADMIN_PIN) {
+      if (accounts.length > 0 && pendingProfile) {
+        writeAuditLog(accessToken, accounts[0].username, 'Login', `User logged in as ${pendingProfile.role}`);
+      }
       setSelectedProfile(pendingProfile);
       setPendingProfile(null);
       setPinInput('');
@@ -604,7 +610,6 @@ function App() {
           </div>
 
           {['Admin', 'Manager'].includes(userRole) && (
-            <>
               <div 
                 className={`sidebar-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
                 onClick={() => setActiveTab('admin')}
@@ -612,6 +617,8 @@ function App() {
                 <Users size={18} />
                 <span>Admin</span>
               </div>
+          )}
+          {['Admin', 'Manager', 'Account'].includes(userRole) && (
               <div 
                 className={`sidebar-nav-item ${activeTab === 'report' ? 'active' : ''}`}
                 onClick={() => setActiveTab('report')}
@@ -619,7 +626,6 @@ function App() {
                 <FileText size={18} />
                 <span>Report</span>
               </div>
-            </>
           )}
 
         </nav>
@@ -963,7 +969,7 @@ function App() {
             <span>Admin</span>
           </button>
         )}
-        {['Admin', 'Manager'].includes(userRole) && (
+        {['Admin', 'Manager', 'Account'].includes(userRole) && (
           <button 
             className={`bottom-nav-item ${activeTab === 'report' ? 'active' : ''}`}
             onClick={() => setActiveTab('report')}
