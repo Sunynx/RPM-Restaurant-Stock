@@ -39,6 +39,28 @@ export default function ReportPanel({ inventory, categories = [] }) {
   const pieChartRef = useRef(null);
   const barChartRef = useRef(null);
 
+  // Sorting State
+  const [logSort, setLogSort] = useState({ key: 'date', direction: 'desc' });
+  const [txSort, setTxSort] = useState({ key: 'date', direction: 'desc' });
+  
+  const handleLogSort = (key) => {
+    setLogSort(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
+  };
+  
+  const handleTxSort = (key) => {
+    setTxSort(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
+  };
+
+  const getLogSortIcon = (key) => {
+    if (logSort.key !== key) return null;
+    return logSort.direction === 'asc' ? ' ↑' : ' ↓';
+  };
+  
+  const getTxSortIcon = (key) => {
+    if (txSort.key !== key) return null;
+    return txSort.direction === 'asc' ? ' ↑' : ' ↓';
+  };
+
   useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
@@ -65,7 +87,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
 
   const filteredLogs = useMemo(() => {
     const now = new Date();
-    return logs.filter(log => {
+    const filtered = logs.filter(log => {
       if (log.title === 'Login') return false;
       const logDate = new Date(log.date);
       if (filter === 'daily') return logDate.toDateString() === now.toDateString();
@@ -77,11 +99,27 @@ export default function ReportPanel({ inventory, categories = [] }) {
       }
       return true;
     });
-  }, [logs, filter, startDate, endDate]);
+
+    const sorted = [...filtered].sort((a, b) => {
+      let aVal = a[logSort.key] || '';
+      let bVal = b[logSort.key] || '';
+      if (logSort.key === 'date') {
+        aVal = new Date(a.date).getTime();
+        bVal = new Date(b.date).getTime();
+      } else {
+        aVal = String(aVal).toLowerCase();
+        bVal = String(bVal).toLowerCase();
+      }
+      if (aVal < bVal) return logSort.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return logSort.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }, [logs, filter, startDate, endDate, logSort]);
 
   const filteredTransactions = useMemo(() => {
     const now = new Date();
-    return transactions.filter(tx => {
+    const filtered = transactions.filter(tx => {
       const txDate = new Date(tx.date);
       if (filter === 'daily') return txDate.toDateString() === now.toDateString();
       if (filter === 'monthly') return txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear();
@@ -92,7 +130,27 @@ export default function ReportPanel({ inventory, categories = [] }) {
       }
       return true;
     });
-  }, [transactions, filter, startDate, endDate]);
+
+    const sorted = [...filtered].sort((a, b) => {
+      let aVal = a[txSort.key] || '';
+      let bVal = b[txSort.key] || '';
+      if (txSort.key === 'date') {
+        aVal = new Date(a.date).getTime();
+        bVal = new Date(b.date).getTime();
+      } else if (txSort.key === 'qty') {
+        aVal = parseFloat(aVal) || 0;
+        bVal = parseFloat(bVal) || 0;
+      } else {
+        aVal = String(aVal).toLowerCase();
+        bVal = String(bVal).toLowerCase();
+      }
+      if (aVal < bVal) return txSort.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return txSort.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    return sorted;
+  }, [transactions, filter, startDate, endDate, txSort]);
 
   const inventoryMap = useMemo(() => new Map(inventory.map(p => [String(p.id), p])), [inventory]);
   const categoryMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
@@ -664,7 +722,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
     } finally {
       setPdfExporting(false);
     }
-  }, [inventory, stats, transactions, categories, filteredTransactions, inventoryMap, categoryMap]);
+  }, [inventory, stats, transactions, categories, filteredTransactions, inventoryMap, categoryMap, revenues]);
 
   const filterLabel = filter === 'daily' ? 'Today' : 
                       filter === 'monthly' ? 'This Month' : 
@@ -957,11 +1015,11 @@ export default function ReportPanel({ inventory, categories = [] }) {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Date & Time</th>
-                    <th>User</th>
-                    <th>Action</th>
-                    <th>Details</th>
-                    <th>Status</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('date')}>Date & Time{getLogSortIcon('date')}</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('user')}>User{getLogSortIcon('user')}</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('title')}>Action{getLogSortIcon('title')}</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('details')}>Details{getLogSortIcon('details')}</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('status')}>Status{getLogSortIcon('status')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1003,12 +1061,12 @@ export default function ReportPanel({ inventory, categories = [] }) {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Date & Time</th>
-                    <th>Type</th>
-                    <th>Product</th>
-                    <th>Qty</th>
-                    <th>By</th>
-                    <th>Remarks</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleTxSort('date')}>Date & Time{getTxSortIcon('date')}</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleTxSort('type')}>Type{getTxSortIcon('type')}</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleTxSort('productId')}>Product{getTxSortIcon('productId')}</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleTxSort('quantity')}>Qty{getTxSortIcon('quantity')}</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleTxSort('performedBy')}>By{getTxSortIcon('performedBy')}</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleTxSort('remarks')}>Remarks{getTxSortIcon('remarks')}</th>
                   </tr>
                 </thead>
                 <tbody>

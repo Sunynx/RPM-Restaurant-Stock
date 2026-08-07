@@ -668,7 +668,12 @@ function App() {
         {/* Topbar */}
         <header className="topbar">
           <div className="topbar-left">
-            <h2 className="topbar-title">{pageTitle}</h2>
+            <h2 className="topbar-title">
+              {pageTitle}
+              <span className="mobile-only" style={{ fontSize: 10, color: 'var(--text-tertiary)', marginLeft: 8, fontWeight: 500, verticalAlign: 'middle' }}>
+                v1.0.3
+              </span>
+            </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: loading ? 'var(--primary)' : 'var(--text-tertiary)', marginLeft: 'var(--sp-2)' }}>
               {loading ? (
                 <>

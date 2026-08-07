@@ -22,6 +22,10 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
   // User edit state
   const [editingUserId, setEditingUserId] = useState(null);
   const [editUserData, setEditUserData] = useState({ name: '', email: '', role: '' });
+  
+  // Sort State for Logs
+  const [logSort, setLogSort] = useState({ key: 'date', direction: 'desc' });
+  const [logsSearchTerm, setLogsSearchTerm] = useState('');
 
   // Categories state
   const [catName, setCatName] = useState('');
@@ -41,6 +45,42 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
       });
     }
   }, [activeTab, accessToken]);
+
+  const handleLogSort = (key) => {
+    let direction = 'asc';
+    if (logSort.key === key && logSort.direction === 'asc') {
+      direction = 'desc';
+    }
+    setLogSort({ key, direction });
+  };
+
+  const filteredLogs = useMemo(() => {
+    let filtered = auditLogs;
+    if (logsSearchTerm.trim()) {
+      const term = logsSearchTerm.toLowerCase();
+      filtered = filtered.filter(l => 
+        (l.user || '').toLowerCase().includes(term) ||
+        (l.title || '').toLowerCase().includes(term) ||
+        (l.details || '').toLowerCase().includes(term)
+      );
+    }
+    
+    return [...filtered].sort((a, b) => {
+      let aValue = a[logSort.key] || '';
+      let bValue = b[logSort.key] || '';
+      if (logSort.key === 'date') {
+        aValue = new Date(a.date).getTime();
+        bValue = new Date(b.date).getTime();
+      } else {
+        aValue = aValue.toString().toLowerCase();
+        bValue = bValue.toString().toLowerCase();
+      }
+      
+      if (aValue < bValue) return logSort.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return logSort.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [auditLogs, logsSearchTerm, logSort]);
 
   const handleAddUser = (e) => {
     e.preventDefault();
@@ -574,14 +614,22 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                     <table className="data-table">
                       <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 1 }}>
                         <tr>
-                          <th style={{ paddingLeft: 'var(--sp-6)' }}>Date</th>
-                          <th>User</th>
-                          <th>Action Type</th>
-                          <th>Details</th>
+                          <th style={{ paddingLeft: 'var(--sp-6)', cursor: 'pointer' }} onClick={() => handleLogSort('date')}>
+                            Date {logSort.key === 'date' && (logSort.direction === 'asc' ? '↑' : '↓')}
+                          </th>
+                          <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('user')}>
+                            User {logSort.key === 'user' && (logSort.direction === 'asc' ? '↑' : '↓')}
+                          </th>
+                          <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('title')}>
+                            Action Type {logSort.key === 'title' && (logSort.direction === 'asc' ? '↑' : '↓')}
+                          </th>
+                          <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('details')}>
+                            Details {logSort.key === 'details' && (logSort.direction === 'asc' ? '↑' : '↓')}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
-                        {auditLogs.length > 0 ? auditLogs.map(log => (
+                        {filteredLogs.length > 0 ? filteredLogs.map(log => (
                           <tr key={log.id}>
                             <td style={{ paddingLeft: 'var(--sp-6)', whiteSpace: 'nowrap' }}>
                               {new Date(log.date).toLocaleString()}
@@ -605,7 +653,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                   
                   {/* Mobile View */}
                   <div className="mobile-only" style={{ padding: 'var(--sp-4)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
-                    {auditLogs.length > 0 ? auditLogs.map(log => (
+                    {filteredLogs.length > 0 ? filteredLogs.map(log => (
                       <div key={log.id} style={{ border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: 'var(--sp-4)', background: 'var(--bg-subtle)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--sp-2)' }}>
                           <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{new Date(log.date).toLocaleString()}</span>
