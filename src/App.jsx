@@ -66,7 +66,7 @@ function App() {
       setPinError('');
     } else {
       if (accounts.length > 0) {
-        const userIdentifier = profile.name ? `${profile.name} (${profile.role}) - ${accounts[0].username}` : accounts[0].username;
+        const userIdentifier = profile.name ? `${profile.name} - ${accounts[0].username}` : accounts[0].username;
         writeAuditLog(accessToken, userIdentifier, 'Login', `User logged in as ${profile.role}`);
       }
       setSelectedProfile(profile);
@@ -77,7 +77,7 @@ function App() {
     const valueToCheck = typeof pinValue === 'string' ? pinValue : pinInput;
     if (valueToCheck === ADMIN_PIN) {
       if (accounts.length > 0 && pendingProfile) {
-        const userIdentifier = pendingProfile.name ? `${pendingProfile.name} (${pendingProfile.role}) - ${accounts[0].username}` : accounts[0].username;
+        const userIdentifier = pendingProfile.name ? `${pendingProfile.name} - ${accounts[0].username}` : accounts[0].username;
         writeAuditLog(accessToken, userIdentifier, 'Login', `User logged in as ${pendingProfile.role}`);
       }
       setSelectedProfile(pendingProfile);
@@ -255,7 +255,7 @@ function App() {
 
   const updateMutation = useMutation({
     mutationFn: (updatedItem) => {
-      const performedBy = selectedProfile ? `${selectedProfile.name} (${selectedProfile.role}) - ${accounts[0]?.username}` : accounts[0]?.username;
+      const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
       return updateInventoryInSharePoint(accessToken, updatedItem.id, updatedItem, performedBy);
     },
     onMutate: async (updatedItem) => {
@@ -295,7 +295,7 @@ function App() {
 
   const updateDetailsMutation = useMutation({
     mutationFn: (updatedFields) => {
-      const performedBy = selectedProfile ? `${selectedProfile.name} (${selectedProfile.role}) - ${accounts[0]?.username}` : accounts[0]?.username;
+      const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
       return updateProductDetailsInSharePoint(accessToken, editingProductDetails.id, updatedFields, performedBy);
     },
     onSuccess: () => {
@@ -317,7 +317,7 @@ function App() {
 
   const addProductMutation = useMutation({
     mutationFn: (productData) => {
-      const performedBy = selectedProfile ? `${selectedProfile.name} (${selectedProfile.role}) - ${accounts[0]?.username}` : accounts[0]?.username;
+      const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
       return createProductInSharePoint(accessToken, productData, performedBy);
     },
     onMutate: async (newProduct) => {
@@ -361,7 +361,7 @@ function App() {
 
   const editUserRoleMutation = useMutation({
     mutationFn: ({ userId, newRole, targetEmail }) => {
-      const performedBy = selectedProfile ? `${selectedProfile.name} (${selectedProfile.role}) - ${accounts[0]?.username}` : accounts[0]?.username;
+      const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
       return updateUserRoleInSharePoint(accessToken, userId, newRole, performedBy, targetEmail);
     },
     onSuccess: (_, variables) => {
@@ -385,7 +385,7 @@ function App() {
 
   const updateUserDetailsMutation = useMutation({
     mutationFn: ({ userId, updatedFields, targetEmail }) => {
-      const performedBy = selectedProfile ? `${selectedProfile.name} (${selectedProfile.role}) - ${accounts[0]?.username}` : accounts[0]?.username;
+      const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
       return updateUserDetailsInSharePoint(accessToken, userId, updatedFields, performedBy, targetEmail);
     },
     onSuccess: (_, variables) => {
@@ -414,7 +414,7 @@ function App() {
 
   const deleteUserMutation = useMutation({
     mutationFn: ({ userId, targetEmail }) => {
-      const performedBy = selectedProfile ? `${selectedProfile.name} (${selectedProfile.role}) - ${accounts[0]?.username}` : accounts[0]?.username;
+      const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
       return deleteUserFromSharePoint(accessToken, userId, performedBy, targetEmail);
     },
     onSuccess: (_, variables) => {
@@ -438,7 +438,7 @@ function App() {
 
   const addUserMutation = useMutation({
     mutationFn: (userData) => {
-      const performedBy = selectedProfile ? `${selectedProfile.name} (${selectedProfile.role}) - ${accounts[0]?.username}` : accounts[0]?.username;
+      const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
       return addUserToSharePoint(accessToken, userData, performedBy);
     },
     onSuccess: () => {
@@ -459,7 +459,7 @@ function App() {
 
   const addCategoryMutation = useMutation({
     mutationFn: (categoryData) => {
-      const performedBy = selectedProfile ? `${selectedProfile.name} (${selectedProfile.role}) - ${accounts[0]?.username}` : accounts[0]?.username;
+      const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
       return createCategoryInSharePoint(accessToken, categoryData, performedBy);
     },
     onSuccess: () => {

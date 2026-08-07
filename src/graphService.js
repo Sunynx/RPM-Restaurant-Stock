@@ -353,11 +353,14 @@ export async function updateInventoryInSharePoint(accessToken, itemId, updatedDa
     const productsListId = await getListId(client, siteId, LIST_PRODUCTS);
     const txListId = await getListId(client, siteId, LIST_TRANSACTIONS);
 
-    // 1. Update Product Stock
+    const fieldsToPatch = { StockOnHand: updatedData.closing };
+    if (updatedData.cost !== undefined) {
+      fieldsToPatch.UnitCost = parseFloat(updatedData.cost) || 0;
+    }
+
+    // 1. Update Product Stock (and Cost if available)
     await client.api(`/sites/${siteId}/lists/${productsListId}/items/${itemId}/fields`)
-      .patch({
-        StockOnHand: updatedData.closing // New calculated stock
-      });
+      .patch(fieldsToPatch);
 
     // 2. Insert Transactions
     const createTransaction = async (type, quantity, remarks = '') => {

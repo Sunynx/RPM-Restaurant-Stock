@@ -7,6 +7,7 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
   const [quantity, setQuantity] = useState('');
   const [reason, setReason] = useState('sales'); // 'sales' | 'ent'
   const [remark, setRemark] = useState('');
+  const [receiveCost, setReceiveCost] = useState('');
 
   const currentStock = parseInt(item.stockOnHand) || 0;
   const qty = parseInt(quantity) || 0;
@@ -24,8 +25,18 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
     e.preventDefault();
     if (!canSave) return;
 
+    let updatedCost = item.cost;
+    if (mode === 'add' && receiveCost && parseFloat(receiveCost) > 0) {
+      const currentAvgCost = parseFloat(item.cost) || 0;
+      const totalCurrentValue = currentStock * currentAvgCost;
+      const totalReceivedValue = parseFloat(receiveCost);
+      const computedAvgCost = (totalCurrentValue + totalReceivedValue) / newStock;
+      updatedCost = parseFloat(computedAvgCost.toFixed(2));
+    }
+
     const saveData = {
       ...item,
+      cost: updatedCost,
       issued: mode === 'add' ? qty : 0,
       sales: mode === 'use' && reason === 'sales' ? qty : 0,
       ent: mode === 'use' && reason === 'ent' ? qty : 0,
@@ -214,6 +225,30 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                       </p>
                     )}
                   </motion.div>
+                )}
+
+                {/* Receive Cost (Optional) */}
+                {mode === 'add' && qty > 0 && (
+                  <div style={{ marginTop: 'var(--sp-4)', padding: '0 var(--sp-4)' }}>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 'var(--sp-2)' }}>
+                      Total Cost (Optional)
+                    </label>
+                    <input 
+                      type="number" 
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', background: 'var(--bg-body)', color: 'var(--text-primary)', outline: 'none' }}
+                      placeholder="Enter total cost for this batch..."
+                      value={receiveCost}
+                      onChange={(e) => setReceiveCost(e.target.value)}
+                      min="0"
+                      step="0.01"
+                    />
+                    {receiveCost && parseFloat(receiveCost) > 0 && (
+                      <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 'var(--sp-1)' }}>
+                        ≈ ฿{(parseFloat(receiveCost) / qty).toFixed(2)} / unit 
+                        | New Avg Cost: ฿{(((currentStock * (parseFloat(item.cost)||0)) + parseFloat(receiveCost)) / newStock).toFixed(2)}
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* Remark (Optional, but required if negative) */}
