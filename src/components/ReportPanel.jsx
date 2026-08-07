@@ -66,6 +66,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
   const filteredLogs = useMemo(() => {
     const now = new Date();
     return logs.filter(log => {
+      if (log.title === 'Login') return false;
       const logDate = new Date(log.date);
       if (filter === 'daily') return logDate.toDateString() === now.toDateString();
       if (filter === 'monthly') return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
