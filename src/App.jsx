@@ -660,7 +660,7 @@ function App() {
             </button>
           </div>
           <div style={{ textAlign: 'center', fontSize: 10, color: 'var(--text-tertiary)', marginTop: 'var(--sp-2)' }}>
-            v1.0.1
+            v1.0.2
           </div>
         </div>
       </aside>
@@ -1102,6 +1102,9 @@ function App() {
                         </div>
                         <div className="profile-card-name">
                           {profile.name || fallbackName}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4 }}>
+                          {profile.role || 'No Role'}
                         </div>
                       </div>
                     );
