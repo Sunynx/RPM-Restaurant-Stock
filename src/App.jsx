@@ -589,10 +589,11 @@ function App() {
     <div className="app-shell">
       {/* Desktop Sidebar */}
       <aside className="sidebar">
-        <div className="sidebar-brand" style={{ padding: 'var(--sp-8) var(--sp-4) var(--sp-4)', display: 'flex', justifyContent: 'center' }}>
+        <div className="sidebar-brand" style={{ padding: 'var(--sp-8) var(--sp-4) var(--sp-4)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div className="sidebar-brand-logo" style={{ width: '140px', background: 'transparent', overflow: 'hidden' }}>
             <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain', objectPosition: 'center' }} />
           </div>
+          <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 'var(--sp-2)', letterSpacing: '0.05em', opacity: 0.6 }}>v1.0.3</div>
         </div>
         <div className="sidebar-divider" style={{ margin: '0 var(--sp-4)' }}></div>
 
@@ -658,9 +659,6 @@ function App() {
             >
               <LogOut size={16} />
             </button>
-          </div>
-          <div style={{ textAlign: 'center', fontSize: 10, color: 'var(--text-tertiary)', marginTop: 'var(--sp-2)' }}>
-            v1.0.2
           </div>
         </div>
       </aside>
@@ -1102,9 +1100,6 @@ function App() {
                         </div>
                         <div className="profile-card-name">
                           {profile.name || fallbackName}
-                        </div>
-                        <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4 }}>
-                          {profile.role || 'No Role'}
                         </div>
                       </div>
                     );
