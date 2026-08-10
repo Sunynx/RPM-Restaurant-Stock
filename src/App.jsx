@@ -41,6 +41,68 @@ function App() {
     }, 10);
   }, [activeTab]);
 
+  // Version checking mechanism
+  useEffect(() => {
+    let currentVersion = null;
+    
+    const checkVersion = async () => {
+      try {
+        // Append timestamp to prevent caching
+        const res = await fetch(`/version.json?t=${Date.now()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        if (!currentVersion) {
+          currentVersion = data.version;
+        } else if (currentVersion !== data.version) {
+          toast((t) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <span style={{ fontWeight: 600 }}>มีเวอร์ชันใหม่! (New version available)</span>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                กรุณารีเฟรชหน้าจอเพื่ออัปเดตระบบ
+              </span>
+              <button 
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  window.location.reload(true);
+                }}
+                style={{ 
+                  background: 'var(--primary)', 
+                  color: 'white', 
+                  border: 'none', 
+                  padding: '6px 12px', 
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  marginTop: '4px'
+                }}
+              >
+                อัปเดตเดี๋ยวนี้ (Update Now)
+              </button>
+            </div>
+          ), { duration: Infinity, id: 'version-update-toast' });
+        }
+      } catch (err) {
+        console.error('Failed to check version:', err);
+      }
+    };
+
+    // Check version on initial load
+    checkVersion();
+
+    // Check version every 5 minutes
+    const interval = setInterval(checkVersion, 5 * 60 * 1000);
+    
+    // Check version when window gains focus
+    const handleFocus = () => checkVersion();
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
   const [initialFilters, setInitialFilters] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [editingProductDetails, setEditingProductDetails] = useState(null);
@@ -922,7 +984,7 @@ function App() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
               >
-                <ReportPanel inventory={inventory} categories={categories} />
+                <ReportPanel inventory={inventory} categories={categories} userRole={userRole} />
               </motion.div>
             )}
           </AnimatePresence>

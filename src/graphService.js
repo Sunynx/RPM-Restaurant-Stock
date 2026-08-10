@@ -383,7 +383,15 @@ export async function updateInventoryInSharePoint(accessToken, itemId, updatedDa
     await Promise.all(txPromises);
 
     // Write to audit log
-    await writeAuditLog(accessToken, userEmail, "UpdateStock", `Updated stock for product ${updatedData.code} (${updatedData.item}). New Stock: ${updatedData.closing}`);
+    const oldStock = updatedData.stockOnHand || 0;
+    const newStock = updatedData.closing;
+    let actionStr = '';
+    if (updatedData.issued > 0) actionStr = `Received +${updatedData.issued}`;
+    else if (updatedData.sales > 0) actionStr = `Sold -${updatedData.sales}`;
+    else if (updatedData.ent > 0) actionStr = `ENT -${updatedData.ent}`;
+    else actionStr = `Adjusted`;
+
+    await writeAuditLog(accessToken, userEmail, "UpdateStock", `Updated stock for product ${updatedData.code} (${updatedData.item}): ${oldStock} -> ${newStock} (${actionStr})`);
 
     // Check for low stock and trigger LINE Notify
     const minStockLevel = parseInt(updatedData.minStockLevel) || 10;

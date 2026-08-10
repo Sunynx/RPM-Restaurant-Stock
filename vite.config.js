@@ -2,9 +2,20 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+import fs from 'fs';
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    {
+      name: 'generate-version',
+      buildStart() {
+        if (!fs.existsSync('public')) {
+          fs.mkdirSync('public');
+        }
+        fs.writeFileSync('public/version.json', JSON.stringify({ version: Date.now() }));
+      }
+    },
     react(),
     VitePWA({
       registerType: 'autoUpdate',

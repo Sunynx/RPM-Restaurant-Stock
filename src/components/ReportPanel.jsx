@@ -24,7 +24,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, val
   );
 };
 
-export default function ReportPanel({ inventory, categories = [] }) {
+export default function ReportPanel({ inventory, categories = [], userRole }) {
   const { instance, accounts } = useMsal();
   const [logs, setLogs] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -32,7 +32,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
   const [filter, setFilter] = useState('daily');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [activeSection, setActiveSection] = useState('overview');
+  const [activeSection, setActiveSection] = useState(userRole === 'Admin' ? 'overview' : 'transactions');
   const [searchTerm, setSearchTerm] = useState('');
   const [pdfExporting, setPdfExporting] = useState(false);
   const [showCsvMenu, setShowCsvMenu] = useState(false);
@@ -730,7 +730,7 @@ export default function ReportPanel({ inventory, categories = [] }) {
                       'All Time';
 
   const sectionTabs = [
-    { key: 'overview', label: 'Overview', icon: Activity },
+    ...(userRole === 'Admin' ? [{ key: 'overview', label: 'Overview', icon: Activity }] : []),
     { key: 'transactions', label: 'Transaction Log', icon: TrendingDown },
     { key: 'inventory', label: 'Inventory Snapshot', icon: Package },
   ];
