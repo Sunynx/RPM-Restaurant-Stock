@@ -157,6 +157,43 @@ function App() {
     setSelectedProfile(null);
   };
   
+  // Idle Timeout Mechanism (10 minutes)
+  useEffect(() => {
+    let idleTimer;
+    const IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+
+    const resetTimer = () => {
+      clearTimeout(idleTimer);
+      if (selectedProfile) {
+        idleTimer = setTimeout(() => {
+          handleClearProfile();
+          toast('เซสชันหมดอายุเนื่องจากไม่มีการใช้งาน (Session expired due to inactivity)', { icon: '🔒' });
+        }, IDLE_TIMEOUT_MS);
+      }
+    };
+
+    if (selectedProfile) {
+      // Setup listeners
+      window.addEventListener('mousemove', resetTimer);
+      window.addEventListener('keydown', resetTimer);
+      window.addEventListener('scroll', resetTimer);
+      window.addEventListener('click', resetTimer);
+      window.addEventListener('touchstart', resetTimer);
+
+      // Initialize
+      resetTimer();
+    }
+
+    return () => {
+      clearTimeout(idleTimer);
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
+      window.removeEventListener('scroll', resetTimer);
+      window.removeEventListener('click', resetTimer);
+      window.removeEventListener('touchstart', resetTimer);
+    };
+  }, [selectedProfile]);
+
   const LOW_STOCK_THRESHOLD = 10;
 
   const handleLogin = async () => {
