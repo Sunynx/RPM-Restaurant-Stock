@@ -675,7 +675,7 @@ function App() {
             <span>Inventory</span>
           </div>
 
-          {['Admin', 'Manager'].includes(userRole) && (
+          {userRole === 'Admin' && (
               <div 
                 className={`sidebar-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
                 onClick={() => setActiveTab('admin')}
@@ -1031,7 +1031,7 @@ function App() {
           </div>
           <span>Alerts</span>
         </button>
-        {['Admin', 'Manager'].includes(userRole) && (
+        {userRole === 'Admin' && (
           <button 
             className={`bottom-nav-item ${activeTab === 'admin' ? 'active' : ''}`}
             onClick={() => setActiveTab('admin')}
