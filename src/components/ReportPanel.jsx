@@ -286,7 +286,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         else if (tx.type === 'Spoilage' || tx.type === 'ENT') entCount++;
 
         csvRows.push([
-          `"${new Date(tx.date).toLocaleString('en-GB')}"`,
+          `"${new Date(tx.date).toLocaleString('th-TH')}"`,
           `"${product ? product.code : '-'}"`,
           `"${product ? product.item : tx.productId}"`,
           `"${category}"`,
@@ -402,7 +402,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         else if (tx.type === 'Spoilage' || tx.type === 'ENT') entCount++;
 
         csvRows.push([
-          `"${new Date(tx.date).toLocaleString('en-GB')}"`,
+          `"${new Date(tx.date).toLocaleString('th-TH')}"`,
           `"${product ? product.code : '-'}"`,
           `"${product ? product.item : tx.productId}"`,
           `"${category}"`,
@@ -431,7 +431,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         if ((log.status || '').toLowerCase() === 'success') successCount++;
         else errorCount++;
         csvRows.push([
-          `"${new Date(log.date).toLocaleString('en-GB')}"`,
+          `"${new Date(log.date).toLocaleString('th-TH')}"`,
           `"${log.user}"`, `"${log.title}"`,
           `"${(log.details || '').replace(/"/g, '""')}"`,
           `"${log.status}"`
@@ -680,7 +680,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         const txRows = todayTx.map(tx => {
           const product = inventoryMap.get(String(tx.productId));
           return [
-            new Date(tx.date).toLocaleString('en-GB'),
+            new Date(tx.date).toLocaleString('th-TH'),
             tx.type,
             product ? product.item : `#${tx.productId}`,
             String(tx.quantity),
@@ -1030,7 +1030,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
                   ) : (
                     filteredLogs.map(log => (
                       <tr key={log.id}>
-                        <td style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{new Date(log.date).toLocaleString('en-GB')}</td>
+                        <td style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{new Date(log.date).toLocaleString('th-TH')}</td>
                         <td style={{ fontSize: 13 }}>{log.user}</td>
                         <td>
                           <span className="badge badge-primary" style={{ fontSize: 11 }}>{log.title}</span>
@@ -1080,7 +1080,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
                       const isNegative = tx.quantity < 0;
                       return (
                         <tr key={tx.id}>
-                          <td style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{new Date(tx.date).toLocaleString('en-GB')}</td>
+                          <td style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{new Date(tx.date).toLocaleString('th-TH')}</td>
                           <td>
                             <span className={`badge ${tx.type === 'Receive' ? 'badge-success' : tx.type === 'Sales' ? 'badge-primary' : 'badge-warning'}`} style={{ fontSize: 11 }}>
                               {tx.type}

@@ -149,7 +149,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
     doc.text('RPM Inventory Report', 14, 22);
     doc.setFontSize(11);
     doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    doc.text(`Generated on: ${new Date().toLocaleString('th-TH')}`, 14, 30);
     
     const tableColumn = ["Code", "Item Name", "Category", "Unit", "Cost", "Price", "Stock", "Min Stock"];
     const tableRows = [];
@@ -632,7 +632,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                         {filteredLogs.length > 0 ? filteredLogs.map(log => (
                           <tr key={log.id}>
                             <td style={{ paddingLeft: 'var(--sp-6)', whiteSpace: 'nowrap' }}>
-                              {new Date(log.date).toLocaleString()}
+                              {new Date(log.date).toLocaleString('th-TH')}
                             </td>
                             <td style={{ fontWeight: 500 }}>{log.user}</td>
                             <td>
@@ -656,7 +656,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                     {filteredLogs.length > 0 ? filteredLogs.map(log => (
                       <div key={log.id} style={{ border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', padding: 'var(--sp-4)', background: 'var(--bg-subtle)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--sp-2)' }}>
-                          <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{new Date(log.date).toLocaleString()}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{new Date(log.date).toLocaleString('th-TH')}</span>
                           <span className="badge badge-neutral" style={{ flexShrink: 0, marginLeft: 'var(--sp-2)' }}>{log.title}</span>
                         </div>
                         <div style={{ fontWeight: 600, fontSize: 14, marginBottom: '2px', wordBreak: 'break-all' }}>{log.user}</div>
