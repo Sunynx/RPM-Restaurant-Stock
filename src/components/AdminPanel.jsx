@@ -23,10 +23,11 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
   const [editingUserId, setEditingUserId] = useState(null);
   const [editUserData, setEditUserData] = useState({ name: '', email: '', role: '' });
   
-  // Sort State for Logs
   const [logSort, setLogSort] = useState({ key: 'date', direction: 'desc' });
   const [logsSearchTerm, setLogsSearchTerm] = useState('');
   const [logFilterAction, setLogFilterAction] = useState('all');
+  const [logStartDate, setLogStartDate] = useState('');
+  const [logEndDate, setLogEndDate] = useState('');
 
   // Categories state
   const [catName, setCatName] = useState('');
@@ -81,6 +82,16 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
     if (logFilterAction !== 'all') {
       filtered = filtered.filter(l => (l.title || '').toLowerCase() === logFilterAction.toLowerCase());
     }
+
+    if (logStartDate) {
+      const start = new Date(logStartDate).getTime();
+      filtered = filtered.filter(l => new Date(l.date).getTime() >= start);
+    }
+
+    if (logEndDate) {
+      const end = new Date(logEndDate).getTime() + 86400000 - 1; // Include full day
+      filtered = filtered.filter(l => new Date(l.date).getTime() <= end);
+    }
     
     return [...filtered].sort((a, b) => {
       if (!logSort.key) {
@@ -101,7 +112,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
       if (aValue > bValue) return logSort.direction === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [auditLogs, logsSearchTerm, logSort, logFilterAction]);
+  }, [auditLogs, logsSearchTerm, logSort, logFilterAction, logStartDate, logEndDate]);
 
   const handleAddUser = (e) => {
     e.preventDefault();
@@ -650,8 +661,8 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                 <h2 className="card-title" style={{ fontSize: 18 }}>System Audit Logs</h2>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Recent actions performed in the system.</p>
                 <div className="inventory-toolbar" style={{ borderBottom: 'none', padding: 'var(--sp-4) 0 0 0' }}>
-                  <div className="toolbar-top">
-                    <div className="toolbar-search">
+                  <div className="toolbar-top" style={{ display: 'flex', gap: 'var(--sp-4)', flexWrap: 'wrap' }}>
+                    <div className="toolbar-search" style={{ flex: 1, minWidth: '250px' }}>
                       <div className="search-container">
                         <Search className="search-icon" size={16} />
                         <input 
@@ -662,6 +673,34 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                           onChange={(e) => setLogsSearchTerm(e.target.value)}
                         />
                       </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
+                      <input 
+                        type="date" 
+                        className="form-input" 
+                        style={{ padding: '4px 8px', fontSize: '13px', height: '34px', width: 'auto' }}
+                        value={logStartDate}
+                        onChange={e => setLogStartDate(e.target.value)}
+                        title="Start Date"
+                      />
+                      <span style={{ color: 'var(--text-tertiary)' }}>-</span>
+                      <input 
+                        type="date" 
+                        className="form-input" 
+                        style={{ padding: '4px 8px', fontSize: '13px', height: '34px', width: 'auto' }}
+                        value={logEndDate}
+                        onChange={e => setLogEndDate(e.target.value)}
+                        title="End Date"
+                      />
+                      {(logStartDate || logEndDate) && (
+                        <button 
+                          className="btn btn-sm" 
+                          style={{ height: '34px' }}
+                          onClick={() => { setLogStartDate(''); setLogEndDate(''); }}
+                        >
+                          Clear Date
+                        </button>
+                      )}
                     </div>
                   </div>
                   {auditLogs.length > 0 && (
