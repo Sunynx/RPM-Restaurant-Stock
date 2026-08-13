@@ -64,7 +64,16 @@ function App() {
               <button 
                 onClick={() => {
                   toast.dismiss(t.id);
-                  window.location.reload(true);
+                  if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then((registrations) => {
+                      for (let registration of registrations) {
+                        registration.unregister();
+                      }
+                      window.location.href = window.location.href; // Force reload without cache
+                    });
+                  } else {
+                    window.location.reload(true);
+                  }
                 }}
                 style={{ 
                   background: 'var(--primary)', 
