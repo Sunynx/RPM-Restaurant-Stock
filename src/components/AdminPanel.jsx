@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud, FolderTree, FileSpreadsheet, FileText, Download, Pencil, Trash2, Check, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud, FolderTree, FileSpreadsheet, FileText, Download, Pencil, Trash2, Check, X, ChevronUp, ChevronDown, Search, ArrowUp, ArrowUpDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchAuditLogs } from '../graphService';
 import { utils, writeFile } from 'xlsx';
@@ -188,6 +188,33 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
   ];
 
   const tabs = allTabs.filter(tab => userRole === 'Admin' || !tab.adminOnly);
+
+  const SortHeader = ({ label, sortKey, style }) => {
+    const isActive = logSort.key === sortKey;
+    const isDesc = isActive && logSort.direction === 'desc';
+    
+    return (
+      <th onClick={() => handleLogSort(sortKey)} style={{ cursor: 'pointer', userSelect: 'none', ...style }}>
+        <div className={`sort-header ${isActive ? 'active' : ''}`}>
+          <span>{label}</span>
+          <div className="sort-indicator">
+            {isActive ? (
+              <motion.div
+                initial={false}
+                animate={{ rotate: isDesc ? 180 : 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                style={{ display: 'flex' }}
+              >
+                <ArrowUp size={13} strokeWidth={2.5} />
+              </motion.div>
+            ) : (
+              <ArrowUpDown size={13} style={{ opacity: 0.25 }} />
+            )}
+          </div>
+        </div>
+      </th>
+    );
+  };
 
   return (
     <div className="admin-container" style={{ width: '100%', margin: '0 auto' }}>
@@ -601,18 +628,21 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
               <div style={{ padding: 'var(--sp-6)', borderBottom: '1px solid var(--border-subtle)' }}>
                 <h2 className="card-title" style={{ fontSize: 18 }}>System Audit Logs</h2>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Recent actions performed in the system.</p>
-                <div style={{ padding: 'var(--sp-6)', display: 'flex', alignItems: 'center', gap: 'var(--sp-4)' }}>
-                  <input
-                    type="text"
-                    placeholder="Search audit logs..."
-                    value={logsSearchTerm}
-                    onChange={e => setLogsSearchTerm(e.target.value)}
-                    className="input"
-                    style={{ flex: 1, padding: 'var(--sp-2)' }}
-                  />
-                  {logsSearchTerm && (
-                    <button className="btn btn-sm" onClick={() => setLogsSearchTerm('')}>Clear</button>
-                  )}
+                <div className="inventory-toolbar" style={{ borderBottom: 'none', padding: 'var(--sp-4) 0 0 0' }}>
+                  <div className="toolbar-top">
+                    <div className="toolbar-search">
+                      <div className="search-container">
+                        <Search className="search-icon" size={16} />
+                        <input 
+                          type="text" 
+                          className="search-input" 
+                          placeholder="Search audit logs..." 
+                          value={logsSearchTerm}
+                          onChange={(e) => setLogsSearchTerm(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               
@@ -627,22 +657,10 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                     <table className="data-table">
                       <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 1 }}>
                         <tr>
-                          <th style={{ paddingLeft: 'var(--sp-6)', cursor: 'pointer' }} onClick={() => handleLogSort('date')}>
-                            Date {logSort.key === 'date' && logSort.direction === 'asc' && <ChevronUp size={14} />}
-                            {logSort.key === 'date' && logSort.direction === 'desc' && <ChevronDown size={14} />}
-                          </th>
-                          <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('user')}>
-                            User {logSort.key === 'user' && logSort.direction === 'asc' && <ChevronUp size={14} />}
-                            {logSort.key === 'user' && logSort.direction === 'desc' && <ChevronDown size={14} />}
-                          </th>
-                          <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('title')}>
-                            Action Type {logSort.key === 'title' && logSort.direction === 'asc' && <ChevronUp size={14} />}
-                            {logSort.key === 'title' && logSort.direction === 'desc' && <ChevronDown size={14} />}
-                          </th>
-                          <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('details')}>
-                            Details {logSort.key === 'details' && logSort.direction === 'asc' && <ChevronUp size={14} />}
-                            {logSort.key === 'details' && logSort.direction === 'desc' && <ChevronDown size={14} />}
-                          </th>
+                          <SortHeader label="Date" sortKey="date" style={{ paddingLeft: 'var(--sp-6)' }} />
+                          <SortHeader label="User" sortKey="user" />
+                          <SortHeader label="Action Type" sortKey="title" />
+                          <SortHeader label="Details" sortKey="details" />
                         </tr>
                       </thead>
                       <tbody>
