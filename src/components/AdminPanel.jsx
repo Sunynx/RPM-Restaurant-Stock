@@ -26,6 +26,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
   // Sort State for Logs
   const [logSort, setLogSort] = useState({ key: 'date', direction: 'desc' });
   const [logsSearchTerm, setLogsSearchTerm] = useState('');
+  const [logFilterAction, setLogFilterAction] = useState('all');
 
   // Categories state
   const [catName, setCatName] = useState('');
@@ -46,12 +47,24 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
     }
   }, [activeTab, accessToken]);
 
+  const uniqueActions = useMemo(() => {
+    const actions = new Set();
+    auditLogs.forEach(log => {
+      if (log.title) actions.add(log.title);
+    });
+    return Array.from(actions).sort();
+  }, [auditLogs]);
+
   const handleLogSort = (key) => {
-    let direction = 'asc';
-    if (logSort.key === key && logSort.direction === 'asc') {
-      direction = 'desc';
+    if (logSort.key === key) {
+      if (logSort.direction === 'asc') {
+        setLogSort({ key, direction: 'desc' });
+      } else {
+        setLogSort({ key: null, direction: 'asc' });
+      }
+    } else {
+      setLogSort({ key, direction: 'asc' });
     }
-    setLogSort({ key, direction });
   };
 
   const filteredLogs = useMemo(() => {
@@ -65,7 +78,15 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
       );
     }
     
+    if (logFilterAction !== 'all') {
+      filtered = filtered.filter(l => (l.title || '').toLowerCase() === logFilterAction.toLowerCase());
+    }
+    
     return [...filtered].sort((a, b) => {
+      if (!logSort.key) {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      }
+
       let aValue = a[logSort.key] || '';
       let bValue = b[logSort.key] || '';
       if (logSort.key === 'date') {
@@ -80,7 +101,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
       if (aValue > bValue) return logSort.direction === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [auditLogs, logsSearchTerm, logSort]);
+  }, [auditLogs, logsSearchTerm, logSort, logFilterAction]);
 
   const handleAddUser = (e) => {
     e.preventDefault();
@@ -643,6 +664,28 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                       </div>
                     </div>
                   </div>
+                  {auditLogs.length > 0 && (
+                    <div className="filter-chips">
+                      <button
+                        className={`filter-chip ${logFilterAction === 'all' ? 'active' : ''}`}
+                        onClick={() => setLogFilterAction('all')}
+                      >
+                        All ({auditLogs.length})
+                      </button>
+                      {uniqueActions.map(action => {
+                        const count = auditLogs.filter(l => l.title === action).length;
+                        return (
+                          <button
+                            key={action}
+                            className={`filter-chip ${logFilterAction === action ? 'active' : ''}`}
+                            onClick={() => setLogFilterAction(action)}
+                          >
+                            {action} ({count})
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
               
