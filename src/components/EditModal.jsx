@@ -36,6 +36,8 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
 
     const saveData = {
       ...item,
+      oldCost: item.cost,
+      receivedCost: mode === 'add' ? receiveCost : null,
       cost: updatedCost,
       issued: mode === 'add' ? qty : 0,
       sales: mode === 'use' && reason === 'sales' ? qty : 0,
@@ -243,9 +245,10 @@ export default function EditModal({ item, onClose, onSave, userRole }) {
                       step="0.01"
                     />
                     {receiveCost && parseFloat(receiveCost) > 0 && (
-                      <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 'var(--sp-1)' }}>
-                        ≈ ฿{(parseFloat(receiveCost) * qty).toFixed(2)} total 
-                        | New Avg Cost: ฿{(((currentStock * (parseFloat(item.cost)||0)) + (parseFloat(receiveCost) * qty)) / newStock).toFixed(2)}
+                      <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 'var(--sp-1)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
+                        <span>≈ ฿{(parseFloat(receiveCost) * qty).toFixed(2)} total | Avg Cost: ฿{(parseFloat(item.cost)||0).toFixed(2)}</span>
+                        <ArrowRight size={12} style={{ color: 'var(--text-tertiary)' }} />
+                        <span style={{ color: 'var(--primary)', fontWeight: 500 }}>฿{(((currentStock * (parseFloat(item.cost)||0)) + (parseFloat(receiveCost) * qty)) / newStock).toFixed(2)}</span>
                       </div>
                     )}
                   </div>

@@ -386,10 +386,21 @@ export async function updateInventoryInSharePoint(accessToken, itemId, updatedDa
     const oldStock = updatedData.stockOnHand || 0;
     const newStock = updatedData.closing;
     let actionStr = '';
-    if (updatedData.issued > 0) actionStr = `Received +${updatedData.issued}`;
-    else if (updatedData.sales > 0) actionStr = `Sold -${updatedData.sales}`;
-    else if (updatedData.ent > 0) actionStr = `ENT -${updatedData.ent}`;
-    else actionStr = `Adjusted`;
+    if (updatedData.issued > 0) {
+      actionStr = `Received +${updatedData.issued}`;
+      if (updatedData.oldCost !== undefined) {
+        actionStr += `, Cost: ฿${parseFloat(updatedData.oldCost).toFixed(2)} -> ฿${parseFloat(updatedData.cost).toFixed(2)}`;
+        if (updatedData.receivedCost && parseFloat(updatedData.receivedCost) > 0) {
+          actionStr += ` (Received at ฿${parseFloat(updatedData.receivedCost).toFixed(2)})`;
+        }
+      }
+    } else if (updatedData.sales > 0) {
+      actionStr = `Sold -${updatedData.sales}`;
+    } else if (updatedData.ent > 0) {
+      actionStr = `ENT -${updatedData.ent}`;
+    } else {
+      actionStr = `Adjusted`;
+    }
 
     await writeAuditLog(accessToken, userEmail, "UpdateStock", `Updated stock for product ${updatedData.code} (${updatedData.item}): ${oldStock} -> ${newStock} (${actionStr})`);
 
