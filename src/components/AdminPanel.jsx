@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud, FolderTree, FileSpreadsheet, FileText, Download, Pencil, Trash2, Check, X } from 'lucide-react';
+import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud, FolderTree, FileSpreadsheet, FileText, Download, Pencil, Trash2, Check, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchAuditLogs } from '../graphService';
 import { utils, writeFile } from 'xlsx';
@@ -601,6 +601,19 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
               <div style={{ padding: 'var(--sp-6)', borderBottom: '1px solid var(--border-subtle)' }}>
                 <h2 className="card-title" style={{ fontSize: 18 }}>System Audit Logs</h2>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Recent actions performed in the system.</p>
+                <div style={{ padding: 'var(--sp-6)', display: 'flex', alignItems: 'center', gap: 'var(--sp-4)' }}>
+                  <input
+                    type="text"
+                    placeholder="Search audit logs..."
+                    value={logsSearchTerm}
+                    onChange={e => setLogsSearchTerm(e.target.value)}
+                    className="input"
+                    style={{ flex: 1, padding: 'var(--sp-2)' }}
+                  />
+                  {logsSearchTerm && (
+                    <button className="btn btn-sm" onClick={() => setLogsSearchTerm('')}>Clear</button>
+                  )}
+                </div>
               </div>
               
               {loadingLogs ? (
@@ -615,16 +628,20 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                       <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 1 }}>
                         <tr>
                           <th style={{ paddingLeft: 'var(--sp-6)', cursor: 'pointer' }} onClick={() => handleLogSort('date')}>
-                            Date {logSort.key === 'date' && (logSort.direction === 'asc' ? '↑' : '↓')}
+                            Date {logSort.key === 'date' && logSort.direction === 'asc' && <ChevronUp size={14} />}
+                            {logSort.key === 'date' && logSort.direction === 'desc' && <ChevronDown size={14} />}
                           </th>
                           <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('user')}>
-                            User {logSort.key === 'user' && (logSort.direction === 'asc' ? '↑' : '↓')}
+                            User {logSort.key === 'user' && logSort.direction === 'asc' && <ChevronUp size={14} />}
+                            {logSort.key === 'user' && logSort.direction === 'desc' && <ChevronDown size={14} />}
                           </th>
                           <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('title')}>
-                            Action Type {logSort.key === 'title' && (logSort.direction === 'asc' ? '↑' : '↓')}
+                            Action Type {logSort.key === 'title' && logSort.direction === 'asc' && <ChevronUp size={14} />}
+                            {logSort.key === 'title' && logSort.direction === 'desc' && <ChevronDown size={14} />}
                           </th>
                           <th style={{ cursor: 'pointer' }} onClick={() => handleLogSort('details')}>
-                            Details {logSort.key === 'details' && (logSort.direction === 'asc' ? '↑' : '↓')}
+                            Details {logSort.key === 'details' && logSort.direction === 'asc' && <ChevronUp size={14} />}
+                            {logSort.key === 'details' && logSort.direction === 'desc' && <ChevronDown size={14} />}
                           </th>
                         </tr>
                       </thead>
