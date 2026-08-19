@@ -1,12 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud, FolderTree, FileSpreadsheet, FileText, Download, Pencil, Trash2, Check, X, ChevronUp, ChevronDown, Search, ArrowUp, ArrowUpDown } from 'lucide-react';
+import { Shield, Plus, Loader2, Database, List, FileClock, UploadCloud, FolderTree, FileSpreadsheet, FileText, Download, Pencil, Trash2, Check, X, ChevronUp, ChevronDown, Search, ArrowUp, ArrowUpDown, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchAuditLogs } from '../graphService';
+import { fetchAuditLogs, fetchTransactions, updateTransactionRecord, updateInventoryStockOnly } from '../graphService';
 import { utils, writeFile } from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { useMsal } from '@azure/msal-react';
+import toast from 'react-hot-toast';
 
 export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateUser, onDeleteUser, accessToken, setIsCSVModalOpen, categories = [], onAddCategory, inventory = [], userRole }) {
+  const { accounts } = useMsal();
   const [activeTab, setActiveTab] = useState(userRole === 'Manager' ? 'categories' : 'users');
   
   // Users state
@@ -37,6 +40,18 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
   const [auditLogs, setAuditLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
 
+  // Transactions State
+  const [transactions, setTransactions] = useState([]);
+  const [loadingTx, setLoadingTx] = useState(false);
+  const [txSort, setTxSort] = useState({ key: 'date', direction: 'desc' });
+  const [txSearchTerm, setTxSearchTerm] = useState('');
+  
+  // Edit Transaction State
+  const [editingTx, setEditingTx] = useState(null);
+  const [editTxQty, setEditTxQty] = useState('');
+  const [editTxRemarks, setEditTxRemarks] = useState('');
+  const [isSavingTx, setIsSavingTx] = useState(false);
+
   // Fetch Audit Logs when tab becomes active
   useEffect(() => {
     if (activeTab === 'logs' && accessToken) {
@@ -44,6 +59,12 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
       fetchAuditLogs(accessToken).then(logs => {
         setAuditLogs(logs);
         setLoadingLogs(false);
+      });
+    } else if (activeTab === 'transactions' && accessToken) {
+      setLoadingTx(true);
+      fetchTransactions(accessToken).then(txs => {
+        setTransactions(txs);
+        setLoadingTx(false);
       });
     }
   }, [activeTab, accessToken]);
@@ -113,6 +134,97 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
       return 0;
     });
   }, [auditLogs, logsSearchTerm, logSort, logFilterAction, logStartDate, logEndDate]);
+
+  const filteredTransactions = useMemo(() => {
+    let filtered = transactions;
+    if (txSearchTerm.trim()) {
+      const term = txSearchTerm.toLowerCase();
+      filtered = filtered.filter(tx => {
+        const product = inventory.find(p => String(p.id) === String(tx.productId));
+        const productName = product ? product.item.toLowerCase() : '';
+        return (
+          (tx.type || '').toLowerCase().includes(term) ||
+          productName.includes(term) ||
+          (tx.remarks || '').toLowerCase().includes(term)
+        );
+      });
+    }
+
+    return [...filtered].sort((a, b) => {
+      let aVal = a[txSort.key] || '';
+      let bVal = b[txSort.key] || '';
+      if (txSort.key === 'date') {
+        aVal = new Date(a.date).getTime();
+        bVal = new Date(b.date).getTime();
+      } else if (txSort.key === 'quantity') {
+        aVal = parseFloat(aVal) || 0;
+        bVal = parseFloat(bVal) || 0;
+      } else {
+        aVal = String(aVal).toLowerCase();
+        bVal = String(bVal).toLowerCase();
+      }
+      if (aVal < bVal) return txSort.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return txSort.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [transactions, txSearchTerm, txSort, inventory]);
+
+  const handleTxSort = (key) => {
+    setTxSort(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
+  };
+
+  const handleSaveTxEdit = async () => {
+    if (!editingTx || !accessToken) return;
+    try {
+      setIsSavingTx(true);
+      const oldQty = parseFloat(editingTx.quantity);
+      const newQty = parseFloat(editTxQty);
+      if (isNaN(newQty)) {
+        toast.error("Invalid quantity");
+        return;
+      }
+      
+      const diff = newQty - oldQty;
+      
+      if (diff !== 0) {
+        const product = inventory.find(p => String(p.id) === String(editingTx.productId));
+        if (product) {
+          // If transaction was Sales/ENT (negative qty), a positive diff means we sold LESS, so we return to stock (+).
+          // However, we just take the current stock and SUBTRACT the diff from the perspective of the initial operation.
+          // Wait. If old was -2 (sold 2), new is -1 (sold 1). Diff is +1.
+          // Since it's a negative transaction, we originally reduced stock by 2. Now we only reduce by 1.
+          // So we need to ADD 1 to the stock.
+          // Diff is +1. So newStock = currentStock + diff. Let's verify:
+          // What if old was 10 (received 10), new is 8 (received 8). Diff is -2.
+          // We need to subtract 2 from stock.
+          // Diff is -2. So newStock = currentStock + diff. 
+          // Perfect! newStock = currentStock + diff works for both cases.
+          
+          const currentStock = parseInt(product.stockOnHand) || 0;
+          const newStock = currentStock + diff;
+          
+          await updateInventoryStockOnly(accessToken, product.id, newStock);
+        }
+      }
+
+      await updateTransactionRecord(accessToken, editingTx.id, newQty, editTxRemarks, accounts?.[0]?.username || "Admin");
+      
+      // Update local state
+      setTransactions(prev => prev.map(t => t.id === editingTx.id ? { ...t, quantity: newQty, remarks: editTxRemarks } : t));
+      toast.success("Transaction updated successfully!");
+      setEditingTx(null);
+      
+      // Optional: you could reload transactions here to be safe
+      // const txs = await fetchTransactions(accessToken);
+      // setTransactions(txs);
+      
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update transaction.");
+    } finally {
+      setIsSavingTx(false);
+    }
+  };
 
   const handleAddUser = (e) => {
     e.preventDefault();
@@ -216,6 +328,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
     { id: 'users', label: 'Users', icon: Shield, adminOnly: true },
     { id: 'categories', label: 'Categories', icon: FolderTree },
     { id: 'data', label: 'Data & Reports', icon: Database, adminOnly: true },
+    { id: 'transactions', label: 'Manage Transactions', icon: Activity, adminOnly: true },
     { id: 'logs', label: 'Audit Logs', icon: FileClock, adminOnly: true }
   ];
 
@@ -227,6 +340,33 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
     
     return (
       <th onClick={() => handleLogSort(sortKey)} style={{ cursor: 'pointer', userSelect: 'none', ...style }}>
+        <div className={`sort-header ${isActive ? 'active' : ''}`}>
+          <span>{label}</span>
+          <div className="sort-indicator">
+            {isActive ? (
+              <motion.div
+                initial={false}
+                animate={{ rotate: isDesc ? 180 : 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                style={{ display: 'flex' }}
+              >
+                <ArrowUp size={13} strokeWidth={2.5} />
+              </motion.div>
+            ) : (
+              <ArrowUpDown size={13} style={{ opacity: 0.25 }} />
+            )}
+          </div>
+        </div>
+      </th>
+    );
+  };
+
+  const TxSortHeader = ({ label, sortKey, style }) => {
+    const isActive = txSort.key === sortKey;
+    const isDesc = isActive && txSort.direction === 'desc';
+    
+    return (
+      <th onClick={() => handleTxSort(sortKey)} style={{ cursor: 'pointer', userSelect: 'none', ...style }}>
         <div className={`sort-header ${isActive ? 'active' : ''}`}>
           <span>{label}</span>
           <div className="sort-indicator">
@@ -648,6 +788,101 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
           </motion.div>
         )}
 
+        {activeTab === 'transactions' && (
+          <motion.div
+            key="transactions"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div style={{ padding: 'var(--sp-6)', borderBottom: '1px solid var(--border-subtle)' }}>
+                <h2 className="card-title" style={{ fontSize: 18 }}>Manage Transactions</h2>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Edit incorrect transaction quantities to automatically adjust inventory stock.</p>
+                <div className="inventory-toolbar" style={{ borderBottom: 'none', padding: 'var(--sp-4) 0 0 0' }}>
+                  <div className="toolbar-search" style={{ width: '100%', maxWidth: '400px' }}>
+                    <div className="search-container">
+                      <Search className="search-icon" size={16} />
+                      <input 
+                        type="text" 
+                        className="search-input" 
+                        placeholder="Search product, type, or remarks..." 
+                        value={txSearchTerm}
+                        onChange={(e) => setTxSearchTerm(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {loadingTx ? (
+                <div style={{ padding: 'var(--sp-12)', display: 'flex', justifyContent: 'center' }}>
+                  <Loader2 size={24} className="spin" style={{ color: 'var(--primary)' }} />
+                </div>
+              ) : (
+                <div className="data-table-container desktop-only" style={{ maxHeight: 600, overflowY: 'auto' }}>
+                  <table className="data-table">
+                    <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 1 }}>
+                      <tr>
+                        <TxSortHeader label="Date" sortKey="date" style={{ paddingLeft: 'var(--sp-6)' }} />
+                        <TxSortHeader label="Type" sortKey="type" />
+                        <TxSortHeader label="Product" sortKey="productId" />
+                        <TxSortHeader label="Quantity" sortKey="quantity" />
+                        <TxSortHeader label="Performed By" sortKey="performedBy" />
+                        <th style={{ textAlign: 'center' }}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTransactions.length > 0 ? filteredTransactions.map(tx => {
+                        const product = inventory.find(p => String(p.id) === String(tx.productId));
+                        const isNegative = tx.quantity < 0;
+                        return (
+                          <tr key={tx.id}>
+                            <td style={{ paddingLeft: 'var(--sp-6)', whiteSpace: 'nowrap' }}>
+                              {new Date(tx.date).toLocaleString('th-TH')}
+                            </td>
+                            <td>
+                              <span className={`badge ${tx.type === 'Receive' ? 'badge-success' : tx.type === 'Sales' ? 'badge-primary' : 'badge-warning'}`}>
+                                {tx.type}
+                              </span>
+                            </td>
+                            <td style={{ fontWeight: 600 }}>{product ? product.item : `#${tx.productId}`}</td>
+                            <td style={{ fontWeight: 700, color: isNegative ? 'var(--danger)' : 'var(--success)' }}>
+                              {isNegative ? '' : '+'}{tx.quantity}
+                            </td>
+                            <td>{tx.performedBy}</td>
+                            <td style={{ textAlign: 'center' }}>
+                              <button 
+                                className="btn"
+                                onClick={() => {
+                                  setEditingTx(tx);
+                                  setEditTxQty(tx.quantity);
+                                  setEditTxRemarks(tx.remarks || '');
+                                }}
+                                style={{ padding: 4, width: 28, height: 28, color: 'var(--text-secondary)' }} 
+                                title="Edit Transaction"
+                              >
+                                <Pencil size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      }) : (
+                        <tr>
+                          <td colSpan="6" style={{ textAlign: 'center', padding: 'var(--sp-8)', color: 'var(--text-secondary)' }}>
+                            No transactions found.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
         {activeTab === 'logs' && (
           <motion.div
             key="logs"
@@ -788,6 +1023,107 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                 </>
               )}
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Transaction Modal */}
+      <AnimatePresence>
+        {editingTx && (
+          <motion.div 
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
+          >
+            <motion.div 
+              className="modal-content"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              style={{ width: '100%', maxWidth: 450, padding: 'var(--sp-6)', position: 'relative' }}
+            >
+              <button 
+                onClick={() => setEditingTx(null)}
+                style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+              >
+                <X size={20} />
+              </button>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', marginBottom: 'var(--sp-5)' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 'var(--radius-lg)', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Pencil size={20} />
+                </div>
+                <div>
+                  <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>Edit Transaction</h2>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>Adjust incorrect records</p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-4)' }}>
+                <div style={{ background: 'var(--bg-subtle)', padding: 'var(--sp-3)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)' }}>
+                  <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 2 }}>Product</div>
+                  <div style={{ fontWeight: 600, fontSize: 14 }}>
+                    {inventory.find(p => String(p.id) === String(editingTx.productId))?.item || `#${editingTx.productId}`}
+                  </div>
+                  <div style={{ display: 'flex', gap: 'var(--sp-4)', marginTop: 8 }}>
+                    <div>
+                      <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>Date</div>
+                      <div style={{ fontSize: 13 }}>{new Date(editingTx.date).toLocaleString('th-TH')}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>Type</div>
+                      <div style={{ fontSize: 13 }}>{editingTx.type}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600 }}>New Quantity</label>
+                  <input 
+                    type="number" 
+                    className="form-input" 
+                    value={editTxQty} 
+                    onChange={e => setEditTxQty(e.target.value)}
+                    style={{ fontSize: 16, padding: '10px 12px' }}
+                  />
+                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4 }}>
+                    Enter the correct quantity. Inventory stock will automatically adjust based on the difference (Current: {editingTx.quantity}).
+                  </p>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 600 }}>Reason for Edit (Required)</label>
+                  <textarea 
+                    className="form-input" 
+                    value={editTxRemarks} 
+                    onChange={e => setEditTxRemarks(e.target.value)}
+                    placeholder="E.g. Typo by staff, entered 2 instead of 1"
+                    rows={3}
+                    style={{ resize: 'vertical' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 'var(--sp-3)', marginTop: 'var(--sp-6)', paddingTop: 'var(--sp-4)', borderTop: '1px solid var(--border-subtle)', justifyContent: 'flex-end' }}>
+                <button 
+                  className="btn" 
+                  onClick={() => setEditingTx(null)}
+                  disabled={isSavingTx}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={handleSaveTxEdit}
+                  disabled={isSavingTx || !editTxQty || !editTxRemarks.trim()}
+                  style={{ minWidth: 100 }}
+                >
+                  {isSavingTx ? <Loader2 size={16} className="spin" /> : 'Save Changes'}
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

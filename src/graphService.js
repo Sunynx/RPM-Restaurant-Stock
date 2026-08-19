@@ -346,6 +346,41 @@ export async function fetchTransactions(accessToken) {
   }
 }
 
+export async function updateTransactionRecord(accessToken, transactionId, newQuantity, remarks, userEmail) {
+  const client = getGraphClient(accessToken);
+  try {
+    const siteId = await getSiteId(client);
+    const listId = await getListId(client, siteId, LIST_TRANSACTIONS);
+
+    await client.api(`/sites/${siteId}/lists/${listId}/items/${transactionId}/fields`).patch({
+      Quantity: parseFloat(newQuantity),
+      Remarks: remarks
+    });
+
+    await writeAuditLog(accessToken, userEmail, "EditTransaction", `Edited transaction ID ${transactionId} to qty ${newQuantity}. Remarks: ${remarks}`);
+    return true;
+  } catch (error) {
+    console.error("Error updating transaction record", error);
+    throw error;
+  }
+}
+
+export async function updateInventoryStockOnly(accessToken, productId, newStock) {
+  const client = getGraphClient(accessToken);
+  try {
+    const siteId = await getSiteId(client);
+    const productsListId = await getListId(client, siteId, LIST_PRODUCTS);
+
+    await client.api(`/sites/${siteId}/lists/${productsListId}/items/${productId}/fields`)
+      .patch({ StockOnHand: parseInt(newStock) });
+
+    return true;
+  } catch (error) {
+    console.error("Error updating inventory stock only", error);
+    throw error;
+  }
+}
+
 export async function updateInventoryInSharePoint(accessToken, itemId, updatedData, userEmail) {
   const client = getGraphClient(accessToken);
   try {
