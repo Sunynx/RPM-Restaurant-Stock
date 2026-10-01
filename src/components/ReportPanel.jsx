@@ -421,6 +421,60 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
       if (entCount > 0) {
         csvRows.push(['', '', '', '', `ENT: ${entCount}`, '', '', '', '', '', ''].join(','));
       }
+    } else if (type === 'cut-stock') {
+      csvRows = [['Code', 'Product Name', 'Category', 'Sales Qty', 'Spoilage/ENT Qty', 'Total Cut Qty', 'Total Value (Cost)'].join(',')];
+      
+      const cutMap = {};
+      filteredTransactions.forEach(tx => {
+        if (tx.type === 'Sales' || tx.type === 'Spoilage' || tx.type === 'ENT') {
+          if (!cutMap[tx.productId]) {
+            cutMap[tx.productId] = { sales: 0, ent: 0 };
+          }
+          if (tx.type === 'Sales') cutMap[tx.productId].sales += Math.abs(tx.quantity);
+          else cutMap[tx.productId].ent += Math.abs(tx.quantity);
+        }
+      });
+      
+      const allCuts = Object.entries(cutMap)
+        .map(([productId, data]) => {
+          const product = inventoryMap.get(String(productId));
+          const cost = parseFloat(product?.cost) || 0;
+          const totalQty = data.sales + data.ent;
+          return {
+            code: product ? (product.code || '-') : '-',
+            name: product ? (product.item || product.code) : `Item ${productId}`,
+            categoryId: product?.categoryId,
+            salesQty: data.sales,
+            entQty: data.ent,
+            totalQty: totalQty,
+            totalCost: totalQty * cost
+          };
+        })
+        .sort((a, b) => b.totalQty - a.totalQty);
+
+      let sumSales = 0;
+      let sumEnt = 0;
+      let sumTotal = 0;
+      let sumTotalCost = 0;
+      allCuts.forEach(item => {
+        const categoryObj = categoryMap.get(item.categoryId);
+        const category = categoryObj ? categoryObj.name : '—';
+        sumSales += item.salesQty;
+        sumEnt += item.entQty;
+        sumTotal += item.totalQty;
+        sumTotalCost += item.totalCost;
+        csvRows.push([
+          `"${item.code}"`,
+          `"${item.name.replace(/"/g, '""')}"`,
+          `"${category}"`,
+          item.salesQty,
+          item.entQty,
+          item.totalQty,
+          item.totalCost
+        ].join(','));
+      });
+      csvRows.push(['', '', '', '', '', '', ''].join(','));
+      csvRows.push(['', '', 'Sum Total', sumSales, sumEnt, sumTotal, sumTotalCost].join(','));
     } else {
       csvRows = [['Date', 'User', 'Action', 'Details', 'Status'].join(',')];
       let count = 0;
@@ -828,6 +882,17 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
               }}
             >
               <Download size={14} /> Sales Ranking
+            </button>
+
+            <button
+              onClick={() => handleExportCSV('cut-stock')}
+              style={{
+                padding: '10px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
+                background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-default)',
+                borderRadius: 'var(--radius-lg)', fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow-sm)'
+              }}
+            >
+              <Download size={14} /> Cut Stock Summary
             </button>
 
             <button
