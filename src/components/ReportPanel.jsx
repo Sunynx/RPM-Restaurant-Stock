@@ -449,8 +449,21 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         csvRows.push(['', '', '', '', `ENT: ${entCount}`, '', '', '', '', '', '', ''].join(','));
       }
     } else if (type === 'cut-stock') {
-      csvRows = [['Code', 'Product Name', 'Category', 'Sales Qty', 'Spoilage/ENT Qty', 'Total Cut Qty', 'Total Value (Cost)'].join(',')];
+      csvRows = [['Code', 'Product Name', 'Category', 'Starting Stock', 'Sales Qty', 'Spoilage/ENT Qty', 'Total Cut Qty', 'Ending Stock', 'Total Value (Cost)'].join(',')];
       
+      const stockBounds = {};
+      filteredTransactions.forEach(tx => {
+         const txTime = new Date(tx.date).getTime();
+         const prodId = String(tx.productId);
+         if (!stockBounds[prodId]) {
+            stockBounds[prodId] = { firstTxDate: txTime, lastTxDate: txTime, startStock: txStockHistory[tx.id]?.before || 0, endStock: txStockHistory[tx.id]?.after || 0 };
+         } else {
+            const b = stockBounds[prodId];
+            if (txTime < b.firstTxDate) { b.firstTxDate = txTime; b.startStock = txStockHistory[tx.id]?.before || 0; }
+            if (txTime > b.lastTxDate) { b.lastTxDate = txTime; b.endStock = txStockHistory[tx.id]?.after || 0; }
+         }
+      });
+
       const cutMap = {};
       filteredTransactions.forEach(tx => {
         if (tx.type === 'Sales' || tx.type === 'Spoilage' || tx.type === 'ENT') {
@@ -467,13 +480,16 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
           const product = inventoryMap.get(String(productId));
           const cost = parseFloat(product?.cost) || 0;
           const totalQty = data.sales + data.ent;
+          const bounds = stockBounds[String(productId)] || { startStock: 0, endStock: 0 };
           return {
             code: product ? (product.code || '-') : '-',
             name: product ? (product.item || product.code) : `Item ${productId}`,
             categoryId: product?.categoryId,
+            startStock: bounds.startStock,
             salesQty: data.sales,
             entQty: data.ent,
             totalQty: totalQty,
+            endStock: bounds.endStock,
             totalCost: totalQty * cost
           };
         })
@@ -494,14 +510,16 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
           `"${item.code}"`,
           `"${item.name.replace(/"/g, '""')}"`,
           `"${category}"`,
+          item.startStock,
           item.salesQty,
           item.entQty,
           item.totalQty,
+          item.endStock,
           item.totalCost
         ].join(','));
       });
-      csvRows.push(['', '', '', '', '', '', ''].join(','));
-      csvRows.push(['', '', 'Sum Total', sumSales, sumEnt, sumTotal, sumTotalCost].join(','));
+      csvRows.push(['', '', '', '', '', '', '', '', ''].join(','));
+      csvRows.push(['', '', 'Sum Total', '', sumSales, sumEnt, sumTotal, '', sumTotalCost].join(','));
     } else {
       csvRows = [['Date', 'User', 'Action', 'Details', 'Status'].join(',')];
       let count = 0;
