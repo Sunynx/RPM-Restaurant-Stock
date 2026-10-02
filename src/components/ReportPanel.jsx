@@ -223,6 +223,27 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
     );
   }, [inventory, searchTerm]);
 
+  const txStockHistory = useMemo(() => {
+    const history = {};
+    const runningStock = {};
+    inventory.forEach(p => {
+      runningStock[String(p.id)] = parseInt(p.stockOnHand) || 0;
+    });
+    
+    const sortedTxs = [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    sortedTxs.forEach(tx => {
+      const prodId = String(tx.productId);
+      const current = runningStock[prodId] || 0;
+      const qty = parseFloat(tx.quantity) || 0;
+      const after = current;
+      const before = current - qty;
+      history[tx.id] = { before, after };
+      runningStock[prodId] = before;
+    });
+    return history;
+  }, [transactions, inventory]);
+
   // Chart data
   const stockStatusData = useMemo(() => {
     const active = inventory.filter(p => {
@@ -270,7 +291,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
   const handleExportCSV = (type) => {
     let csvRows = [];
     if (type === 'transactions') {
-      csvRows = [['Date', 'Code', 'Product Name', 'Category', 'Type', 'Quantity', 'Performed By', 'Remarks'].join(',')];
+      csvRows = [['Date', 'Code', 'Product Name', 'Category', 'Type', 'Before Stock', 'Quantity', 'After Stock', 'Performed By', 'Remarks'].join(',')];
       let receiveCount = 0;
       let salesCount = 0;
       let entCount = 0;
@@ -285,22 +306,25 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         else if (tx.type === 'Sales') salesCount++;
         else if (tx.type === 'Spoilage' || tx.type === 'ENT') entCount++;
 
+        const history = txStockHistory[tx.id] || { before: 0, after: 0 };
         csvRows.push([
           `"${new Date(tx.date).toLocaleString('th-TH')}"`,
           `"${product ? product.code : '-'}"`,
           `"${product ? product.item : tx.productId}"`,
           `"${category}"`,
           `"${tx.type}"`,
+          history.before,
           tx.quantity,
+          history.after,
           `"${tx.performedBy}"`,
           `"${(tx.remarks || '').replace(/"/g, '""')}"`
         ].join(','));
       });
-      csvRows.push(['', '', '', '', '', '', '', ''].join(','));
-      csvRows.push(['', '', '', 'Sum Total', `Receive: ${receiveCount}`, sumQty, '', ''].join(','));
-      csvRows.push(['', '', '', '', `Sales: ${salesCount}`, '', '', ''].join(','));
+      csvRows.push(['', '', '', '', '', '', '', '', '', ''].join(','));
+      csvRows.push(['', '', '', 'Sum Total', `Receive: ${receiveCount}`, '', sumQty, '', '', ''].join(','));
+      csvRows.push(['', '', '', '', `Sales: ${salesCount}`, '', '', '', '', ''].join(','));
       if (entCount > 0) {
-        csvRows.push(['', '', '', '', `ENT: ${entCount}`, '', '', ''].join(','));
+        csvRows.push(['', '', '', '', `ENT: ${entCount}`, '', '', '', '', ''].join(','));
       }
     } else if (type === 'inventory') {
       csvRows = [['Code', 'Product Name', 'Category', 'Unit', 'Cost', 'Price', 'Stock', 'Value', 'Min Level', 'Status'].join(',')];
@@ -375,7 +399,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
       csvRows.push(['', '', '', ''].join(','));
       csvRows.push(['', '', 'Sum Total', sumQty].join(','));
     } else if (type === 'summary') {
-      csvRows = [['Date & Time', 'Code', 'Product Name', 'Category', 'Action', 'Qty', 'Unit Cost', 'Unit Price', 'Current Stock', 'Performed By', 'Remarks'].join(',')];
+      csvRows = [['Date & Time', 'Code', 'Product Name', 'Category', 'Action', 'Before Stock', 'Qty', 'After Stock', 'Unit Cost', 'Unit Price', 'Performed By', 'Remarks'].join(',')];
       let receiveCount = 0;
       let salesCount = 0;
       let entCount = 0;
@@ -401,25 +425,28 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         else if (tx.type === 'Sales') salesCount++;
         else if (tx.type === 'Spoilage' || tx.type === 'ENT') entCount++;
 
+        const history = txStockHistory[tx.id] || { before: 0, after: 0 };
+
         csvRows.push([
           `"${new Date(tx.date).toLocaleString('th-TH')}"`,
           `"${product ? product.code : '-'}"`,
           `"${product ? product.item : tx.productId}"`,
           `"${category}"`,
           `"${tx.type}"`,
+          history.before,
           tx.quantity,
+          history.after,
           unitCost,
           unitPrice,
-          currentStock,
           `"${tx.performedBy}"`,
           `"${(tx.remarks || '').replace(/"/g, '""')}"`
         ].join(','));
       });
-      csvRows.push(['', '', '', '', '', '', '', '', '', '', ''].join(','));
-      csvRows.push(['', '', '', 'Sum Total', `Receive: ${receiveCount}`, sumQty, sumUnitCost, sumUnitPrice, sumCurrentStock, '', ''].join(','));
-      csvRows.push(['', '', '', '', `Sales: ${salesCount}`, '', '', '', '', '', ''].join(','));
+      csvRows.push(['', '', '', '', '', '', '', '', '', '', '', ''].join(','));
+      csvRows.push(['', '', '', 'Sum Total', `Receive: ${receiveCount}`, '', sumQty, '', sumUnitCost, sumUnitPrice, '', ''].join(','));
+      csvRows.push(['', '', '', '', `Sales: ${salesCount}`, '', '', '', '', '', '', ''].join(','));
       if (entCount > 0) {
-        csvRows.push(['', '', '', '', `ENT: ${entCount}`, '', '', '', '', '', ''].join(','));
+        csvRows.push(['', '', '', '', `ENT: ${entCount}`, '', '', '', '', '', '', ''].join(','));
       }
     } else if (type === 'cut-stock') {
       csvRows = [['Code', 'Product Name', 'Category', 'Sales Qty', 'Spoilage/ENT Qty', 'Total Cut Qty', 'Total Value (Cost)'].join(',')];
@@ -1129,7 +1156,9 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
                     <th style={{ cursor: 'pointer' }} onClick={() => handleTxSort('date')}>Date & Time{getTxSortIcon('date')}</th>
                     <th style={{ cursor: 'pointer' }} onClick={() => handleTxSort('type')}>Type{getTxSortIcon('type')}</th>
                     <th style={{ cursor: 'pointer' }} onClick={() => handleTxSort('productId')}>Product{getTxSortIcon('productId')}</th>
+                    <th>Before</th>
                     <th style={{ cursor: 'pointer' }} onClick={() => handleTxSort('quantity')}>Qty{getTxSortIcon('quantity')}</th>
+                    <th>After</th>
                     <th style={{ cursor: 'pointer' }} onClick={() => handleTxSort('performedBy')}>By{getTxSortIcon('performedBy')}</th>
                     <th style={{ cursor: 'pointer' }} onClick={() => handleTxSort('remarks')}>Remarks{getTxSortIcon('remarks')}</th>
                   </tr>
@@ -1152,9 +1181,11 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
                             </span>
                           </td>
                           <td style={{ fontSize: 13, fontWeight: 600 }}>{product ? product.item : `#${tx.productId}`}</td>
+                          <td style={{ fontSize: 13 }}>{txStockHistory[tx.id]?.before || 0}</td>
                           <td style={{ fontWeight: 700, color: isNegative ? 'var(--danger)' : 'var(--success)', fontSize: 13 }}>
                             {isNegative ? '' : '+'}{tx.quantity}
                           </td>
+                          <td style={{ fontSize: 13 }}>{txStockHistory[tx.id]?.after || 0}</td>
                           <td style={{ fontSize: 13 }}>{tx.performedBy}</td>
                           <td style={{ fontSize: 13, color: tx.remarks ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>{tx.remarks || '—'}</td>
                         </tr>
