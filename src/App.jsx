@@ -410,6 +410,7 @@ function App() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       queryClient.invalidateQueries({ queryKey: ['logs'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
       setEditingProductDetails(null);
       toast.success("Product details updated successfully!");
     },
@@ -701,7 +702,7 @@ function App() {
           <div className="sidebar-brand-logo" style={{ width: '140px', background: 'transparent', overflow: 'hidden' }}>
             <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain', objectPosition: 'center' }} />
           </div>
-          <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 'var(--sp-2)', letterSpacing: '0.05em', opacity: 0.6 }}>v1.0.6</div>
+          <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 'var(--sp-2)', letterSpacing: '0.05em', opacity: 0.6 }}>v1.0.7</div>
         </div>
         <div className="sidebar-divider" style={{ margin: '0 var(--sp-4)' }}></div>
 
@@ -779,7 +780,7 @@ function App() {
             <h2 className="topbar-title">
               {pageTitle}
               <span className="mobile-only" style={{ fontSize: 10, color: 'var(--text-tertiary)', marginLeft: 8, fontWeight: 500, verticalAlign: 'middle' }}>
-                v1.0.6
+                v1.0.7
               </span>
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: loading ? 'var(--primary)' : 'var(--text-tertiary)', marginLeft: 'var(--sp-2)' }}>
@@ -1121,6 +1122,7 @@ function App() {
             categories={categories}
             onClose={() => setEditingProductDetails(null)}
             onSave={handleSaveProductDetails}
+            userRole={userRole}
           />
         )}
         

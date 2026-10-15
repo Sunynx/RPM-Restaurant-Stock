@@ -62,7 +62,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
     const type = (t.type || '').toLowerCase();
     if (type === 'sales' || type === 'ent') {
       chartDataMap[displayDate].sales += Math.abs(t.quantity);
-    } else if (type === 'receive' || type === 'adjustment') {
+    } else if (type === 'receive') {
       chartDataMap[displayDate].receive += Math.abs(t.quantity);
     }
   });
@@ -323,6 +323,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
                     <span className={`badge ${
                       tx.type?.toLowerCase() === 'receive' ? 'badge-success' : 
                       tx.type?.toLowerCase() === 'sales' ? 'badge-info' : 
+                      (tx.type?.toLowerCase() === 'adjust' || tx.type?.toLowerCase() === 'adjustment') ? 'badge-purple' :
                       'badge-warning'
                     }`} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4 }}>
                       {tx.type?.toUpperCase() || 'OTHER'}

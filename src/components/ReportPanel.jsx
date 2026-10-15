@@ -171,8 +171,10 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
     const salesQty = filteredTransactions.filter(t => t.type === 'Sales').reduce((s, t) => s + Math.abs(t.quantity), 0);
     const entQty = filteredTransactions.filter(t => t.type === 'ENT').reduce((s, t) => s + Math.abs(t.quantity), 0);
     const receiveQty = filteredTransactions.filter(t => t.type === 'Receive').reduce((s, t) => s + Math.abs(t.quantity), 0);
+    const adjustmentQty = filteredTransactions.filter(t => t.type === 'Adjust' || t.type === 'Adjustment').reduce((s, t) => s + (t.quantity || 0), 0);
+    const adjustmentCount = filteredTransactions.filter(t => t.type === 'Adjust' || t.type === 'Adjustment').length;
     const totalMovements = filteredTransactions.length;
-    return { salesQty, entQty, receiveQty, totalMovements };
+    return { salesQty, entQty, receiveQty, adjustmentQty, adjustmentCount, totalMovements };
   }, [filteredTransactions]);
 
   const stats = { ...inventoryStats, ...transactionStats };
@@ -305,6 +307,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         if (tx.type === 'Receive') receiveCount++;
         else if (tx.type === 'Sales') salesCount++;
         else if (tx.type === 'Spoilage' || tx.type === 'ENT') entCount++;
+        else if (tx.type === 'Adjust' || tx.type === 'Adjustment') adjustmentCount++;
 
         const history = txStockHistory[tx.id] || { before: 0, after: 0 };
         csvRows.push([
@@ -325,6 +328,9 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
       csvRows.push(['', '', '', '', `Sales: ${salesCount}`, '', '', '', '', ''].join(','));
       if (entCount > 0) {
         csvRows.push(['', '', '', '', `ENT: ${entCount}`, '', '', '', '', ''].join(','));
+      }
+      if (adjustmentCount > 0) {
+        csvRows.push(['', '', '', '', `Adjustment: ${adjustmentCount}`, '', '', '', '', ''].join(','));
       }
     } else if (type === 'inventory') {
       csvRows = [['Code', 'Product Name', 'Category', 'Unit', 'Cost', 'Price', 'Stock', 'Value', 'Min Level', 'Status'].join(',')];
@@ -403,6 +409,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
       let receiveCount = 0;
       let salesCount = 0;
       let entCount = 0;
+      let adjustmentCount = 0;
       let sumQty = 0;
       let sumUnitCost = 0;
       let sumUnitPrice = 0;
@@ -424,6 +431,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         if (tx.type === 'Receive') receiveCount++;
         else if (tx.type === 'Sales') salesCount++;
         else if (tx.type === 'Spoilage' || tx.type === 'ENT') entCount++;
+        else if (tx.type === 'Adjust' || tx.type === 'Adjustment') adjustmentCount++;
 
         const history = txStockHistory[tx.id] || { before: 0, after: 0 };
 
@@ -447,6 +455,9 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
       csvRows.push(['', '', '', '', `Sales: ${salesCount}`, '', '', '', '', '', '', ''].join(','));
       if (entCount > 0) {
         csvRows.push(['', '', '', '', `ENT: ${entCount}`, '', '', '', '', '', '', ''].join(','));
+      }
+      if (adjustmentCount > 0) {
+        csvRows.push(['', '', '', '', `Adjustment: ${adjustmentCount}`, '', '', '', '', '', '', ''].join(','));
       }
       
       // Cut stock section
@@ -853,6 +864,13 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
     ),
     { label: 'Spoilage / ENT', value: stats.entQty, color: 'var(--warning)' },
     { label: 'Received', value: stats.receiveQty, color: 'var(--success)' },
+    ...(userRole === 'Admin' ? [
+      { 
+        label: `Stock Adjustments (${filterLabel})`, 
+        value: `${stats.adjustmentQty > 0 ? '+' : ''}${stats.adjustmentQty} (${stats.adjustmentCount} tx)`, 
+        color: '#8b5cf6' 
+      }
+    ] : []),
     { label: 'Low Stock', value: stats.lowStock, color: stats.lowStock > 0 ? 'var(--warning)' : 'var(--text-primary)' },
     { label: 'Out of Stock', value: stats.outOfStock, color: stats.outOfStock > 0 ? 'var(--danger)' : 'var(--text-primary)' },
   ];
@@ -1189,7 +1207,12 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
                         <tr key={tx.id}>
                           <td style={{ whiteSpace: 'nowrap', fontSize: 13 }}>{new Date(tx.date).toLocaleString('th-TH')}</td>
                           <td>
-                            <span className={`badge ${tx.type === 'Receive' ? 'badge-success' : tx.type === 'Sales' ? 'badge-primary' : 'badge-warning'}`} style={{ fontSize: 11 }}>
+                            <span className={`badge ${
+                              tx.type === 'Receive' ? 'badge-success' : 
+                              tx.type === 'Sales' ? 'badge-primary' : 
+                              (tx.type === 'Adjust' || tx.type === 'Adjustment') ? 'badge-purple' : 
+                              'badge-warning'
+                            }`} style={{ fontSize: 11 }}>
                               {tx.type}
                             </span>
                           </td>

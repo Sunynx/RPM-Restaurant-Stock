@@ -843,7 +843,7 @@ export default function AdminPanel({ users, onAddUser, onEditUserRole, onUpdateU
                               {new Date(tx.date).toLocaleString('th-TH')}
                             </td>
                             <td>
-                              <span className={`badge ${tx.type === 'Receive' ? 'badge-success' : tx.type === 'Sales' ? 'badge-primary' : 'badge-warning'}`}>
+                              <span className={`badge ${tx.type === 'Receive' ? 'badge-success' : tx.type === 'Sales' ? 'badge-primary' : (tx.type === 'Adjust' || tx.type === 'Adjustment') ? 'badge-purple' : 'badge-warning'}`}>
                                 {tx.type}
                               </span>
                             </td>

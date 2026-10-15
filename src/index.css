@@ -933,6 +933,12 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--border-default);
 }
 
+.badge-purple {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
 .status-dot {
   width: 7px;
   height: 7px;

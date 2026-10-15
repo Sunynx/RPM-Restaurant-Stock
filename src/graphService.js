@@ -492,21 +492,21 @@ export async function updateProductDetailsInSharePoint(accessToken, itemId, upda
       if (newStock !== oldStock) {
         const diff = newStock - oldStock;
         const txListId = await getListId(client, siteId, LIST_TRANSACTIONS);
+        const reason = updatedFields.adjustmentReason || 'Manual Stock Adjustment';
+        const remarks = updatedFields.remarks || (updatedFields.adjustmentRemarks ? `${reason}: ${updatedFields.adjustmentRemarks}` : reason);
+
         const txFields = {
           Title: `TX-${Date.now()}`,
           TransactionDate: new Date().toISOString(),
-          TransactionType: 'Receive', // Default to Receive for positive adjustment
+          TransactionType: 'Adjust',
           ProductLookupId: parseInt(itemId),
           Quantity: diff,
           PerformedBy: userEmail,
-          Remarks: 'Manual Stock Adjustment'
+          Remarks: remarks
         };
-        if (diff < 0) {
-           txFields.TransactionType = 'ENT'; // Use ENT for negative adjustments
-        }
         await client.api(`/sites/${siteId}/lists/${txListId}/items`).post({ fields: txFields });
         
-        await writeAuditLog(accessToken, userEmail, "ManualStockAdjustment", `Adjusted stock for product ${updatedFields.code} from ${oldStock} to ${newStock}`);
+        await writeAuditLog(accessToken, userEmail, "StockAdjustment", `Adjusted stock for product ${updatedFields.code} (${updatedFields.item || ''}) from ${oldStock} to ${newStock} (${diff > 0 ? '+' + diff : diff}). Reason: ${remarks}`);
       }
     }
 

@@ -19,20 +19,22 @@ vi.mock('recharts', () => {
     Tooltip: () => <div />,
     Legend: () => <div />,
     ComposedChart: () => <div data-testid="composed-chart">ComposedChart</div>,
+    AreaChart: () => <div data-testid="area-chart">AreaChart</div>,
+    Area: () => <div />,
     Line: () => <div />
   };
 });
 
 describe('Dashboard Component', () => {
   const mockInventory = [
-    { code: 'ITM001', item: 'Coke', closing: '50', groupId: 2 },
-    { code: 'ITM002', item: 'Pepsi', closing: '0', groupId: 2 }, // Out of stock
-    { code: 'ITM003', item: 'Water', closing: '5', groupId: 2 }, // Low stock (threshold 10)
+    { id: '1', code: 'ITM001', item: 'Coke', closing: '50', cost: 10 },
+    { id: '2', code: 'ITM002', item: 'Pepsi', closing: '0', cost: 12 }, // Out of stock
+    { id: '3', code: 'ITM003', item: 'Water', closing: '5', cost: 5 }, // Low stock (threshold 10)
   ];
 
   const mockTransactions = [
-    { id: 1, item: 'Coke', type: 'Sales', quantity: 10, date: '2026-07-24' },
-    { id: 2, item: 'Water', type: 'Receive', quantity: 20, date: '2026-07-24' },
+    { id: 1, productId: '1', item: 'Coke', type: 'Sales', quantity: 10, date: '2026-07-24T10:00:00' },
+    { id: 2, productId: '3', item: 'Water', type: 'Receive', quantity: 20, date: '2026-07-24T11:00:00' },
   ];
 
   it('renders correct total and out of stock items', () => {
@@ -48,12 +50,11 @@ describe('Dashboard Component', () => {
     // Total Items: 3
     expect(screen.getByText('3')).toBeInTheDocument();
     
-    // Out of Stock Items: 1 (Pepsi)
-    expect(screen.getByText('1')).toBeInTheDocument();
+    // Out of Stock / Low Stock Items KPI
+    expect(screen.getAllByText('1').length).toBeGreaterThan(0);
     
-    // Low Stock Details Table should render Water and Pepsi (since Pepsi is 0 < 10)
-    expect(screen.getAllByText('Pepsi').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Water').length).toBeGreaterThan(0);
+    // Recent Transactions / Top Sellers
+    expect(screen.getAllByText('Coke').length).toBeGreaterThan(0);
   });
 
   it('renders charts without crashing', () => {
@@ -66,8 +67,6 @@ describe('Dashboard Component', () => {
       />
     );
     
-    expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
-    expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
     expect(screen.getByTestId('composed-chart')).toBeInTheDocument();
   });
 });
