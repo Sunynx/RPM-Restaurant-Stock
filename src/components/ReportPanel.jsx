@@ -87,10 +87,14 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
 
   const filteredLogs = useMemo(() => {
     const now = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
     const filtered = logs.filter(log => {
       if (log.title === 'Login') return false;
       const logDate = new Date(log.date);
       if (filter === 'daily') return logDate.toDateString() === now.toDateString();
+      if (filter === 'yesterday') return logDate.toDateString() === yesterday.toDateString();
       if (filter === 'monthly') return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
       if (filter === 'custom' && startDate && endDate) {
         const start = new Date(startDate).setHours(0,0,0,0);
@@ -119,9 +123,13 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
 
   const filteredTransactions = useMemo(() => {
     const now = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
     const filtered = transactions.filter(tx => {
       const txDate = new Date(tx.date);
       if (filter === 'daily') return txDate.toDateString() === now.toDateString();
+      if (filter === 'yesterday') return txDate.toDateString() === yesterday.toDateString();
       if (filter === 'monthly') return txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear();
       if (filter === 'custom' && startDate && endDate) {
         const start = new Date(startDate).setHours(0,0,0,0);
@@ -181,8 +189,11 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
 
   const globalRevenues = useMemo(() => {
     let daily = 0;
+    let yesterday = 0;
     let monthly = 0;
     const now = new Date();
+    const yDate = new Date();
+    yDate.setDate(yDate.getDate() - 1);
     
     transactions.forEach(tx => {
       if ((tx.type || '').toLowerCase() === 'sales') {
@@ -194,12 +205,15 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         if (txDate.toDateString() === now.toDateString()) {
           daily += value;
         }
+        if (txDate.toDateString() === yDate.toDateString()) {
+          yesterday += value;
+        }
         if (txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear()) {
           monthly += value;
         }
       }
     });
-    return { daily, monthly };
+    return { daily, yesterday, monthly };
   }, [transactions, inventoryMap]);
 
   const periodRevenue = useMemo(() => {
@@ -214,7 +228,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
     return period;
   }, [filteredTransactions, inventoryMap]);
 
-  const revenues = { daily: globalRevenues.daily, monthly: globalRevenues.monthly, period: periodRevenue };
+  const revenues = { daily: globalRevenues.daily, yesterday: globalRevenues.yesterday, monthly: globalRevenues.monthly, period: periodRevenue };
 
   const inventorySearched = useMemo(() => {
     if (!searchTerm) return inventory;
@@ -564,7 +578,11 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
     const link = document.createElement('a');
     link.href = url;
     let dateStr = new Date().toISOString().split('T')[0];
-    if (filter === 'custom' && startDate && endDate) {
+    if (filter === 'yesterday') {
+      const yDate = new Date();
+      yDate.setDate(yDate.getDate() - 1);
+      dateStr = yDate.toISOString().split('T')[0];
+    } else if (filter === 'custom' && startDate && endDate) {
       dateStr = `${startDate}_to_${endDate}`;
     }
     link.download = `RPM_Report_${type}_${filter}_${dateStr}.csv`;
@@ -840,6 +858,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
   }, [inventory, stats, transactions, categories, filteredTransactions, inventoryMap, categoryMap, revenues]);
 
   const filterLabel = filter === 'daily' ? 'Today' : 
+                      filter === 'yesterday' ? 'Yesterday' : 
                       filter === 'monthly' ? 'This Month' : 
                       filter === 'custom' ? (startDate && endDate ? `${startDate} to ${endDate}` : 'Custom Date') : 
                       'All Time';
@@ -853,7 +872,12 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
   const kpiCards = [
     { label: `Movements (${filterLabel})`, value: stats.totalMovements, color: 'var(--primary)' },
     { label: 'Sales Used', value: stats.salesQty, color: 'var(--indigo-500)' },
-    ...((filter === 'daily' || filter === 'monthly') 
+    ...(filter === 'yesterday'
+      ? [
+          { label: 'Yesterday Sales', value: `฿${revenues.period.toLocaleString()}`, color: 'var(--success)' },
+          { label: 'Monthly Sales', value: `฿${revenues.monthly.toLocaleString()}`, color: 'var(--success)' }
+        ]
+      : (filter === 'daily' || filter === 'monthly') 
       ? [
           { label: 'Daily Sales', value: `฿${revenues.daily.toLocaleString()}`, color: 'var(--success)' },
           { label: 'Monthly Sales', value: `฿${revenues.monthly.toLocaleString()}`, color: 'var(--success)' }
@@ -896,6 +920,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
             <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-subtle)', padding: '4px', borderRadius: 'var(--radius-lg)' }}>
               {[
                 { id: 'daily', label: 'Today' },
+                { id: 'yesterday', label: 'Yesterday' },
                 { id: 'monthly', label: 'This Month' },
                 { id: 'all', label: 'All Time' },
                 { id: 'custom', label: 'Custom' }

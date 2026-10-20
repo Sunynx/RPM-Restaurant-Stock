@@ -16,7 +16,8 @@ import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUser
 import toast from 'react-hot-toast';
 import CSVImporterModal from './components/CSVImporterModal';
 
-const ADMIN_PIN = '0000';
+const ADMIN_PIN = '1234';
+const DEFAULT_PIN = '0000';
 
 function App() {
   const { instance, accounts } = useMsal();
@@ -147,7 +148,10 @@ function App() {
 
   const handlePinSubmit = (pinValue) => {
     const valueToCheck = typeof pinValue === 'string' ? pinValue : pinInput;
-    if (valueToCheck === ADMIN_PIN) {
+    const role = (pendingProfile?.role || '').trim().toLowerCase();
+    const expectedPin = (role === 'admin' || role === 'administrator') ? ADMIN_PIN : DEFAULT_PIN;
+
+    if (valueToCheck === expectedPin) {
       if (accounts.length > 0 && pendingProfile) {
         const userIdentifier = pendingProfile.name ? `${pendingProfile.name} - ${accounts[0].username}` : accounts[0].username;
         writeAuditLog(accessToken, userIdentifier, 'Login', `User logged in as ${pendingProfile.role}`);
@@ -702,7 +706,7 @@ function App() {
           <div className="sidebar-brand-logo" style={{ width: '140px', background: 'transparent', overflow: 'hidden' }}>
             <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain', objectPosition: 'center' }} />
           </div>
-          <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 'var(--sp-2)', letterSpacing: '0.05em', opacity: 0.6 }}>v1.0.7</div>
+          <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 'var(--sp-2)', letterSpacing: '0.05em', opacity: 0.6 }}>v1.0.8</div>
         </div>
         <div className="sidebar-divider" style={{ margin: '0 var(--sp-4)' }}></div>
 
@@ -780,7 +784,7 @@ function App() {
             <h2 className="topbar-title">
               {pageTitle}
               <span className="mobile-only" style={{ fontSize: 10, color: 'var(--text-tertiary)', marginLeft: 8, fontWeight: 500, verticalAlign: 'middle' }}>
-                v1.0.7
+                v1.0.8
               </span>
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: loading ? 'var(--primary)' : 'var(--text-tertiary)', marginLeft: 'var(--sp-2)' }}>
