@@ -176,13 +176,23 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
   }, [inventory]);
 
   const transactionStats = useMemo(() => {
-    const salesQty = filteredTransactions.filter(t => t.type === 'Sales').reduce((s, t) => s + Math.abs(t.quantity), 0);
-    const entQty = filteredTransactions.filter(t => t.type === 'ENT').reduce((s, t) => s + Math.abs(t.quantity), 0);
-    const receiveQty = filteredTransactions.filter(t => t.type === 'Receive').reduce((s, t) => s + Math.abs(t.quantity), 0);
-    const adjustmentQty = filteredTransactions.filter(t => t.type === 'Adjust' || t.type === 'Adjustment').reduce((s, t) => s + (t.quantity || 0), 0);
-    const adjustmentCount = filteredTransactions.filter(t => t.type === 'Adjust' || t.type === 'Adjustment').length;
+    const salesQty = filteredTransactions.filter(t => (t.type || '').toLowerCase() === 'sales').reduce((s, t) => s + Math.abs(t.quantity || 0), 0);
+    const entQty = filteredTransactions.filter(t => (t.type || '').toLowerCase() === 'ent' || (t.type || '').toLowerCase() === 'spoilage').reduce((s, t) => s + Math.abs(t.quantity || 0), 0);
+    const receiveQty = filteredTransactions.filter(t => (t.type || '').toLowerCase() === 'receive').reduce((s, t) => s + Math.abs(t.quantity || 0), 0);
+    const adjustmentQty = filteredTransactions.filter(t => {
+      const type = (t.type || '').toLowerCase();
+      return type === 'adjust' || type === 'adjustment';
+    }).reduce((s, t) => s + (t.quantity || 0), 0);
+    const adjustmentVolume = filteredTransactions.filter(t => {
+      const type = (t.type || '').toLowerCase();
+      return type === 'adjust' || type === 'adjustment';
+    }).reduce((s, t) => s + Math.abs(t.quantity || 0), 0);
+    const adjustmentCount = filteredTransactions.filter(t => {
+      const type = (t.type || '').toLowerCase();
+      return type === 'adjust' || type === 'adjustment';
+    }).length;
     const totalMovements = filteredTransactions.length;
-    return { salesQty, entQty, receiveQty, adjustmentQty, adjustmentCount, totalMovements };
+    return { salesQty, entQty, receiveQty, adjustmentQty, adjustmentVolume, adjustmentCount, totalMovements };
   }, [filteredTransactions]);
 
   const stats = { ...inventoryStats, ...transactionStats };
@@ -279,6 +289,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
       { name: 'Sales', qty: stats.salesQty, fill: '#4f6ef7' },
       { name: 'Spoilage/ENT', qty: stats.entQty, fill: '#f59e0b' },
       { name: 'Received', qty: stats.receiveQty, fill: '#10b981' },
+      { name: 'Adjust', qty: stats.adjustmentVolume, fill: '#8b5cf6' },
     ];
   }, [stats]);
 
@@ -705,6 +716,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         { label: 'Sales', qty: stats.salesQty, color: [79, 110, 247] },
         { label: 'Spoilage / ENT', qty: stats.entQty, color: [245, 158, 11] },
         { label: 'Received', qty: stats.receiveQty, color: [16, 185, 129] },
+        { label: 'Adjust', qty: stats.adjustmentVolume, color: [139, 92, 246] },
       ];
       const maxMvQty = Math.max(...mvItems.map(m => m.qty), 1);
       mvItems.forEach((item) => {

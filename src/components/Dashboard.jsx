@@ -64,6 +64,8 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
       chartDataMap[displayDate].sales += Math.abs(t.quantity);
     } else if (type === 'receive') {
       chartDataMap[displayDate].receive += Math.abs(t.quantity);
+    } else if (type === 'adjust' || type === 'adjustment') {
+      chartDataMap[displayDate].adjust = (chartDataMap[displayDate].adjust || 0) + Math.abs(t.quantity);
     }
   });
 
@@ -82,7 +84,7 @@ export default function Dashboard({ inventory, categories = [], lowStockThreshol
   // Trend Chart Data
   const trendChartData = chartData.map(d => ({
     ...d,
-    totalActivity: d.sales + d.receive
+    totalActivity: d.sales + d.receive + (d.adjust || 0)
   }));
 
   // Top 5 Sellers (Top Movers)
