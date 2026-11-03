@@ -19,6 +19,8 @@ import CSVImporterModal from './components/CSVImporterModal';
 const ADMIN_PIN = '1234';
 const DEFAULT_PIN = '0000';
 
+const APP_VERSION = '1.0.9';
+
 function App() {
   const { instance, accounts } = useMsal();
   const isAuthenticated = useIsAuthenticated();
@@ -53,14 +55,20 @@ function App() {
         if (!res.ok) return;
         const data = await res.json();
         
+        const isNewVersion = 
+          (data.appVersion && data.appVersion !== APP_VERSION) ||
+          (currentVersion && currentVersion !== data.version);
+
         if (!currentVersion) {
           currentVersion = data.version;
-        } else if (currentVersion !== data.version) {
+        }
+
+        if (isNewVersion) {
           toast((t) => (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <span style={{ fontWeight: 600 }}>มีเวอร์ชันใหม่! (New version available)</span>
               <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                กรุณารีเฟรชหน้าจอเพื่ออัปเดตระบบ
+                กรุณารีเฟรชหน้าจอเพื่ออัปเดตระบบ (v{data.appVersion || 'ใหม่'})
               </span>
               <button 
                 onClick={() => {
@@ -767,7 +775,7 @@ function App() {
           <div className="sidebar-brand-logo" style={{ width: '140px', background: 'transparent', overflow: 'hidden' }}>
             <img src="/rpm-logo.svg" alt="RPM Logo" style={{ width: '100%', height: 'auto', objectFit: 'contain', objectPosition: 'center' }} />
           </div>
-          <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 'var(--sp-2)', letterSpacing: '0.05em', opacity: 0.6 }}>v1.0.8</div>
+          <div style={{ fontSize: 9, color: 'var(--text-tertiary)', marginTop: 'var(--sp-2)', letterSpacing: '0.05em', opacity: 0.6 }}>v{APP_VERSION}</div>
         </div>
         <div className="sidebar-divider" style={{ margin: '0 var(--sp-4)' }}></div>
 
@@ -845,7 +853,7 @@ function App() {
             <h2 className="topbar-title">
               {pageTitle}
               <span className="mobile-only" style={{ fontSize: 10, color: 'var(--text-tertiary)', marginLeft: 8, fontWeight: 500, verticalAlign: 'middle' }}>
-                v1.0.8
+                v{APP_VERSION}
               </span>
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: loading ? 'var(--primary)' : 'var(--text-tertiary)', marginLeft: 'var(--sp-2)' }}>
