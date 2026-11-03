@@ -43,6 +43,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
   // Sorting State
   const [logSort, setLogSort] = useState({ key: 'date', direction: 'desc' });
   const [txSort, setTxSort] = useState({ key: 'date', direction: 'desc' });
+  const [invSort, setInvSort] = useState({ key: 'code', direction: 'asc' });
   
   const handleLogSort = (key) => {
     setLogSort(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
@@ -50,6 +51,10 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
   
   const handleTxSort = (key) => {
     setTxSort(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
+  };
+
+  const handleInvSort = (key) => {
+    setInvSort(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
   };
 
   const getLogSortIcon = (key) => {
@@ -60,6 +65,11 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
   const getTxSortIcon = (key) => {
     if (txSort.key !== key) return null;
     return txSort.direction === 'asc' ? ' ↑' : ' ↓';
+  };
+
+  const getInvSortIcon = (key) => {
+    if (invSort.key !== key) return null;
+    return invSort.direction === 'asc' ? ' ↑' : ' ↓';
   };
 
   useEffect(() => { loadData(); }, []);
@@ -160,17 +170,137 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
   const inventoryMap = useMemo(() => new Map(inventory.map(p => [String(p.id), p])), [inventory]);
   const categoryMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
 
+  const filterDateRange = useMemo(() => {
+    const now = new Date();
+    if (filter === 'daily') {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
+      return { start: start.getTime(), end: end.getTime(), label: 'Today', isFiltered: true };
+    }
+    if (filter === 'yesterday') {
+      const start = new Date();
+      start.setDate(start.getDate() - 1);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date();
+      end.setDate(end.getDate() - 1);
+      end.setHours(23, 59, 59, 999);
+      return { start: start.getTime(), end: end.getTime(), label: 'Yesterday', isFiltered: true };
+    }
+    if (filter === 'monthly') {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      end.setHours(23, 59, 59, 999);
+      return { start: start.getTime(), end: end.getTime(), label: 'This Month', isFiltered: true };
+    }
+    if (filter === 'custom') {
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        return { start: start.getTime(), end: end.getTime(), label: `${startDate} to ${endDate}`, isFiltered: true };
+      } else if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(startDate);
+        end.setHours(23, 59, 59, 999);
+        return { start: start.getTime(), end: end.getTime(), label: startDate, isFiltered: true };
+      }
+    }
+    return { start: null, end: null, label: 'All Time', isFiltered: false };
+  }, [filter, startDate, endDate]);
+
+  const filterLabel = filterDateRange.label;
+
+  const inventorySnapshotData = useMemo(() => {
+    const map = {};
+    const { start: pStart, end: pEnd, isFiltered } = filterDateRange;
+
+    inventory.forEach(p => {
+      const prodId = String(p.id);
+      const currentStock = parseInt(p.stockOnHand) || 0;
+      
+      let afterTxsSum = 0;
+      let periodIn = 0;
+      let periodOut = 0;
+      let periodAdjust = 0;
+
+      transactions.forEach(tx => {
+        if (String(tx.productId) !== prodId) return;
+        const txTime = new Date(tx.date).getTime();
+        const qty = parseFloat(tx.quantity) || 0;
+        const type = (tx.type || '').toLowerCase();
+
+        if (isFiltered && pEnd && txTime > pEnd) {
+          afterTxsSum += qty;
+        } else if (!isFiltered || (txTime >= (pStart || 0) && txTime <= (pEnd || Infinity))) {
+          if (type === 'receive') {
+            periodIn += Math.abs(qty);
+          } else if (type === 'sales' || type === 'ent' || type === 'spoilage') {
+            periodOut += Math.abs(qty);
+          } else if (type === 'adjust' || type === 'adjustment') {
+            periodAdjust += qty;
+          } else {
+            if (qty > 0) periodIn += qty;
+            else periodOut += Math.abs(qty);
+          }
+        }
+      });
+
+      const endingStock = isFiltered ? (currentStock - afterTxsSum) : currentStock;
+      const startingStock = endingStock - (periodIn - periodOut + periodAdjust);
+
+      const minVal = parseInt(p.minStockLevel) || 0;
+      let status = 'Good';
+      let badgeClass = 'badge-success';
+      if (endingStock <= 0) {
+        status = 'Out of Stock';
+        badgeClass = 'badge-danger';
+      } else if (endingStock <= minVal) {
+        status = 'Low Stock';
+        badgeClass = 'badge-warning';
+      }
+
+      map[prodId] = {
+        startingStock,
+        periodIn,
+        periodOut,
+        periodAdjust,
+        endingStock,
+        status,
+        badgeClass,
+        costValue: endingStock * (parseFloat(p.cost) || 0),
+        priceValue: endingStock * (parseFloat(p.price) || 0)
+      };
+    });
+
+    return map;
+  }, [inventory, transactions, filterDateRange]);
+
+  const hasAnyAdjust = useMemo(() => {
+    return Object.values(inventorySnapshotData).some(s => s.periodAdjust !== 0);
+  }, [inventorySnapshotData]);
+
   const inventoryStats = useMemo(() => {
     const totalProducts = inventory.length;
-    const totalStock = inventory.reduce((sum, p) => sum + (parseInt(p.stockOnHand) || 0), 0);
-    const lowStock = inventory.filter(p => {
-      const stock = parseInt(p.stockOnHand) || 0;
+    let totalStock = 0;
+    let lowStock = 0;
+    let outOfStock = 0;
+    
+    inventory.forEach(p => {
+      const snap = inventorySnapshotData[String(p.id)];
+      const stock = snap ? snap.endingStock : (parseInt(p.stockOnHand) || 0);
       const min = parseInt(p.minStockLevel) || 0;
-      return stock > 0 && stock <= min;
-    }).length;
-    const outOfStock = inventory.filter(p => (parseInt(p.stockOnHand) || 0) <= 0).length;
+      totalStock += stock;
+      if (stock <= 0) outOfStock++;
+      else if (stock <= min) lowStock++;
+    });
+
     return { totalProducts, totalStock, lowStock, outOfStock };
-  }, [inventory]);
+  }, [inventory, inventorySnapshotData]);
 
   const transactionStats = useMemo(() => {
     const salesQty = filteredTransactions.filter(t => (t.type || '').toLowerCase() === 'sales').reduce((s, t) => s + Math.abs(t.quantity || 0), 0);
@@ -245,6 +375,27 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
       (p.code || '').toLowerCase().includes(term)
     );
   }, [inventory, searchTerm]);
+
+  const sortedInventory = useMemo(() => {
+    const list = [...inventorySearched];
+    list.sort((a, b) => {
+      let aVal, bVal;
+      if (invSort.key === 'stock') {
+        aVal = inventorySnapshotData[String(a.id)]?.endingStock ?? (parseInt(a.stockOnHand) || 0);
+        bVal = inventorySnapshotData[String(b.id)]?.endingStock ?? (parseInt(b.stockOnHand) || 0);
+      } else if (invSort.key === 'cost' || invSort.key === 'price') {
+        aVal = parseFloat(a[invSort.key]) || 0;
+        bVal = parseFloat(b[invSort.key]) || 0;
+      } else {
+        aVal = String(a[invSort.key] || '').toLowerCase();
+        bVal = String(b[invSort.key] || '').toLowerCase();
+      }
+      if (aVal < bVal) return invSort.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return invSort.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [inventorySearched, inventorySnapshotData, invSort]);
 
   const txStockHistory = useMemo(() => {
     const history = {};
@@ -355,7 +506,14 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         csvRows.push(['', '', '', '', `Adjustment: ${adjustmentCount}`, '', '', '', '', ''].join(','));
       }
     } else if (type === 'inventory') {
-      csvRows = [['Code', 'Product Name', 'Category', 'Unit', 'Cost', 'Price', 'Stock', 'Value', 'Min Level', 'Status'].join(',')];
+      const isFiltered = filterDateRange.isFiltered;
+      let headers = ['Code', 'Product Name', 'Category', 'Unit', 'Cost', 'Price'];
+      if (isFiltered) {
+        headers.push('Starting Stock', 'In (+)', 'Out (-)', 'Adjust (+/-)');
+      }
+      headers.push(isFiltered ? `Stock (${filterLabel})` : 'Stock', 'Total Value', 'Min Level', 'Status');
+      csvRows = [headers.join(',')];
+
       let sumStock = 0;
       let sumValue = 0;
       let sumCost = 0;
@@ -363,10 +521,19 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
       let goodCount = 0;
       let lowStockCount = 0;
       let outOfStockCount = 0;
+
       inventory.forEach(p => {
         const categoryObj = categoryMap.get(p.categoryId);
         const category = categoryObj ? categoryObj.name : '—';
-        const stockVal = parseInt(p.stockOnHand) || 0;
+        const snap = inventorySnapshotData[String(p.id)] || {
+          startingStock: parseInt(p.stockOnHand) || 0,
+          periodIn: 0,
+          periodOut: 0,
+          periodAdjust: 0,
+          endingStock: parseInt(p.stockOnHand) || 0,
+          status: 'Good'
+        };
+        const stockVal = snap.endingStock;
         const minVal = parseInt(p.minStockLevel) || 0;
         const costVal = parseFloat(p.cost) || 0;
         const priceVal = parseFloat(p.price) || 0;
@@ -377,14 +544,16 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         sumStock += stockVal;
         sumValue += totalValue;
         
-        let status = 'Good';
-        if (stockVal <= 0) { status = 'Out of Stock'; outOfStockCount++; }
-        else if (stockVal <= minVal) { status = 'Low Stock'; lowStockCount++; }
-        else { goodCount++; }
+        if (snap.status === 'Out of Stock') outOfStockCount++;
+        else if (snap.status === 'Low Stock') lowStockCount++;
+        else goodCount++;
 
-        csvRows.push([
-          `"${p.code}"`, `"${p.item}"`, `"${category}"`, `"${p.unit}"`, costVal, priceVal, stockVal, totalValue, minVal, `"${status}"`
-        ].join(','));
+        let row = [`"${p.code}"`, `"${p.item.replace(/"/g, '""')}"`, `"${category}"`, `"${p.unit}"`, costVal, priceVal];
+        if (isFiltered) {
+          row.push(snap.startingStock, snap.periodIn, snap.periodOut, snap.periodAdjust);
+        }
+        row.push(stockVal, totalValue, minVal, `"${snap.status}"`);
+        csvRows.push(row.join(','));
       });
       csvRows.push(['', '', '', '', '', '', '', '', '', ''].join(','));
       csvRows.push(['', '', 'Sum Total', '', sumCost, sumPrice, sumStock, sumValue, '', `Good: ${goodCount}`].join(','));
@@ -779,15 +948,25 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
       pdf.setTextColor(255);
       pdf.setFontSize(12);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(`Full Inventory Snapshot (${inventory.length} products)`, margin, 12);
+      pdf.text(`Full Inventory Snapshot - ${filterLabel} (${inventory.length} products)`, margin, 12);
 
       const invRows = inventory.map(p => {
-        const s = parseInt(p.stockOnHand) || 0;
+        const snap = inventorySnapshotData[String(p.id)] || {};
+        const s = snap.endingStock !== undefined ? snap.endingStock : (parseInt(p.stockOnHand) || 0);
         const m = parseInt(p.minStockLevel) || 0;
-        let status = 'Good';
-        if (s <= 0) status = 'Out of Stock';
-        else if (s <= m) status = 'Low Stock';
-        return [p.code || '', p.item || '', p.unit || '', `THB ${(p.cost || 0).toLocaleString()}`, `THB ${(p.price || 0).toLocaleString()}`, String(s), `THB ${(s * (p.cost || 0)).toLocaleString()}`, status];
+        const status = snap.status || (s <= 0 ? 'Out of Stock' : s <= m ? 'Low Stock' : 'Good');
+        const costVal = parseFloat(p.cost) || 0;
+        const priceVal = parseFloat(p.price) || 0;
+        return [
+          p.code || '', 
+          p.item || '', 
+          p.unit || '', 
+          `THB ${costVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 
+          `THB ${priceVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 
+          String(s), 
+          `THB ${(s * costVal).toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 
+          status
+        ];
       });
 
       autoTable(pdf, {
@@ -864,13 +1043,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
     } finally {
       setPdfExporting(false);
     }
-  }, [inventory, stats, transactions, categories, filteredTransactions, inventoryMap, categoryMap, revenues]);
-
-  const filterLabel = filter === 'daily' ? 'Today' : 
-                      filter === 'yesterday' ? 'Yesterday' : 
-                      filter === 'monthly' ? 'This Month' : 
-                      filter === 'custom' ? (startDate && endDate ? `${startDate} to ${endDate}` : 'Custom Date') : 
-                      'All Time';
+  }, [inventory, stats, transactions, categories, filteredTransactions, inventoryMap, categoryMap, revenues, inventorySnapshotData, filterLabel]);
 
   const sectionTabs = [
     ...(userRole === 'Admin' ? [{ key: 'overview', label: 'Overview', icon: Activity }] : []),
@@ -1272,8 +1445,73 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
         {activeSection === 'inventory' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--sp-4)', flexWrap: 'wrap', gap: 'var(--sp-3)' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Full Inventory Snapshot ({inventory.length} products)</h3>
-              <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+              <div>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  Full Inventory Snapshot
+                  <span className="badge badge-primary" style={{ fontSize: 11, fontWeight: 600 }}>
+                    {filterLabel}
+                  </span>
+                  <span style={{ fontSize: 13, color: 'var(--text-tertiary)', fontWeight: 500 }}>
+                    ({inventory.length} products)
+                  </span>
+                </h3>
+                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4 }}>
+                  {filterDateRange.isFiltered 
+                    ? `Showing calculated stock balance as of: ${filterLabel}` 
+                    : 'Showing current live stock on hand'}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-subtle)', padding: '4px', borderRadius: 'var(--radius-lg)' }}>
+                  {[
+                    { id: 'daily', label: 'Today' },
+                    { id: 'yesterday', label: 'Yesterday' },
+                    { id: 'monthly', label: 'This Month' },
+                    { id: 'all', label: 'All Time' },
+                    { id: 'custom', label: 'Custom' }
+                  ].map(f => (
+                    <button
+                      key={f.id}
+                      onClick={() => setFilter(f.id)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: filter === f.id ? 'var(--bg-card)' : 'transparent',
+                        color: filter === f.id ? 'var(--primary)' : 'var(--text-secondary)',
+                        boxShadow: filter === f.id ? 'var(--shadow-sm)' : 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+
+                {filter === 'custom' && (
+                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                    <input
+                      type="date"
+                      className="form-input"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', fontSize: 12 }}
+                    />
+                    <span style={{ fontSize: 12, color: 'var(--text-tertiary)', fontWeight: 600 }}>to</span>
+                    <input
+                      type="date"
+                      className="form-input"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      style={{ padding: '6px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)', fontSize: 12 }}
+                    />
+                  </div>
+                )}
+
                 <div style={{ position: 'relative' }}>
                   <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
                   <input
@@ -1282,7 +1520,7 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
                     placeholder="Search..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{ paddingLeft: 32, minWidth: 160, fontSize: 13 }}
+                    style={{ paddingLeft: 32, minWidth: 150, fontSize: 13 }}
                   />
                 </div>
                 <button className="btn btn-ghost" onClick={() => handleExportCSV('inventory')} style={{ fontSize: 13 }}>
@@ -1294,37 +1532,82 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Code</th>
-                    <th>Product Name</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleInvSort('code')}>Code{getInvSortIcon('code')}</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleInvSort('item')}>Product Name{getInvSortIcon('item')}</th>
                     <th>Unit</th>
-                    <th style={{ textAlign: 'right' }}>Cost</th>
-                    <th style={{ textAlign: 'right' }}>Price</th>
-                    <th style={{ textAlign: 'right' }}>Stock</th>
+                    <th style={{ textAlign: 'right', cursor: 'pointer' }} onClick={() => handleInvSort('cost')}>Cost{getInvSortIcon('cost')}</th>
+                    <th style={{ textAlign: 'right', cursor: 'pointer' }} onClick={() => handleInvSort('price')}>Price{getInvSortIcon('price')}</th>
+                    {filterDateRange.isFiltered && (
+                      <>
+                        <th style={{ textAlign: 'right', color: 'var(--text-tertiary)' }} title="Starting stock at start of period">Start</th>
+                        <th style={{ textAlign: 'right', color: 'var(--success)' }} title="Received in period">+In</th>
+                        <th style={{ textAlign: 'right', color: 'var(--danger)' }} title="Sales / Spoilage / ENT in period">-Out</th>
+                        {hasAnyAdjust && <th style={{ textAlign: 'right', color: '#8b5cf6' }} title="Adjustments">Adj</th>}
+                      </>
+                    )}
+                    <th style={{ textAlign: 'right', cursor: 'pointer' }} onClick={() => handleInvSort('stock')}>
+                      {filterDateRange.isFiltered ? `Stock (${filterLabel})` : 'Stock'}{getInvSortIcon('stock')}
+                    </th>
                     <th style={{ textAlign: 'right' }}>Min Level</th>
                     <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {inventorySearched.length === 0 ? (
-                    <tr><td colSpan="7" style={{ textAlign: 'center', padding: 'var(--sp-8)', color: 'var(--text-tertiary)' }}>No products found.</td></tr>
+                  {sortedInventory.length === 0 ? (
+                    <tr>
+                      <td 
+                        colSpan={filterDateRange.isFiltered ? (hasAnyAdjust ? 11 : 10) : 8} 
+                        style={{ textAlign: 'center', padding: 'var(--sp-8)', color: 'var(--text-tertiary)' }}
+                      >
+                        No products found.
+                      </td>
+                    </tr>
                   ) : (
-                    inventorySearched.map(p => {
-                      const stockVal = parseInt(p.stockOnHand) || 0;
+                    sortedInventory.map(p => {
+                      const snap = inventorySnapshotData[String(p.id)] || {
+                        startingStock: parseInt(p.stockOnHand) || 0,
+                        periodIn: 0,
+                        periodOut: 0,
+                        periodAdjust: 0,
+                        endingStock: parseInt(p.stockOnHand) || 0,
+                        status: 'Good',
+                        badgeClass: 'badge-success'
+                      };
+                      const stockVal = snap.endingStock;
                       const minVal = parseInt(p.minStockLevel) || 0;
-                      let status = 'Good';
-                      let badgeClass = 'badge-success';
-                      if (stockVal <= 0) { status = 'Out of Stock'; badgeClass = 'badge-danger'; }
-                      else if (stockVal <= minVal) { status = 'Low Stock'; badgeClass = 'badge-warning'; }
                       return (
                         <tr key={p.id}>
                           <td style={{ fontFamily: 'monospace', fontSize: 13 }}>{p.code}</td>
                           <td style={{ fontWeight: 600, fontSize: 13 }}>{p.item}</td>
                           <td style={{ fontSize: 13 }}>{p.unit}</td>
-                          <td style={{ textAlign: 'right', fontSize: 13 }}>฿{(p.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                          <td style={{ textAlign: 'right', fontSize: 13 }}>฿{(p.price || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                          <td style={{ textAlign: 'right', fontWeight: 700, fontSize: 13, color: stockVal <= 0 ? 'var(--danger)' : stockVal <= minVal ? 'var(--warning)' : 'var(--text-primary)' }}>{stockVal}</td>
+                          <td style={{ textAlign: 'right', fontSize: 13 }}>฿{(parseFloat(p.cost) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                          <td style={{ textAlign: 'right', fontSize: 13 }}>฿{(parseFloat(p.price) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                          {filterDateRange.isFiltered && (
+                            <>
+                              <td style={{ textAlign: 'right', fontSize: 13, color: 'var(--text-secondary)' }}>{snap.startingStock}</td>
+                              <td style={{ textAlign: 'right', fontSize: 13, color: snap.periodIn > 0 ? 'var(--success)' : 'var(--text-tertiary)', fontWeight: snap.periodIn > 0 ? 600 : 400 }}>
+                                {snap.periodIn > 0 ? `+${snap.periodIn}` : '0'}
+                              </td>
+                              <td style={{ textAlign: 'right', fontSize: 13, color: snap.periodOut > 0 ? 'var(--danger)' : 'var(--text-tertiary)', fontWeight: snap.periodOut > 0 ? 600 : 400 }}>
+                                {snap.periodOut > 0 ? `-${snap.periodOut}` : '0'}
+                              </td>
+                              {hasAnyAdjust && (
+                                <td style={{ textAlign: 'right', fontSize: 13, color: snap.periodAdjust !== 0 ? '#8b5cf6' : 'var(--text-tertiary)', fontWeight: snap.periodAdjust !== 0 ? 600 : 400 }}>
+                                  {snap.periodAdjust > 0 ? `+${snap.periodAdjust}` : snap.periodAdjust}
+                                </td>
+                              )}
+                            </>
+                          )}
+                          <td style={{ 
+                            textAlign: 'right', 
+                            fontWeight: 700, 
+                            fontSize: 13, 
+                            color: stockVal <= 0 ? 'var(--danger)' : stockVal <= minVal ? 'var(--warning)' : 'var(--text-primary)' 
+                          }}>
+                            {stockVal}
+                          </td>
                           <td style={{ textAlign: 'right', fontSize: 13, color: 'var(--text-tertiary)' }}>{minVal}</td>
-                          <td><span className={`badge ${badgeClass}`} style={{ fontSize: 11 }}>{status}</span></td>
+                          <td><span className={`badge ${snap.badgeClass}`} style={{ fontSize: 11 }}>{snap.status}</span></td>
                         </tr>
                       );
                     })
