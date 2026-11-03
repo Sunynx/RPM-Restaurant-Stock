@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Download, RefreshCw, Package, TrendingDown, Activity, Search, FileDown } from 'lucide-react';
 import { fetchAuditLogs, fetchTransactions } from '../graphService';
+import { getValidAccessToken } from '../authConfig';
 import toast from 'react-hot-toast';
 import { useMsal } from '@azure/msal-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
@@ -66,14 +67,10 @@ export default function ReportPanel({ inventory, categories = [], userRole }) {
   const loadData = async () => {
     setLoading(true);
     try {
-      const account = accounts[0];
-      const response = await instance.acquireTokenSilent({
-        scopes: ['Sites.ReadWrite.All'],
-        account: account
-      });
+      const accessToken = await getValidAccessToken(instance);
       const [logData, txData] = await Promise.all([
-        fetchAuditLogs(response.accessToken),
-        fetchTransactions(response.accessToken)
+        fetchAuditLogs(accessToken),
+        fetchTransactions(accessToken)
       ]);
       setLogs(logData);
       setTransactions(txData);

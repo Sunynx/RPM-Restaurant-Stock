@@ -11,7 +11,7 @@ import EditModal from './components/EditModal';
 import EditProductDetailsModal from './components/EditProductDetailsModal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
-import { loginRequest } from './authConfig';
+import { loginRequest, getValidAccessToken } from './authConfig';
 import { fetchInventoryFromSharePoint, updateInventoryInSharePoint, fetchAppUsers, fetchTransactions, createProductInSharePoint, fetchCategories, writeAuditLog, createGenericSharePointItem, updateProductDetailsInSharePoint, createCategoryInSharePoint, updateUserRoleInSharePoint, addUserToSharePoint, updateUserDetailsInSharePoint, deleteUserFromSharePoint } from './graphService';
 import toast from 'react-hot-toast';
 import CSVImporterModal from './components/CSVImporterModal';
@@ -253,43 +253,94 @@ function App() {
   };
 
   useEffect(() => {
-    if (isAuthenticated && accounts[0]) {
-      instance.acquireTokenSilent({
-        ...loginRequest,
-        account: accounts[0]
-      }).then((response) => {
-        setAccessToken(response.accessToken);
-      }).catch((error) => {
-        console.error("Token silent error:", error);
-        if (error.name === "InteractionRequiredAuthError") {
-           instance.acquireTokenRedirect(loginRequest);
-        }
-      });
+    if (isAuthenticated && (accounts[0] || instance.getActiveAccount())) {
+      getValidAccessToken(instance)
+        .then((token) => {
+          if (token) setAccessToken(token);
+        })
+        .catch((error) => {
+          console.error("Initial token acquisition error:", error);
+        });
     }
   }, [isAuthenticated, accounts, instance]);
 
+  // Proactive token refresh & sync on tab resume/focus
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleSyncOnResume = async () => {
+      if (document.visibilityState === 'visible') {
+        try {
+          const freshToken = await getValidAccessToken(instance);
+          if (freshToken) {
+            setAccessToken(freshToken);
+            queryClient.invalidateQueries();
+          }
+        } catch (err) {
+          console.error("Session re-sync on tab resume failed:", err);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleSyncOnResume);
+    window.addEventListener('focus', handleSyncOnResume);
+
+    // Proactively refresh token every 15 minutes while app is open
+    const refreshInterval = setInterval(async () => {
+      try {
+        const freshToken = await getValidAccessToken(instance);
+        if (freshToken) setAccessToken(freshToken);
+      } catch (err) {
+        console.warn("Proactive token refresh failed:", err);
+      }
+    }, 15 * 60 * 1000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleSyncOnResume);
+      window.removeEventListener('focus', handleSyncOnResume);
+      clearInterval(refreshInterval);
+    };
+  }, [isAuthenticated, instance, queryClient]);
+
   const { data: inventory = [], isLoading: isLoadingInventory } = useQuery({
     queryKey: ['inventory'],
-    queryFn: () => fetchInventoryFromSharePoint(accessToken),
-    enabled: !!accessToken,
+    queryFn: async () => {
+      const token = await getValidAccessToken(instance);
+      if (token && token !== accessToken) setAccessToken(token);
+      return fetchInventoryFromSharePoint(token || accessToken);
+    },
+    enabled: isAuthenticated && (!!accounts[0] || !!instance.getActiveAccount()),
   });
 
   const { data: categories = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ['categories'],
-    queryFn: () => fetchCategories(accessToken),
-    enabled: !!accessToken,
+    queryFn: async () => {
+      const token = await getValidAccessToken(instance);
+      if (token && token !== accessToken) setAccessToken(token);
+      return fetchCategories(token || accessToken);
+    },
+    enabled: isAuthenticated && (!!accounts[0] || !!instance.getActiveAccount()),
   });
 
   const { data: appUsers = [], isLoading: isLoadingUsers } = useQuery({
     queryKey: ['appUsers'],
-    queryFn: () => fetchAppUsers(accessToken, accounts[0].username),
-    enabled: !!accessToken && !!accounts[0]?.username,
+    queryFn: async () => {
+      const token = await getValidAccessToken(instance);
+      if (token && token !== accessToken) setAccessToken(token);
+      const email = accounts[0]?.username || instance.getActiveAccount()?.username;
+      return fetchAppUsers(token || accessToken, email);
+    },
+    enabled: isAuthenticated && (!!accounts[0]?.username || !!instance.getActiveAccount()?.username),
   });
 
   const { data: transactions = [], isLoading: isLoadingTransactions } = useQuery({
     queryKey: ['transactions'],
-    queryFn: () => fetchTransactions(accessToken),
-    enabled: !!accessToken,
+    queryFn: async () => {
+      const token = await getValidAccessToken(instance);
+      if (token && token !== accessToken) setAccessToken(token);
+      return fetchTransactions(token || accessToken);
+    },
+    enabled: isAuthenticated && (!!accounts[0] || !!instance.getActiveAccount()),
   });
 
   const loading = isLoadingInventory || isLoadingUsers || isLoadingTransactions || isLoadingCategories;
@@ -367,9 +418,10 @@ function App() {
   }, [inventory]);
 
   const updateMutation = useMutation({
-    mutationFn: (updatedItem) => {
+    mutationFn: async (updatedItem) => {
+      const token = await getValidAccessToken(instance);
       const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
-      return updateInventoryInSharePoint(accessToken, updatedItem.id, updatedItem, performedBy);
+      return updateInventoryInSharePoint(token || accessToken, updatedItem.id, updatedItem, performedBy);
     },
     onMutate: async (updatedItem) => {
       await queryClient.cancelQueries({ queryKey: ['inventory'] });
@@ -402,14 +454,15 @@ function App() {
   });
 
   const handleSaveItem = (updatedItem) => {
-    if (!accessToken) return;
+    if (!isAuthenticated) return;
     updateMutation.mutate(updatedItem);
   };
 
   const updateDetailsMutation = useMutation({
-    mutationFn: (updatedFields) => {
+    mutationFn: async (updatedFields) => {
+      const token = await getValidAccessToken(instance);
       const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
-      return updateProductDetailsInSharePoint(accessToken, editingProductDetails.id, updatedFields, performedBy);
+      return updateProductDetailsInSharePoint(token || accessToken, editingProductDetails.id, updatedFields, performedBy);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
@@ -425,14 +478,15 @@ function App() {
   });
 
   const handleSaveProductDetails = (updatedItem) => {
-    if (!accessToken) return;
+    if (!isAuthenticated) return;
     updateDetailsMutation.mutate(updatedItem);
   };
 
   const addProductMutation = useMutation({
-    mutationFn: (productData) => {
+    mutationFn: async (productData) => {
+      const token = await getValidAccessToken(instance);
       const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
-      return createProductInSharePoint(accessToken, productData, performedBy);
+      return createProductInSharePoint(token || accessToken, productData, performedBy);
     },
     onMutate: async (newProduct) => {
       await queryClient.cancelQueries({ queryKey: ['inventory'] });
@@ -469,14 +523,15 @@ function App() {
   });
 
   const handleAddProduct = (productData) => {
-    if (!accessToken) return;
+    if (!isAuthenticated) return;
     addProductMutation.mutate(productData);
   };
 
   const editUserRoleMutation = useMutation({
-    mutationFn: ({ userId, newRole, targetEmail }) => {
+    mutationFn: async ({ userId, newRole, targetEmail }) => {
+      const token = await getValidAccessToken(instance);
       const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
-      return updateUserRoleInSharePoint(accessToken, userId, newRole, performedBy, targetEmail);
+      return updateUserRoleInSharePoint(token || accessToken, userId, newRole, performedBy, targetEmail);
     },
     onSuccess: (_, variables) => {
       toast.success("User role updated!");
@@ -493,14 +548,15 @@ function App() {
   });
 
   const handleEditUserRole = (userId, newRole, targetEmail) => {
-    if (!accessToken) return;
+    if (!isAuthenticated) return;
     editUserRoleMutation.mutate({ userId, newRole, targetEmail });
   };
 
   const updateUserDetailsMutation = useMutation({
-    mutationFn: ({ userId, updatedFields, targetEmail }) => {
+    mutationFn: async ({ userId, updatedFields, targetEmail }) => {
+      const token = await getValidAccessToken(instance);
       const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
-      return updateUserDetailsInSharePoint(accessToken, userId, updatedFields, performedBy, targetEmail);
+      return updateUserDetailsInSharePoint(token || accessToken, userId, updatedFields, performedBy, targetEmail);
     },
     onSuccess: (_, variables) => {
       toast.success("User details updated!");
@@ -522,14 +578,15 @@ function App() {
   });
 
   const handleUpdateUser = (userId, updatedFields, targetEmail) => {
-    if (!accessToken) return;
+    if (!isAuthenticated) return;
     updateUserDetailsMutation.mutate({ userId, updatedFields, targetEmail });
   };
 
   const deleteUserMutation = useMutation({
-    mutationFn: ({ userId, targetEmail }) => {
+    mutationFn: async ({ userId, targetEmail }) => {
+      const token = await getValidAccessToken(instance);
       const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
-      return deleteUserFromSharePoint(accessToken, userId, performedBy, targetEmail);
+      return deleteUserFromSharePoint(token || accessToken, userId, performedBy, targetEmail);
     },
     onSuccess: (_, variables) => {
       toast.success("User removed successfully!");
@@ -546,14 +603,15 @@ function App() {
   });
 
   const handleDeleteUser = (userId, targetEmail) => {
-    if (!accessToken) return;
+    if (!isAuthenticated) return;
     deleteUserMutation.mutate({ userId, targetEmail });
   };
 
   const addUserMutation = useMutation({
-    mutationFn: (userData) => {
+    mutationFn: async (userData) => {
+      const token = await getValidAccessToken(instance);
       const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
-      return addUserToSharePoint(accessToken, userData, performedBy);
+      return addUserToSharePoint(token || accessToken, userData, performedBy);
     },
     onSuccess: () => {
       toast.success("User added successfully!");
@@ -567,14 +625,15 @@ function App() {
   });
 
   const handleAddUser = (userData) => {
-    if (!accessToken) return;
+    if (!isAuthenticated) return;
     addUserMutation.mutate(userData);
   };
 
   const addCategoryMutation = useMutation({
-    mutationFn: (categoryData) => {
+    mutationFn: async (categoryData) => {
+      const token = await getValidAccessToken(instance);
       const performedBy = selectedProfile ? `${selectedProfile.name} - ${accounts[0]?.username}` : accounts[0]?.username;
-      return createCategoryInSharePoint(accessToken, categoryData, performedBy);
+      return createCategoryInSharePoint(token || accessToken, categoryData, performedBy);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
@@ -588,12 +647,14 @@ function App() {
   });
 
   const handleAddCategory = (categoryData) => {
-    if (!accessToken) return;
+    if (!isAuthenticated) return;
     addCategoryMutation.mutate(categoryData);
   };
 
   const handleProcessImport = async (listName, dataRows) => {
-    if (!accessToken) return;
+    const token = await getValidAccessToken(instance);
+    if (!token && !accessToken) return;
+    const activeToken = token || accessToken;
     
     if (listName === 'Inventory_Products' && categories.length === 0) {
       toast.warn("No categories loaded. Products will be imported without categories.");
@@ -648,7 +709,7 @@ function App() {
         }
 
         console.log(`Payload for ${listName}:`, fields);
-        await createGenericSharePointItem(accessToken, listName, fields);
+        await createGenericSharePointItem(activeToken, listName, fields);
       } catch (err) {
         console.error("Import error for row", row, err);
         errors++;

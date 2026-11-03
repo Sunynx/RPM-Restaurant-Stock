@@ -3,14 +3,12 @@ import { createRoot } from 'react-dom/client'
 import { Toaster } from 'react-hot-toast'
 import './index.css'
 import App from './App.jsx'
-import { PublicClientApplication, EventType } from '@azure/msal-browser';
+import { EventType } from '@azure/msal-browser';
 import { MsalProvider } from '@azure/msal-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { msalConfig } from './authConfig';
+import { msalConfig, msalInstance } from './authConfig';
 
 const queryClient = new QueryClient();
-
-const msalInstance = new PublicClientApplication(msalConfig);
 
 msalInstance.initialize().then(() => {
   return msalInstance.handleRedirectPromise().catch(err => {

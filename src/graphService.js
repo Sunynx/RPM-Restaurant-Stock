@@ -1,11 +1,28 @@
 // src/graphService.js
 import { Client } from "@microsoft/microsoft-graph-client";
+import { getValidAccessToken } from "./authConfig";
 
-// Initialize the Graph Client
+// Initialize the Graph Client with proactive MSAL silent token refresh
 export const getGraphClient = (accessToken) => {
   return Client.init({
-    authProvider: (done) => {
-      done(null, accessToken);
+    authProvider: async (done) => {
+      try {
+        let token = accessToken;
+        if (!token || typeof token === 'function') {
+          token = typeof token === 'function' ? await token() : await getValidAccessToken();
+        } else {
+          // If a token string was passed, prefer the freshest non-expired token from MSAL
+          try {
+            const freshToken = await getValidAccessToken();
+            if (freshToken) token = freshToken;
+          } catch {
+            // Keep passed token if silent refresh fails or isn't required yet
+          }
+        }
+        done(null, token);
+      } catch (err) {
+        done(err, null);
+      }
     }
   });
 };
@@ -64,6 +81,9 @@ export async function fetchAppUsers(accessToken, currentUserEmail) {
     })).filter(u => u.status !== 'Inactive');
   } catch (error) {
     console.error("Error fetching Users, defaulting to Admin", error);
+    if (error?.statusCode === 401 || error?.code === 'InvalidAuthenticationToken') {
+      throw error;
+    }
     return [{ email: currentUserEmail, role: 'Admin' }];
   }
 }
@@ -215,6 +235,9 @@ export async function fetchCategories(accessToken) {
     }));
   } catch (error) {
     console.error("Error fetching Categories", error);
+    if (error?.statusCode === 401 || error?.code === 'InvalidAuthenticationToken') {
+      throw error;
+    }
     return [];
   }
 }
@@ -342,6 +365,9 @@ export async function fetchTransactions(accessToken) {
     }));
   } catch (error) {
     console.error("Error fetching transactions", error);
+    if (error?.statusCode === 401 || error?.code === 'InvalidAuthenticationToken') {
+      throw error;
+    }
     return [];
   }
 }
